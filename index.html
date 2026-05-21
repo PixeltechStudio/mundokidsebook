@@ -978,10 +978,10 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
 }
 .hero-stat .label { font-size: 0.82rem; color: var(--text-muted); }
 
-/* Floating books — always visible on desktop */
+/* 3D book visual — always visible on desktop */
 .hero-visual {
   position: relative;
-  height: 520px;
+  height: 560px;
   display: flex !important;
   align-items: center; justify-content: center;
 }
@@ -1044,6 +1044,53 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
 @keyframes sparkle-float {
   0%,100%{ opacity:0; transform:scale(0) translateY(0) }
   50%{ opacity:1; transform:scale(1) translateY(-32px) }
+}
+
+/* ── LANDING 3D BOOK WRAPPER ── */
+.landing-book-wrap {
+  position: relative;
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 100%;
+  perspective: 1000px;
+}
+/* Mini livros flutuantes em volta do livro 3D na landing */
+.landing-mini-book {
+  position: absolute;
+  width: 80px; height: 110px;
+  border-radius: 4px 12px 12px 4px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 12px 36px rgba(0,0,0,0.45), 0 0 20px rgba(192,132,252,0.2);
+  z-index: 1;
+  pointer-events: none;
+}
+.lmb1 {
+  background: linear-gradient(135deg, #ff6eb4, #c084fc);
+  top: 5%; left: 2%;
+  animation: lmb-float1 6s ease-in-out infinite;
+}
+.lmb2 {
+  background: linear-gradient(135deg, #93c5fd, #3b82f6);
+  top: 10%; right: 4%;
+  animation: lmb-float2 7s ease-in-out infinite 1s;
+}
+.lmb3 {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  bottom: 10%; left: 5%;
+  animation: lmb-float1 8s ease-in-out infinite 0.5s;
+}
+.lmb4 {
+  background: linear-gradient(135deg, #34d399, #059669);
+  bottom: 5%; right: 6%;
+  animation: lmb-float2 5s ease-in-out infinite 1.5s;
+}
+@keyframes lmb-float1 {
+  0%,100% { transform: rotate(-8deg) translateY(0); }
+  50%      { transform: rotate(-8deg) translateY(-16px); }
+}
+@keyframes lmb-float2 {
+  0%,100% { transform: rotate(6deg) translateY(0); }
+  50%      { transform: rotate(6deg) translateY(-14px); }
 }
 
 /* ─────────────────────────────────────
@@ -1726,16 +1773,45 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
         </div>
       </div>
       <div class="hero-visual">
-        <div class="floating-books">
-          <div class="float-book"><div class="book-placeholder">🦁<span>A Aventura do Leão</span></div></div>
-          <div class="float-book"><div class="book-placeholder">🌈<span>O Arco-íris Mágico</span></div></div>
-          <div class="float-book"><div class="book-placeholder">⭐<span>Estrelas do Céu</span></div></div>
-          <div class="float-book"><div class="book-placeholder">🐉<span>O Dragão Amigo</span></div></div>
-          <div class="float-book"><div class="book-placeholder">🧚<span>A Fada da Floresta</span></div></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
-          <div class="sparkle"></div>
+        <!-- LIVRO 3D — igual à área logada -->
+        <div class="book-3d-wrap landing-book-wrap">
+          <div class="book-sparkles">
+            <span class="bsp s1">✨</span>
+            <span class="bsp s2">⭐</span>
+            <span class="bsp s3">🌟</span>
+            <span class="bsp s4">✨</span>
+            <span class="bsp s5">⭐</span>
+            <span class="bsp s6">🌟</span>
+          </div>
+          <div class="book-3d" id="landing-book-3d" onclick="openModal('register-modal')">
+            <!-- Front Cover — mesma estrutura da área logada -->
+            <div class="book-face book-front">
+              <div class="book-cover-art" id="landing-hero-book-cover">
+                <div class="book-cover-gradient" id="landing-hero-cover-grad">
+                  <div class="book-cover-emoji" id="landing-hero-cover-emoji">📚</div>
+                  <div class="book-cover-title" id="landing-hero-cover-title">Aventura Mágica</div>
+                  <div class="book-cover-author" id="landing-hero-cover-author">Mundo Encantado</div>
+                </div>
+              </div>
+              <div class="book-shine"></div>
+            </div>
+            <!-- Spine -->
+            <div class="book-face book-spine">
+              <div class="spine-title" id="landing-spine-title">Aventura</div>
+            </div>
+            <!-- Back -->
+            <div class="book-face book-back"></div>
+            <!-- Pages / Top / Bottom -->
+            <div class="book-face book-pages"></div>
+            <div class="book-face book-top"></div>
+            <div class="book-face book-bottom"></div>
+            <button class="book-open-btn">🚀 Começar agora</button>
+          </div>
+          <!-- Mini livros flutuantes ao redor -->
+          <div class="landing-mini-book lmb1">🦁</div>
+          <div class="landing-mini-book lmb2">🌈</div>
+          <div class="landing-mini-book lmb3">🐉</div>
+          <div class="landing-mini-book lmb4">🧚</div>
         </div>
       </div>
     </div>
@@ -2900,7 +2976,7 @@ function showPage(page) {
   // Show/hide navbar
   const navbar = document.getElementById('navbar');
   if (navbar) {
-    navbar.style.display = (page === 'reader' || page === 'admin') ? 'none' : '';
+    navbar.style.display = (page === 'reader' || page === 'admin' || page === 'dashboard') ? 'none' : '';
   }
 
   window.scrollTo(0, 0);
@@ -3082,10 +3158,12 @@ async function checkSession() {
     } else {
       hideLoading();
       showPage('landing');
+      loadLandingBookCover(); // carrega capa do primeiro livro na landing
     }
   } catch (e) {
     hideLoading();
     showPage('landing');
+    loadLandingBookCover();
   }
 }
 
@@ -3406,6 +3484,33 @@ async function loadNetflixLibrary() {
   }
 }
 
+/* ── Carrega a capa do primeiro livro disponível no livro 3D da landing ── */
+async function loadLandingBookCover() {
+  try {
+    const books = await Backendless.Data.of('Livros').find(
+      Backendless.DataQueryBuilder.create().setWhereClause('ativo = true').setPageSize(1)
+    );
+    if (!books || books.length === 0) return;
+    const b = books[0];
+    const landingGrad = document.getElementById('landing-hero-cover-grad');
+    if (!landingGrad) return;
+    if (b.capaUrl) {
+      landingGrad.style.cssText = `background:url(${b.capaUrl}) center/cover no-repeat;`;
+      ['book-cover-emoji','book-cover-title','book-cover-author'].forEach(cls => {
+        const el = landingGrad.querySelector('.'+cls); if(el) el.style.display='none';
+      });
+    } else {
+      landingGrad.style.background = getBookColor(b.objectId).gradient;
+      const emo = landingGrad.querySelector('.book-cover-emoji'); if(emo) emo.textContent = getBookEmoji(b);
+      const tit = landingGrad.querySelector('.book-cover-title'); if(tit) tit.textContent = (b.titulo||'').substring(0,24);
+    }
+    const landingSpine = document.getElementById('landing-spine-title');
+    if (landingSpine) landingSpine.textContent = (b.titulo || 'Aventura').substring(0, 12);
+  } catch(e) {
+    // silently fail — keeps default gradient cover
+  }
+}
+
 function setupHero() {
   const lastProg = Object.values(progressMap).sort((a,b) => new Date(b.atualizadoEm||0) - new Date(a.atualizadoEm||0))[0];
   if (lastProg) heroBookObj = allBooks.find(b => b.objectId === lastProg.livroId) || null;
@@ -3444,6 +3549,23 @@ function setupHero() {
     favBtn.classList.toggle('favorited', isFav);
     favBtn.textContent = isFav ? '♥ Favoritado' : '♡ Favoritar';
   }
+
+  // ── Sincroniza capa idêntica no livro 3D da LANDING PAGE ──
+  const landingGrad = document.getElementById('landing-hero-cover-grad');
+  if (landingGrad) {
+    if (b.capaUrl) {
+      landingGrad.style.cssText = `background:url(${b.capaUrl}) center/cover no-repeat;`;
+      ['book-cover-emoji','book-cover-title','book-cover-author'].forEach(cls => {
+        const el = landingGrad.querySelector('.'+cls); if(el) el.style.display='none';
+      });
+    } else {
+      landingGrad.style.background = getBookColor(b.objectId).gradient;
+      const emo = landingGrad.querySelector('.book-cover-emoji'); if(emo) emo.textContent = getBookEmoji(b);
+      const tit = landingGrad.querySelector('.book-cover-title'); if(tit) tit.textContent = (b.titulo||'').substring(0,24);
+    }
+  }
+  const landingSpine = document.getElementById('landing-spine-title');
+  if (landingSpine) landingSpine.textContent = (b.titulo || 'Aventura').substring(0, 12);
 }
 
 function populateCarousels() {
