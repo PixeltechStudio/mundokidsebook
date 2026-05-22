@@ -4097,28 +4097,6 @@ async function handleAdminLogin() {
 async function handleLogout(silent = false) {
   await updateOnlineStatus(false);
   try { await Backendless.UserService.logout(); } catch(e) {}
-  // Reset estado de conquistas para o próximo login
-  _newFeaturesInitialized = false;
-  _conquistasRecordId = null;
-  achievementsUnlocked = {};
-  readingStats = {
-    booksOpened:0, booksCompleted:0, totalMinutes:0, favorites:0,
-    usedBedtime:false, bedtimeUses:0, usedBedtimeMusic:false,
-    streak:0, childProfiles:0, plan:'gratuito',
-    genresRead:[], authorsRead:[], booksShared:0, booksRated:0,
-    hasProfilePhoto:false, profileComplete:false,
-    searchesDone:0, birthdayLogin:false, newYearRead:false,
-    halloweenRead:false, christmasRead:false,
-    bingeDayMax:0, perfectWeeks:0, perfectMonths:0,
-    chaptersRead:0, booksNoSkip:0, booksReread:0,
-    finishedAtNight:false, finishedInMorning:false,
-    readEarlyMorning:false, readLateNight:false,
-    readWeekend:false, readLunchtime:false,
-    fastPageRead:false, speedCompleted:false,
-    notificationsOn:false, totalSessions:0,
-    totalAchievements:0, loginStreak:0,
-    nightMarathon:false, topReader:false,
-  };
   currentUser = null;
   isAdmin = false;
   allBooks = [];
@@ -4164,10 +4142,6 @@ async function loadDashboard() {
   initDashParticles();
   initNetflixScroll();
   await loadNetflixLibrary();
-
-  // Inicializa as funcionalidades extras (conquistas, modo dormir, etc.)
-  // com delay para garantir que o DOM está pronto
-  setTimeout(initNewFeatures, 400);
 }
 
 function initNetflixScroll() {
@@ -4220,28 +4194,10 @@ async function loadNetflixLibrary() {
       } catch(e) {}
     }
 
-    try {
-      const favKey = `favs_${currentUser.objectId}`;
-      const stored = localStorage.getItem(favKey);
-      if (stored) favoritesSet = new Set(JSON.parse(stored));
-    } catch(e) {}
+    // Carrega favoritos do Backendless (com fallback para localStorage)
+    await loadFavoritesFromBackendless();
 
-    const progressCount = Object.keys(progressMap).length;
-    setText('stat-books-read', progressCount);
-
-    // Sincroniza stats de leitura com dados reais do Backendless
-    const completedCount = Object.values(progressMap).filter(p => p.progresso >= 100 || p.concluido === true).length;
-    if (progressCount > (readingStats.booksOpened||0)) {
-      readingStats.booksOpened = progressCount;
-    }
-    if (completedCount > (readingStats.booksCompleted||0)) {
-      readingStats.booksCompleted = completedCount;
-    }
-    // Sincroniza favoritos reais
-    if (typeof favoritesSet !== 'undefined' && favoritesSet.size > (readingStats.favorites||0)) {
-      readingStats.favorites = favoritesSet.size;
-    }
-    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+    setText('stat-books-read', Object.keys(progressMap).length);
 
     if (allBooks.length === 0) {
       document.getElementById('carousel-all').innerHTML = '<div class="empty-section-msg">Nenhum livro disponível ainda!</div>';
@@ -4475,8 +4431,49 @@ function toggleFavorite(bookId, btnEl) {
     if(btnEl){btnEl.classList.add('favorited');btnEl.innerHTML='♥';}
     showToast('❤️ Adicionado aos favoritos!','success',2000);
   }
+  // Salva no Backendless (fonte primária) e localStorage como cache
+  saveFavoritesToBackendless();
   try { localStorage.setItem(`favs_${currentUser?.objectId}`,JSON.stringify([...favoritesSet])); } catch(e){}
   renderFavoritesGrid();
+}
+
+async function saveFavoritesToBackendless() {
+  if (!currentUser) return;
+  try {
+    // Busca registro existente para fazer upsert
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${currentUser.objectId}'`)
+      .setPageSize(1);
+    const existing = await Backendless.Data.of('Favoritos').find(q);
+    const data = {
+      usuarioId: currentUser.objectId,
+      livros: JSON.stringify([...favoritesSet]),
+      atualizadoEm: new Date().toISOString()
+    };
+    if (existing.length > 0) data.objectId = existing[0].objectId;
+    await Backendless.Data.of('Favoritos').save(data);
+  } catch(e) { /* non-critical — cache local mantém estado */ }
+}
+
+async function loadFavoritesFromBackendless() {
+  if (!currentUser) return;
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${currentUser.objectId}'`)
+      .setPageSize(1);
+    const results = await Backendless.Data.of('Favoritos').find(q);
+    if (results.length && results[0].livros) {
+      favoritesSet = new Set(JSON.parse(results[0].livros));
+      // Sincroniza cache local
+      try { localStorage.setItem(`favs_${currentUser.objectId}`, JSON.stringify([...favoritesSet])); } catch(e){}
+      return;
+    }
+  } catch(e) {}
+  // Fallback para localStorage se Backendless falhar
+  try {
+    const stored = localStorage.getItem(`favs_${currentUser.objectId}`);
+    if (stored) favoritesSet = new Set(JSON.parse(stored));
+  } catch(e) {}
 }
 function toggleFavoriteHero() {
   if(!heroBookObj) return;
@@ -4703,22 +4700,7 @@ function closeReader() {
         const pl = await Backendless.Data.of('ProgressoLeitura').find(pq);
         progressMap = {};
         pl.forEach(p => { progressMap[p.livroId] = p; });
-        const progressCount = Object.keys(progressMap).length;
-    setText('stat-books-read', progressCount);
-
-    // Sincroniza stats de leitura com dados reais do Backendless
-    const completedCount = Object.values(progressMap).filter(p => p.progresso >= 100 || p.concluido === true).length;
-    if (progressCount > (readingStats.booksOpened||0)) {
-      readingStats.booksOpened = progressCount;
-    }
-    if (completedCount > (readingStats.booksCompleted||0)) {
-      readingStats.booksCompleted = completedCount;
-    }
-    // Sincroniza favoritos reais
-    if (typeof favoritesSet !== 'undefined' && favoritesSet.size > (readingStats.favorites||0)) {
-      readingStats.favorites = favoritesSet.size;
-    }
-    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+        setText('stat-books-read', Object.keys(progressMap).length);
         populateCarousels();
         setupHero();
       } catch(e) {}
@@ -5615,34 +5597,61 @@ function continueLeituraHero() {
 /* ────────────────────────────────────────────
    3. PERFIS INFANTIS
 ──────────────────────────────────────────── */
-function loadChildProfiles() {
+async function loadChildProfiles() {
+  if (!currentUser) return;
   try {
-    const stored = localStorage.getItem('childProfiles_' + (Backendless.UserService.getCurrentUser()?.objectId || 'guest'));
-    if (stored) childProfiles = JSON.parse(stored);
-  } catch(e) { childProfiles = []; }
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${currentUser.objectId}'`)
+      .setPageSize(1);
+    const results = await Backendless.Data.of('PerfilInfantil').find(q);
+    if (results.length && results[0].perfis) {
+      childProfiles = JSON.parse(results[0].perfis);
+      // Sincroniza cache local
+      try { localStorage.setItem('childProfiles_' + currentUser.objectId, JSON.stringify(childProfiles)); } catch(e){}
+    } else {
+      // Fallback para localStorage
+      try {
+        const stored = localStorage.getItem('childProfiles_' + currentUser.objectId);
+        if (stored) childProfiles = JSON.parse(stored);
+      } catch(e) { childProfiles = []; }
+    }
+  } catch(e) {
+    // Fallback para localStorage se Backendless falhar
+    try {
+      const stored = localStorage.getItem('childProfiles_' + (currentUser?.objectId || 'guest'));
+      if (stored) childProfiles = JSON.parse(stored);
+    } catch(e2) { childProfiles = []; }
+  }
   renderChildProfilesInModal();
   renderChildProfilesInParentArea();
   updateReadingStats({ childProfiles: childProfiles.length });
 }
 
 function saveChildProfilesLocal() {
+  // Salva no Backendless (fonte primária) e localStorage como cache
+  saveChildProfilesToBackendless();
   try {
-    const uid = Backendless.UserService.getCurrentUser()?.objectId || 'guest';
+    const uid = currentUser?.objectId || 'guest';
     localStorage.setItem('childProfiles_' + uid, JSON.stringify(childProfiles));
-    // Salva no Backendless em background
-    saveChildProfilesToBackendless();
   } catch(e) {}
 }
 
 async function saveChildProfilesToBackendless() {
   try {
-    const user = Backendless.UserService.getCurrentUser();
+    const user = currentUser;
     if (!user) return;
-    await Backendless.Data.of('PerfilInfantil').save({
+    // Upsert: busca registro existente para manter objectId
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(1);
+    const existing = await Backendless.Data.of('PerfilInfantil').find(q);
+    const data = {
       usuarioId: user.objectId,
       perfis: JSON.stringify(childProfiles),
       atualizadoEm: new Date().toISOString()
-    });
+    };
+    if (existing.length > 0) data.objectId = existing[0].objectId;
+    await Backendless.Data.of('PerfilInfantil').save(data);
   } catch(e) {}
 }
 
@@ -5911,11 +5920,6 @@ function stopAmbientMusic() {
 ──────────────────────────────────────────── */
 function openAchievementsModal() {
   openModal('achievements-modal');
-  // Sincroniza plano antes de renderizar (para conquistas de plano)
-  try {
-    const u = Backendless.UserService.getCurrentUser();
-    if (u && u.plano) readingStats.plan = u.plano;
-  } catch(e) {}
   renderAchievements();
 }
 
@@ -5942,18 +5946,37 @@ function renderAchievements() {
   }).join('');
 }
 
-let _lastStatsSave = 0;
 function updateReadingStats(updates) {
   Object.assign(readingStats, updates);
-  // Salva localmente sempre
-  try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+  // Salva no Backendless (fonte primária) e localStorage como cache
+  saveStatsToBothStorages();
   checkAchievements();
-  // Persiste no Backendless (throttle: máx 1x a cada 30s para não sobrecarregar)
-  const now = Date.now();
-  if (now - _lastStatsSave > 30000) {
-    _lastStatsSave = now;
-    saveAchievementsToBackendless();
-  }
+}
+
+function saveStatsToBothStorages() {
+  // Cache local imediato
+  try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+  // Backendless em background
+  saveStatsToBackendless();
+}
+
+async function saveStatsToBackendless() {
+  try {
+    const user = currentUser;
+    if (!user) return;
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(1);
+    const existing = await Backendless.Data.of('Conquistas').find(q);
+    const data = {
+      usuarioId: user.objectId,
+      conquistas: JSON.stringify(achievementsUnlocked),
+      stats: JSON.stringify(readingStats),
+      atualizadoEm: new Date().toISOString()
+    };
+    if (existing.length > 0) data.objectId = existing[0].objectId;
+    await Backendless.Data.of('Conquistas').save(data);
+  } catch(e) {}
 }
 
 function checkAchievements() {
@@ -5970,7 +5993,7 @@ function checkAchievements() {
     readingStats.totalAchievements = Object.keys(achievementsUnlocked).length;
     try { localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked)); } catch(e){}
     try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
-    saveAchievementsToBackendless();
+    saveStatsToBackendless();
     newlyUnlocked.forEach(ach => showAchievementNotif(ach));
   }
 }
@@ -5991,64 +6014,34 @@ function updateNavAchievementBadge() {
 }
 
 async function saveAchievementsToBackendless() {
-  try {
-    const user = Backendless.UserService.getCurrentUser();
-    if (!user) return;
-    const payload = {
-      usuarioId: user.objectId,
-      conquistas: JSON.stringify(achievementsUnlocked),
-      stats:      JSON.stringify(readingStats),
-      totalDesbloqueadas: Object.keys(achievementsUnlocked).length,
-      atualizadoEm: new Date().toISOString()
-    };
-    // Inclui objectId para fazer UPDATE ao invés de INSERT duplicado
-    if (_conquistasRecordId) payload.objectId = _conquistasRecordId;
-    const saved = await Backendless.Data.of('Conquistas').save(payload);
-    if (saved && saved.objectId) _conquistasRecordId = saved.objectId;
-  } catch(e) { console.warn('saveAchievements error:', e); }
+  // Delegado para saveStatsToBackendless que faz upsert correto
+  await saveStatsToBackendless();
 }
 
 async function loadAchievementsFromBackendless() {
-  // 1) Tenta carregar localStorage primeiro como base
+  try {
+    const user = currentUser;
+    if (!user) return;
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(1);
+    const results = await Backendless.Data.of('Conquistas').find(q);
+    if (results.length) {
+      const rec = results[0];
+      if (rec.conquistas) achievementsUnlocked = JSON.parse(rec.conquistas);
+      if (rec.stats) Object.assign(readingStats, JSON.parse(rec.stats));
+      // Sincroniza localStorage como cache
+      try { localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked)); } catch(e){}
+      try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+      return;
+    }
+  } catch(e) {}
+  // Fallback para localStorage se Backendless falhar
   try {
     const local = localStorage.getItem('achievements');
     if (local) achievementsUnlocked = JSON.parse(local);
     const stats = localStorage.getItem('readingStats');
     if (stats) Object.assign(readingStats, JSON.parse(stats));
-  } catch(e) {}
-
-  // 2) Backendless tem prioridade — sobrescreve o local (dados mais completos/atuais)
-  try {
-    const user = Backendless.UserService.getCurrentUser();
-    if (!user) return;
-
-    // Sincroniza o plano atual do usuário em readingStats
-    if (user.plano) readingStats.plan = user.plano;
-
-    const q = Backendless.DataQueryBuilder.create()
-      .setWhereClause(`usuarioId = '${user.objectId}'`)
-      .setSortBy(['atualizadoEm DESC'])
-      .setPageSize(1);
-    const results = await Backendless.Data.of('Conquistas').find(q);
-    if (results.length) {
-      const rec = results[0];
-      _conquistasRecordId = rec.objectId; // guarda para upsert futuro
-      // Merge: Backendless + localStorage (união de conquistas desbloqueadas)
-      let blUnlocked = {};
-      if (rec.conquistas) { try { blUnlocked = JSON.parse(rec.conquistas); } catch(e) {} }
-      achievementsUnlocked = Object.assign({}, achievementsUnlocked, blUnlocked);
-      if (rec.stats) {
-        try { Object.assign(readingStats, JSON.parse(rec.stats)); } catch(e) {}
-      }
-      // Garante plano atualizado mesmo após merge
-      if (user.plano) readingStats.plan = user.plano;
-    }
-  } catch(e) { console.warn('loadAchievements BL error:', e); }
-
-  // Persiste o estado merged de volta ao localStorage
-  try {
-    localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked));
-    localStorage.setItem('readingStats', JSON.stringify(readingStats));
   } catch(e) {}
 }
 
@@ -6191,7 +6184,45 @@ function addNotification(type, title, body) {
 }
 
 function saveNotificationsLocal() {
+  // Salva no Backendless (fonte primária) e localStorage como cache
   try { localStorage.setItem('notifications_v2', JSON.stringify(notifications)); } catch(e){}
+  saveNotificationsToBackendless();
+}
+
+async function saveNotificationsToBackendless() {
+  try {
+    const user = currentUser;
+    if (!user) return;
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(1);
+    const existing = await Backendless.Data.of('Notificacoes').find(q);
+    const data = {
+      usuarioId: user.objectId,
+      dados: JSON.stringify(notifications.slice(0, 20)),
+      atualizadoEm: new Date().toISOString()
+    };
+    if (existing.length > 0) data.objectId = existing[0].objectId;
+    await Backendless.Data.of('Notificacoes').save(data);
+  } catch(e) {}
+}
+
+async function loadNotificationsFromBackendless() {
+  try {
+    const user = currentUser;
+    if (!user) return;
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(1);
+    const results = await Backendless.Data.of('Notificacoes').find(q);
+    if (results.length && results[0].dados) {
+      notifications = JSON.parse(results[0].dados);
+      try { localStorage.setItem('notifications_v2', JSON.stringify(notifications)); } catch(e){}
+      return;
+    }
+  } catch(e) {}
+  // Fallback para localStorage
+  loadNotificationsLocal();
 }
 
 function loadNotificationsLocal() {
@@ -6310,47 +6341,34 @@ function endReadingSession(bookTitle) {
 ──────────────────────────────────────────── */
 const _origShowDashboard = typeof showDashboard === 'function' ? showDashboard : null;
 
-let _conquistasRecordId = null; // objectId do registro de Conquistas (para upsert)
-let _newFeaturesInitialized = false;
 function initNewFeatures() {
-  // Evita dupla inicialização (loadDashboard E showPage hook podem chamar)
-  if (_newFeaturesInitialized) return;
-  _newFeaturesInitialized = true;
-
   // Mostra botão de modo noturno na dashboard
   const bedtimeBtn = document.getElementById('bedtime-toggle-btn');
   if (bedtimeBtn) bedtimeBtn.style.display = 'flex';
 
-  // Carrega dados locais
-  loadNotificationsLocal();
-  loadChildProfiles();
-  loadAchievementsFromBackendless().then(() => {
-    // Sincroniza totalSessions
-    readingStats.totalSessions = (readingStats.totalSessions || 0) + 1;
-    checkAchievements();
-    // Persiste sessão atualizada
-    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e) {}
+  // Carrega notificações do Backendless (com fallback local)
+  loadNotificationsFromBackendless().then(() => {
+    updateNotifDot();
+    renderNotifications();
   });
 
-  // Carrega totalReadingMinutes do localStorage
+  // Carrega perfis infantis do Backendless
+  loadChildProfiles();
+
+  // Carrega conquistas e stats do Backendless
+  loadAchievementsFromBackendless().then(() => {
+    checkAchievements();
+    // Restaura totalReadingMinutes das stats carregadas do Backendless
+    if (readingStats.totalMinutes) totalReadingMinutes = readingStats.totalMinutes;
+  });
+
+  // Fallback: carrega totalReadingMinutes do localStorage se não veio do Backendless
   try {
     const stored = localStorage.getItem('totalReadingMinutes');
-    if (stored) totalReadingMinutes = parseFloat(stored) || 0;
-    // Sincroniza com readingStats.totalMinutes (evita dessincronização)
-    if (totalReadingMinutes > readingStats.totalMinutes) {
-      readingStats.totalMinutes = totalReadingMinutes;
-    } else if (readingStats.totalMinutes > totalReadingMinutes) {
-      totalReadingMinutes = readingStats.totalMinutes;
-    }
+    if (stored && !totalReadingMinutes) totalReadingMinutes = parseFloat(stored) || 0;
   } catch(e){}
 
-  // Sincroniza o plano do usuário em readingStats
-  try {
-    const u = Backendless.UserService.getCurrentUser();
-    if (u && u.plano) readingStats.plan = u.plano;
-  } catch(e) {}
-
-  // Restaura modo bedtime se estava ativo
+  // Restaura modo bedtime se estava ativo (preferência local de UI, não precisa Backendless)
   try {
     if (localStorage.getItem('bedtimeMode') === '1') {
       document.getElementById('bedtime-mode-toggle').checked = true;
@@ -6374,10 +6392,10 @@ function initNewFeatures() {
   });
 
   // Primeira visita — notificação de boas-vindas
-  const hasVisited = localStorage.getItem('hasVisited');
+  const hasVisited = localStorage.getItem('hasVisited_' + (currentUser?.objectId || ''));
   if (!hasVisited) {
     setTimeout(() => addNotification('info', '👋 Bem-vindo ao Mundo Encantado!', 'Explore nossa biblioteca, crie perfis infantis e acompanhe seu progresso de leitura!'), 3000);
-    localStorage.setItem('hasVisited', '1');
+    try { localStorage.setItem('hasVisited_' + (currentUser?.objectId || ''), '1'); } catch(e){}
   }
 
   updateNotifDot();
@@ -6389,6 +6407,8 @@ function initNewFeatures() {
   });
   document.addEventListener('bookClosed', (e) => {
     endReadingSession(e.detail?.title);
+    // Salva tempo de leitura no Backendless via updateReadingStats
+    updateReadingStats({ totalMinutes: totalReadingMinutes });
     try { localStorage.setItem('totalReadingMinutes', totalReadingMinutes); } catch(err){}
   });
   document.addEventListener('bookCompleted', (e) => {
@@ -6400,12 +6420,9 @@ function initNewFeatures() {
     }
     checkAchievements();
   });
-  document.addEventListener('bookFavorited', (e) => {
-    // Conta favoritos reais do favoritesSet se disponível
-    const favCount = (typeof favoritesSet !== 'undefined' && favoritesSet.size)
-      ? favoritesSet.size
-      : (readingStats.favorites||0) + 1;
-    updateReadingStats({ favorites: favCount });
+  document.addEventListener('bookFavorited', () => {
+    updateReadingStats({ favorites: (readingStats.favorites||0) + 1 });
+    checkAchievements();
   });
 }
 
@@ -6727,44 +6744,15 @@ async function loadCPAchievements() {
   el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
   try {
     const q = Backendless.DataQueryBuilder.create()
-      .setWhereClause(`usuarioId = '${currentProfileClientId}'`)
-      .setSortBy(['atualizadoEm DESC'])
-      .setPageSize(1); // Um registro por usuário (upsert)
+      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(50);
     const achs = await Backendless.Data.of('Conquistas').find(q);
-    if (!achs.length || !achs[0].conquistas) {
-      el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista desbloqueada ainda.</div>';
-      return;
-    }
-    // Desserializa o JSON de conquistas
-    let unlockedMap = {};
-    try { unlockedMap = JSON.parse(achs[0].conquistas); } catch(e) {}
-    const unlockedIds = Object.keys(unlockedMap).filter(k => unlockedMap[k]);
-    if (!unlockedIds.length) {
-      el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista desbloqueada ainda.</div>';
-      return;
-    }
-    // Cruza com ACHIEVEMENTS_DEF para obter icon/nome
-    const cards = unlockedIds.map(id => {
-      const def = (typeof ACHIEVEMENTS_DEF !== 'undefined' ? ACHIEVEMENTS_DEF : []).find(a => a.id === id);
-      const icon = def ? def.icon : '🏆';
-      const name = def ? def.name : id;
-      const date = unlockedMap[id] && unlockedMap[id] !== true ? new Date(unlockedMap[id]).toLocaleDateString('pt-BR') : '';
-      return `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-size:1.8rem;margin-bottom:6px;">${icon}</div>
-        <div style="font-weight:700;color:var(--pearl);font-size:0.78rem;line-height:1.3;">${name}</div>
-        ${date ? `<div style="font-size:0.65rem;color:var(--gold);margin-top:4px;">${date}</div>` : ''}
-      </div>`;
-    });
-    const stats = achs[0].stats ? (() => { try { return JSON.parse(achs[0].stats); } catch(e) { return {}; } })() : {};
-    el.innerHTML = `
-      <div style="background:rgba(192,132,252,0.08);border:1px solid rgba(192,132,252,0.2);border-radius:12px;padding:14px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;">
-        <div><span style="font-weight:800;color:var(--pearl);">${unlockedIds.length}</span><span style="color:var(--text-muted);font-size:0.8rem;"> / ${typeof ACHIEVEMENTS_DEF !== 'undefined' ? ACHIEVEMENTS_DEF.length : '100'} conquistas</span></div>
-        ${stats.booksCompleted ? `<div><span style="font-weight:800;color:var(--pearl);">${stats.booksCompleted}</span><span style="color:var(--text-muted);font-size:0.8rem;"> livros lidos</span></div>` : ''}
-        ${stats.totalMinutes ? `<div><span style="font-weight:800;color:var(--pearl);">${Math.round(stats.totalMinutes/60*10)/10}h</span><span style="color:var(--text-muted);font-size:0.8rem;"> de leitura</span></div>` : ''}
-        ${stats.streak ? `<div><span style="font-weight:800;color:var(--pearl);">${stats.streak}</span><span style="color:var(--text-muted);font-size:0.8rem;"> dias seguidos</span></div>` : ''}
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">${cards.join('')}</div>`;
-  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Erro ao carregar conquistas.</div>'; console.warn('loadCPAchievements:', e); }
+    if (!achs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista ainda.</div>'; return; }
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">` +
+      achs.map(a => `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">${a.icone||'🏆'}</div>
+        <div style="font-weight:700;color:var(--pearl);font-size:0.8rem;">${a.nome||a.conquista||'Conquista'}</div>
+      </div>`).join('') + '</div>';
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Sem dados disponíveis.</div>'; }
 }
 
 function toggleClientBlockFromProfile() {
