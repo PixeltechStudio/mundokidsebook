@@ -1778,6 +1778,111 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
 .admin-section { display: none; }
 .admin-section.active { display: block; }
 
+/* ── SVG NAV ICONS ── */
+.svg-icon { display:flex;align-items:center;justify-content:center; }
+.svg-icon svg { width:20px;height:20px;flex-shrink:0; }
+.sidebar-nav li button .svg-icon svg { transition:stroke 0.2s; }
+.sidebar-nav li button:hover .svg-icon svg,
+.sidebar-nav li button.active .svg-icon svg { stroke:var(--lilac); }
+
+/* ── ADMIN CHARTS ── */
+.admin-charts-grid { display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:32px; }
+.admin-chart-card { background:var(--card-bg);backdrop-filter:blur(20px);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:28px; }
+.admin-chart-title { font-weight:800;color:var(--pearl);font-size:1rem;margin-bottom:20px;display:flex;align-items:center;gap:10px; }
+.chart-bar-wrap { display:flex;flex-direction:column;gap:10px; }
+.chart-bar-row { display:flex;align-items:center;gap:12px; }
+.chart-bar-label { width:120px;font-size:0.78rem;color:var(--text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:0; }
+.chart-bar-outer { flex:1;height:10px;background:rgba(255,255,255,0.08);border-radius:5px;overflow:hidden; }
+.chart-bar-inner { height:100%;border-radius:5px;transition:width 0.8s cubic-bezier(0.25,0.46,0.45,0.94); }
+.chart-bar-val { font-size:0.75rem;font-weight:700;color:var(--text-light);min-width:30px;text-align:right;flex-shrink:0; }
+.online-pulse { width:10px;height:10px;border-radius:50%;background:#34d399;animation:pulse 2s infinite;flex-shrink:0; }
+.online-dot-row { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+.online-dot-row:last-child { border-bottom:none; }
+.mini-stat-grid { display:grid;grid-template-columns:repeat(3,1fr);gap:12px; }
+.mini-stat { background:rgba(255,255,255,0.05);border-radius:12px;padding:16px;text-align:center; }
+.mini-stat .msv { font-family:var(--font-title);font-size:1.6rem;color:var(--gold); }
+.mini-stat .msl { font-size:0.72rem;color:var(--text-muted);margin-top:2px; }
+
+/* ── CLIENT PROFILE MODAL ── */
+.client-profile-modal-inner { max-width:720px;width:95%;max-height:90vh;display:flex;flex-direction:column; }
+.cp-header { display:flex;align-items:center;gap:18px;padding:20px 0 28px; }
+.cp-avatar { width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--lilac-deep));display:flex;align-items:center;justify-content:center;font-size:2.2rem;border:3px solid var(--gold);flex-shrink:0; }
+.cp-info h3 { font-family:var(--font-title);color:var(--pearl);font-size:1.3rem; }
+.cp-info p  { color:var(--text-muted);font-size:0.85rem; }
+.cp-tabs { display:flex;gap:4px;background:rgba(255,255,255,0.06);border-radius:var(--radius-sm);padding:4px;margin-bottom:20px;flex-shrink:0; }
+.cp-tab { flex:1;background:none;border:none;color:var(--text-muted);font-family:var(--font-body);font-weight:700;font-size:0.8rem;padding:9px 6px;border-radius:6px;cursor:pointer;transition:all 0.2s; }
+.cp-tab.active { background:rgba(192,132,252,0.2);color:var(--lilac); }
+.cp-tab-content { display:none;overflow-y:auto; }
+.cp-tab-content.active { display:block; }
+
+/* ── BANNERS ── */
+.banners-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px; }
+.banner-admin-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-md);overflow:hidden;transition:var(--transition); }
+.banner-admin-card:hover { transform:translateY(-3px); }
+.banner-preview { width:100%;height:120px;display:flex;align-items:center;justify-content:center;font-size:0.85rem;color:rgba(255,255,255,0.5);overflow:hidden;position:relative; }
+.banner-preview img { width:100%;height:100%;object-fit:cover; }
+.banner-preview-placeholder { display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px; }
+.banner-card-info { padding:14px; }
+.banner-card-title { font-weight:800;color:var(--pearl);font-size:0.9rem;margin-bottom:4px; }
+.banner-card-sub { color:var(--text-muted);font-size:0.75rem;margin-bottom:10px; }
+
+/* ── NOTIF ADMIN ── */
+.notif-target-row { display:flex;gap:10px;margin-bottom:16px; }
+.notif-target-btn { flex:1;padding:12px;border:2px solid rgba(255,255,255,0.12);border-radius:var(--radius-sm);background:rgba(255,255,255,0.04);color:var(--text-muted);font-family:var(--font-body);font-weight:700;cursor:pointer;transition:all 0.2s;font-size:0.88rem; }
+.notif-target-btn.active { border-color:var(--lilac);color:var(--lilac);background:rgba(192,132,252,0.1); }
+.admin-notif-history { display:flex;flex-direction:column;gap:10px; }
+.admin-notif-item { background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;display:flex;align-items:flex-start;gap:12px; }
+.ani-icon { font-size:1.4rem;flex-shrink:0; }
+.ani-body h4 { font-weight:700;color:var(--pearl);font-size:0.88rem;margin-bottom:3px; }
+.ani-body p  { color:var(--text-muted);font-size:0.78rem; }
+.ani-meta { font-size:0.7rem;color:var(--text-muted);margin-top:4px; }
+
+/* ── COUPONS ── */
+.coupons-list { display:flex;flex-direction:column;gap:12px;margin-top:20px; }
+.coupon-item { background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-md);padding:18px 22px;display:flex;align-items:center;gap:16px;transition:var(--transition); }
+.coupon-item:hover { border-color:rgba(255,255,255,0.2); }
+.coupon-code { font-family:monospace;font-size:1.1rem;font-weight:800;color:var(--gold);background:rgba(251,191,36,0.1);padding:6px 14px;border-radius:8px;letter-spacing:2px;flex-shrink:0; }
+.coupon-info { flex:1; }
+.coupon-info h4 { color:var(--pearl);font-size:0.9rem;font-weight:700; }
+.coupon-info p  { color:var(--text-muted);font-size:0.78rem; }
+.plans-admin-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:18px;margin-top:20px; }
+.plan-admin-card { background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius-md);padding:22px;transition:var(--transition); }
+.plan-admin-card:hover { transform:translateY(-3px);border-color:var(--lilac); }
+.pac-name { font-family:var(--font-title);font-size:1.1rem;color:var(--pearl);margin-bottom:4px; }
+.pac-price { font-size:1.6rem;font-weight:800;color:var(--gold);margin-bottom:12px; }
+.pac-features { list-style:none;margin-bottom:16px; }
+.pac-features li { font-size:0.8rem;color:var(--text-muted);padding:3px 0;display:flex;align-items:center;gap:6px; }
+.pac-features li::before { content:'✓';color:#34d399;font-weight:800; }
+
+/* ── ANALYTICS ── */
+.analytics-grid { display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px; }
+.analytics-card { background:var(--card-bg);backdrop-filter:blur(20px);border:1px solid var(--card-border);border-radius:var(--radius-lg);padding:26px; }
+.analytics-card h3 { font-weight:800;color:var(--pearl);font-size:1rem;margin-bottom:18px;display:flex;align-items:center;gap:8px; }
+.top-book-row { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+.top-book-row:last-child { border-bottom:none; }
+.top-book-rank { width:28px;height:28px;border-radius:50%;background:rgba(192,132,252,0.15);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.78rem;color:var(--lilac);flex-shrink:0; }
+.top-book-info { flex:1;min-width:0; }
+.top-book-title { font-weight:700;color:var(--pearl);font-size:0.85rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
+.top-book-reads { font-size:0.72rem;color:var(--text-muted); }
+.inactive-row { display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.05); }
+.inactive-row:last-child { border-bottom:none; }
+
+/* ── LOGS ── */
+.log-item { display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.04);transition:background 0.2s; }
+.log-item:hover { background:rgba(255,255,255,0.02); }
+.log-icon { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;margin-top:2px; }
+.log-icon.create { background:rgba(52,211,153,0.15); }
+.log-icon.edit   { background:rgba(96,165,250,0.15);  }
+.log-icon.delete { background:rgba(248,113,113,0.15); }
+.log-icon.block  { background:rgba(251,191,36,0.15);  }
+.log-icon.notify { background:rgba(192,132,252,0.15); }
+.log-body h4 { font-weight:700;color:var(--pearl);font-size:0.88rem;margin-bottom:2px; }
+.log-body p  { color:var(--text-muted);font-size:0.78rem; }
+.log-time { font-size:0.7rem;color:var(--text-muted);margin-top:3px; }
+.log-filter-row { display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px; }
+.log-filter-btn { padding:6px 14px;border:1px solid rgba(255,255,255,0.12);border-radius:50px;background:none;color:var(--text-muted);font-family:var(--font-body);font-size:0.78rem;font-weight:600;cursor:pointer;transition:all 0.2s; }
+.log-filter-btn.active,.log-filter-btn:hover { border-color:var(--lilac);color:var(--lilac);background:rgba(192,132,252,0.1); }
+
 /* Confirm dialog */
 .confirm-dialog { max-width: 400px; text-align: center; }
 .confirm-dialog .confirm-icon { font-size: 3rem; margin-bottom: 18px; }
@@ -2817,12 +2922,29 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
       </div>
       <nav class="sidebar-nav">
         <ul>
-          <li><button class="active" onclick="adminShowSection('dashboard')" id="nav-admin-dashboard"><span class="nav-icon">📊</span> Dashboard</button></li>
-          <li><button onclick="adminShowSection('books')" id="nav-admin-books"><span class="nav-icon">📚</span> Livros</button></li>
-          <li><button onclick="adminShowSection('clients')" id="nav-admin-clients"><span class="nav-icon">👥</span> Clientes</button></li>
-          <li><button onclick="adminShowSection('add-book')" id="nav-admin-add-book"><span class="nav-icon">➕</span> Novo Livro</button></li>
-          <hr class="divider" style="margin:8px 16px;" />
-          <li><button onclick="handleLogout()"><span class="nav-icon">🚪</span> Sair</button></li>
+          <li><button class="active" onclick="adminShowSection('dashboard')" id="nav-admin-dashboard">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg></span> Dashboard</button></li>
+          <li><button onclick="adminShowSection('books')" id="nav-admin-books">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span> Livros</button></li>
+          <li><button onclick="adminShowSection('clients')" id="nav-admin-clients">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Clientes</button></li>
+          <li><button onclick="adminShowSection('add-book')" id="nav-admin-add-book">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></span> Novo Livro</button></li>
+          <hr class="divider" style="margin:8px 16px;border-color:rgba(255,255,255,0.08);" />
+          <div style="padding:8px 24px 4px;font-size:0.68rem;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;font-weight:700;">Avançado</div>
+          <li><button onclick="adminShowSection('banners')" id="nav-admin-banners">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="12" rx="2"/><path d="M8 21h8M12 17v4"/></svg></span> Banners</button></li>
+          <li><button onclick="adminShowSection('notifications')" id="nav-admin-notifications">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></span> Notificações</button></li>
+          <li><button onclick="adminShowSection('coupons')" id="nav-admin-coupons">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg></span> Cupons &amp; Planos</button></li>
+          <li><button onclick="adminShowSection('analytics')" id="nav-admin-analytics">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></span> Analytics</button></li>
+          <li><button onclick="adminShowSection('logs')" id="nav-admin-logs">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></span> Logs Admin</button></li>
+          <hr class="divider" style="margin:8px 16px;border-color:rgba(255,255,255,0.08);" />
+          <li><button onclick="handleLogout()">
+            <span class="nav-icon svg-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span> Sair</button></li>
         </ul>
       </nav>
     </aside>
@@ -2844,26 +2966,49 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
       <!-- ── SECTION: DASHBOARD ── -->
       <div id="admin-section-dashboard" class="admin-section active">
         <div class="admin-stats-grid" id="admin-stats-grid">
-          <div class="admin-stat-card glass-card"><div class="stat-icon-box purple">👥</div><div><div class="stat-value" id="a-total-clients">—</div><div class="stat-label">Total de clientes</div></div></div>
-          <div class="admin-stat-card glass-card"><div class="stat-icon-box green">✅</div><div><div class="stat-value" id="a-active-clients">—</div><div class="stat-label">Clientes ativos</div></div></div>
-          <div class="admin-stat-card glass-card"><div class="stat-icon-box red">🚫</div><div><div class="stat-value" id="a-blocked-clients">—</div><div class="stat-label">Bloqueados</div></div></div>
-          <div class="admin-stat-card glass-card"><div class="stat-icon-box blue">🟢</div><div><div class="stat-value" id="a-online-clients">—</div><div class="stat-label">Online agora</div></div></div>
-          <div class="admin-stat-card glass-card"><div class="stat-icon-box gold">📚</div><div><div class="stat-value" id="a-total-books">—</div><div class="stat-label">Total de livros</div></div></div>
+          <div class="admin-stat-card glass-card"><div class="stat-icon-box purple"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></div><div><div class="stat-value" id="a-total-clients">—</div><div class="stat-label">Total de clientes</div></div></div>
+          <div class="admin-stat-card glass-card"><div class="stat-icon-box green"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg></div><div><div class="stat-value" id="a-active-clients">—</div><div class="stat-label">Clientes ativos</div></div></div>
+          <div class="admin-stat-card glass-card"><div class="stat-icon-box red"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg></div><div><div class="stat-value" id="a-blocked-clients">—</div><div class="stat-label">Bloqueados</div></div></div>
+          <div class="admin-stat-card glass-card"><div class="stat-icon-box blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg></div><div><div class="stat-value" id="a-online-clients">—</div><div class="stat-label">Online agora</div></div></div>
+          <div class="admin-stat-card glass-card"><div class="stat-icon-box gold"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><div><div class="stat-value" id="a-total-books">—</div><div class="stat-label">Total de livros</div></div></div>
         </div>
 
-        <div class="admin-table-wrap" style="margin-top:32px;">
-          <div class="table-header">
-            <h3>🕐 Últimos Logins</h3>
-            <button class="btn btn-secondary btn-sm" onclick="loadAdminDashboard()">↺ Atualizar</button>
+        <!-- Advanced charts row -->
+        <div class="admin-charts-grid" style="margin-bottom:32px;">
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> Livros Mais Lidos</div>
+            <div class="chart-bar-wrap" id="dash-chart-books"><div style="color:var(--text-muted);font-size:0.82rem;">Carregando...</div></div>
           </div>
-          <table class="admin-table">
-            <thead><tr>
-              <th>Cliente</th><th>E-mail</th><th>Plano</th><th>Último Login</th><th>Status</th>
-            </tr></thead>
-            <tbody id="admin-recent-logins">
-              <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">Carregando...</td></tr>
-            </tbody>
-          </table>
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> Tempo Médio de Leitura</div>
+            <div class="mini-stat-grid" id="dash-reading-stats">
+              <div class="mini-stat"><div class="msv" id="dash-avg-time">—</div><div class="msl">min/sessão</div></div>
+              <div class="mini-stat"><div class="msv" id="dash-total-sessions">—</div><div class="msl">sessões hoje</div></div>
+              <div class="mini-stat"><div class="msv" id="dash-completion-rate">—</div><div class="msl">% conclusão</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Online users + recent logins row -->
+        <div style="display:grid;grid-template-columns:320px 1fr;gap:24px;">
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><span class="online-pulse"></span> Online Agora</div>
+            <div id="dash-online-list" style="font-size:0.82rem;"><div style="color:var(--text-muted);padding:16px 0;">Carregando...</div></div>
+          </div>
+          <div class="admin-table-wrap" style="margin-top:0;">
+            <div class="table-header">
+              <h3>🕐 Últimos Logins</h3>
+              <button class="btn btn-secondary btn-sm" onclick="loadAdminDashboard()">↺ Atualizar</button>
+            </div>
+            <table class="admin-table">
+              <thead><tr>
+                <th>Cliente</th><th>E-mail</th><th>Plano</th><th>Último Login</th><th>Status</th>
+              </tr></thead>
+              <tbody id="admin-recent-logins">
+                <tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:32px;">Carregando...</td></tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -2892,15 +3037,62 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
               <input type="text" id="book-titulo" placeholder="Ex: A Aventura do Leão Corajoso" />
             </div>
             <div class="form-group">
+              <label>Autor</label>
+              <input type="text" id="book-autor" placeholder="Nome do autor" />
+            </div>
+            <div class="form-group full-width">
+              <label>Descrição</label>
+              <textarea id="book-descricao" placeholder="Uma breve descrição do livro..."></textarea>
+            </div>
+            <div class="form-group">
+              <label>Categoria</label>
+              <select id="book-categoria">
+                <option value="">Sem categoria</option>
+                <option value="aventura">🗺️ Aventura</option>
+                <option value="magia">✨ Magia &amp; Fantasia</option>
+                <option value="educativo">🎓 Educativo</option>
+                <option value="noturno">🌙 Hora de Dormir</option>
+                <option value="heroi">🦸 Heróis</option>
+                <option value="natureza">🌿 Natureza &amp; Animais</option>
+                <option value="humor">😂 Humor</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Faixa Etária</label>
+              <select id="book-faixa-etaria">
+                <option value="">Todas as idades</option>
+                <option value="2-4">2 a 4 anos</option>
+                <option value="4-6">4 a 6 anos</option>
+                <option value="6-9">6 a 9 anos</option>
+                <option value="9-12">9 a 12 anos</option>
+                <option value="12+">12+ anos</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Status</label>
               <select id="book-ativo">
                 <option value="true">✅ Ativo (visível para clientes)</option>
                 <option value="false">❌ Inativo (oculto)</option>
               </select>
             </div>
+            <div class="form-group">
+              <label>Plano mínimo de acesso</label>
+              <select id="book-plano-acesso">
+                <option value="gratuito">Gratuito (todos)</option>
+                <option value="mensal">Mensal ou superior</option>
+                <option value="premium">Premium ou superior</option>
+                <option value="vitalicio">Somente Vitalício</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Ordem de Exibição</label>
+              <input type="number" id="book-ordem" placeholder="0" min="0" value="0" />
+            </div>
             <div class="form-group full-width">
-              <label>Descrição</label>
-              <textarea id="book-descricao" placeholder="Uma breve descrição do livro..."></textarea>
+              <label style="display:flex;align-items:center;gap:12px;">
+                <input type="checkbox" id="book-destaque" style="width:18px;height:18px;accent-color:var(--gold);" />
+                <span>⭐ Destacar na Home (aparece primeiro)</span>
+              </label>
             </div>
             <div class="form-group">
               <label>📄 Upload do PDF</label>
@@ -2992,6 +3184,185 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
         </div>
       </div>
 
+      <!-- ── SECTION: BANNERS ── -->
+      <div id="admin-section-banners" class="admin-section">
+        <div style="display:flex;gap:12px;align-items:center;margin-bottom:24px;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="openBannerForm()">➕ Novo Banner</button>
+          <select id="banner-location-filter" class="search-input" style="width:auto;padding:8px 14px;" onchange="filterBanners()">
+            <option value="">Todos os locais</option>
+            <option value="landing">Landing Page</option>
+            <option value="dashboard">Área Logada</option>
+          </select>
+        </div>
+        <div id="banners-loading" style="text-align:center;padding:40px;display:none;"><div class="spinner" style="margin:0 auto;"></div></div>
+        <div class="banners-grid" id="banners-grid"></div>
+        <!-- Banner form (toggled inline) -->
+        <div id="banner-form-wrap" style="display:none;margin-top:28px;">
+          <div class="admin-form-card" style="max-width:680px;">
+            <h3 style="color:var(--pearl);margin-bottom:24px;font-size:1.1rem;" id="banner-form-title">➕ Novo Banner</h3>
+            <input type="hidden" id="banner-edit-id" />
+            <div class="admin-form-grid">
+              <div class="form-group"><label>Título *</label><input type="text" id="banner-titulo" placeholder="Ex: Aventura de Verão!" /></div>
+              <div class="form-group"><label>Subtítulo</label><input type="text" id="banner-subtitulo" placeholder="Descubra novas histórias..." /></div>
+              <div class="form-group"><label>Texto do Botão</label><input type="text" id="banner-btn-text" placeholder="Explorar agora" /></div>
+              <div class="form-group"><label>Link do Botão</label><input type="text" id="banner-btn-link" placeholder="#planos ou URL" /></div>
+              <div class="form-group"><label>Local de Exibição</label>
+                <select id="banner-location"><option value="landing">Landing Page</option><option value="dashboard">Área Logada</option></select></div>
+              <div class="form-group"><label>Status</label>
+                <select id="banner-ativo"><option value="true">✅ Ativo</option><option value="false">❌ Inativo</option></select></div>
+              <div class="form-group full-width"><label>URL da Imagem</label><input type="text" id="banner-imagem" placeholder="https://..." /></div>
+              <div class="full-width" style="display:flex;gap:12px;">
+                <button class="btn btn-primary" onclick="saveBanner()">💾 Salvar Banner</button>
+                <button class="btn btn-secondary" onclick="closeBannerForm()">Cancelar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: NOTIFICATIONS ── -->
+      <div id="admin-section-notifications" class="admin-section">
+        <div class="admin-form-card" style="max-width:640px;margin-bottom:32px;">
+          <h3 style="color:var(--pearl);margin-bottom:20px;font-size:1.1rem;">📢 Enviar Notificação</h3>
+          <div class="notif-target-row">
+            <button class="notif-target-btn active" id="notif-target-all" onclick="setNotifTarget('all')">👥 Todos os usuários</button>
+            <button class="notif-target-btn" id="notif-target-specific" onclick="setNotifTarget('specific')">👤 Usuário específico</button>
+          </div>
+          <div id="notif-specific-field" style="display:none;margin-bottom:14px;">
+            <div class="form-group"><label>E-mail do usuário</label><input type="email" id="notif-user-email" placeholder="usuario@email.com" /></div>
+          </div>
+          <div class="form-group"><label>Tipo</label>
+            <select id="notif-type">
+              <option value="info">ℹ️ Informação</option>
+              <option value="achievement">🏆 Conquista</option>
+              <option value="promo">🎁 Promoção</option>
+              <option value="warning">⚠️ Aviso</option>
+            </select>
+          </div>
+          <div class="form-group"><label>Título *</label><input type="text" id="notif-title" placeholder="Título da notificação" /></div>
+          <div class="form-group"><label>Mensagem *</label><textarea id="notif-message" placeholder="Texto da notificação..."></textarea></div>
+          <button class="btn btn-primary" onclick="sendAdminNotification()">📨 Enviar Notificação</button>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="table-header"><h3>📜 Histórico de Notificações</h3><button class="btn btn-secondary btn-sm" onclick="loadNotifHistory()">↺ Atualizar</button></div>
+          <div id="notif-history-list" style="padding:8px 0;min-height:80px;"><div style="text-align:center;color:var(--text-muted);padding:32px;">Carregando...</div></div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: COUPONS & PLANS ── -->
+      <div id="admin-section-coupons" class="admin-section">
+        <!-- Tabs -->
+        <div class="cp-tabs" style="max-width:380px;margin-bottom:28px;">
+          <button class="cp-tab active" id="ctab-coupons" onclick="showCouponsTab('coupons')">🏷️ Cupons</button>
+          <button class="cp-tab" id="ctab-plans" onclick="showCouponsTab('plans')">💎 Planos</button>
+        </div>
+
+        <!-- Cupons tab -->
+        <div id="coupon-tab-content" class="cp-tab-content" style="display:block;">
+          <div style="display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+            <button class="btn btn-primary btn-sm" onclick="openCouponForm()">➕ Novo Cupom</button>
+          </div>
+          <div id="coupon-form-wrap" style="display:none;margin-bottom:24px;">
+            <div class="admin-form-card" style="max-width:600px;">
+              <h3 style="color:var(--pearl);font-size:1rem;margin-bottom:18px;" id="coupon-form-title">➕ Novo Cupom</h3>
+              <input type="hidden" id="coupon-edit-id" />
+              <div class="admin-form-grid">
+                <div class="form-group"><label>Código *</label><input type="text" id="coupon-code" placeholder="EX: VERAO50" style="text-transform:uppercase;" /></div>
+                <div class="form-group"><label>Desconto (%)</label><input type="number" id="coupon-discount" min="1" max="100" placeholder="50" /></div>
+                <div class="form-group"><label>Validade</label><input type="date" id="coupon-expiry" /></div>
+                <div class="form-group"><label>Limite de Usos</label><input type="number" id="coupon-limit" placeholder="100 (0 = ilimitado)" /></div>
+                <div class="form-group"><label>Status</label><select id="coupon-ativo"><option value="true">✅ Ativo</option><option value="false">❌ Inativo</option></select></div>
+                <div class="form-group full-width"><label>Descrição</label><input type="text" id="coupon-desc" placeholder="Ex: 50% off no plano mensal" /></div>
+                <div class="full-width" style="display:flex;gap:10px;">
+                  <button class="btn btn-primary" onclick="saveCoupon()">💾 Salvar Cupom</button>
+                  <button class="btn btn-secondary" onclick="closeCouponForm()">Cancelar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="coupons-list" id="coupons-list"><div style="text-align:center;color:var(--text-muted);padding:32px;">Carregando cupons...</div></div>
+        </div>
+
+        <!-- Plans tab -->
+        <div id="coupon-tab-plans" class="cp-tab-content" style="display:none;">
+          <div style="display:flex;gap:12px;margin-bottom:20px;">
+            <button class="btn btn-primary btn-sm" onclick="openPlanForm()">➕ Novo Plano</button>
+          </div>
+          <div id="plan-form-wrap" style="display:none;margin-bottom:24px;">
+            <div class="admin-form-card" style="max-width:600px;">
+              <h3 style="color:var(--pearl);font-size:1rem;margin-bottom:18px;" id="plan-form-title">➕ Novo Plano</h3>
+              <input type="hidden" id="plan-edit-id" />
+              <div class="admin-form-grid">
+                <div class="form-group"><label>Nome do Plano *</label><input type="text" id="plan-name" placeholder="Ex: Premium Mensal" /></div>
+                <div class="form-group"><label>Preço (R$)</label><input type="number" id="plan-price" min="0" step="0.01" placeholder="19.90" /></div>
+                <div class="form-group"><label>Tipo</label>
+                  <select id="plan-type"><option value="gratuito">Gratuito</option><option value="mensal">Mensal</option><option value="premium">Premium</option><option value="vitalicio">Vitalício</option></select></div>
+                <div class="form-group"><label>Acesso aos Livros</label>
+                  <select id="plan-access"><option value="all">Todos os livros</option><option value="limited">Selecionados</option><option value="free-only">Somente gratuitos</option></select></div>
+                <div class="form-group full-width"><label>Descrição / Benefícios</label><textarea id="plan-desc-text" placeholder="Liste os benefícios, um por linha..."></textarea></div>
+                <div class="full-width" style="display:flex;gap:10px;">
+                  <button class="btn btn-primary" onclick="savePlan()">💾 Salvar Plano</button>
+                  <button class="btn btn-secondary" onclick="closePlanForm()">Cancelar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="plans-admin-grid" id="plans-admin-grid"><div style="text-align:center;color:var(--text-muted);padding:32px;">Carregando planos...</div></div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: ANALYTICS ── -->
+      <div id="admin-section-analytics" class="admin-section">
+        <div style="display:flex;gap:12px;margin-bottom:24px;">
+          <button class="btn btn-secondary btn-sm" onclick="loadAnalytics()">↺ Atualizar dados</button>
+        </div>
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>Livros Mais Lidos</h3>
+            <div id="analytics-top-books"><div style="color:var(--text-muted);text-align:center;padding:24px;">Carregando...</div></div>
+          </div>
+          <div class="analytics-card">
+            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>Tempo Médio por Livro</h3>
+            <div id="analytics-avg-time"><div style="color:var(--text-muted);text-align:center;padding:24px;">Carregando...</div></div>
+          </div>
+          <div class="analytics-card">
+            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Usuários Inativos (+30 dias)</h3>
+            <div id="analytics-inactive"><div style="color:var(--text-muted);text-align:center;padding:24px;">Carregando...</div></div>
+          </div>
+          <div class="analytics-card">
+            <h3><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle;margin-right:6px;"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg>Abandono de Leitura</h3>
+            <div id="analytics-dropoff"><div style="color:var(--text-muted);text-align:center;padding:24px;">Carregando...</div></div>
+          </div>
+        </div>
+        <!-- Charts row -->
+        <div class="admin-charts-grid">
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg> Distribuição por Plano</div>
+            <div class="chart-bar-wrap" id="chart-plans"></div>
+          </div>
+          <div class="admin-chart-card">
+            <div class="admin-chart-title"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Novos Usuários (últimos 7 dias)</div>
+            <div class="chart-bar-wrap" id="chart-new-users"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION: LOGS ── -->
+      <div id="admin-section-logs" class="admin-section">
+        <div class="log-filter-row" id="log-filters">
+          <button class="log-filter-btn active" onclick="filterLogs('all',this)">Todos</button>
+          <button class="log-filter-btn" onclick="filterLogs('create',this)">➕ Criações</button>
+          <button class="log-filter-btn" onclick="filterLogs('edit',this)">✏️ Edições</button>
+          <button class="log-filter-btn" onclick="filterLogs('delete',this)">🗑️ Exclusões</button>
+          <button class="log-filter-btn" onclick="filterLogs('block',this)">🚫 Bloqueios</button>
+          <button class="log-filter-btn" onclick="filterLogs('notify',this)">📢 Notificações</button>
+        </div>
+        <div class="admin-table-wrap">
+          <div class="table-header"><h3>📋 Registro de Ações Administrativas</h3><button class="btn btn-secondary btn-sm" onclick="loadAdminLogs()">↺ Atualizar</button></div>
+          <div id="logs-list" style="min-height:200px;"><div style="text-align:center;color:var(--text-muted);padding:40px;">Carregando logs...</div></div>
+        </div>
+      </div>
+
     </main>
   </div>
 </div><!-- /page-admin -->
@@ -2999,6 +3370,55 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
 <!-- ══════════════════════════════════════════════
      MODALS
 ══════════════════════════════════════════════ -->
+
+<!-- ══════════════════════════════════════════════
+     ADMIN — CLIENT PROFILE MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="client-profile-modal" onclick="if(event.target===this)closeModal('client-profile-modal')">
+  <div class="modal client-profile-modal-inner">
+    <button class="modal-close" onclick="closeModal('client-profile-modal')">✕</button>
+    <div class="cp-header">
+      <div class="cp-avatar" id="cpm-avatar">🦄</div>
+      <div class="cp-info">
+        <h3 id="cpm-name">Cliente</h3>
+        <p id="cpm-email">email@email.com</p>
+        <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;" id="cpm-badges"></div>
+      </div>
+      <div style="margin-left:auto;display:flex;flex-direction:column;gap:8px;">
+        <button class="btn btn-sm" id="cpm-block-btn" onclick="toggleClientBlockFromProfile()" style="white-space:nowrap;">🚫 Bloquear</button>
+        <button class="btn btn-secondary btn-sm" onclick="editClientFromProfile()">✏️ Editar</button>
+      </div>
+    </div>
+    <div class="cp-tabs">
+      <button class="cp-tab active" id="cptab-overview" onclick="showCPTab('overview')">Perfil</button>
+      <button class="cp-tab" id="cptab-reading" onclick="showCPTab('reading')">Leitura</button>
+      <button class="cp-tab" id="cptab-children" onclick="showCPTab('children')">Perfis Infantis</button>
+      <button class="cp-tab" id="cptab-favorites" onclick="showCPTab('favorites')">Favoritos</button>
+      <button class="cp-tab" id="cptab-achievements" onclick="showCPTab('achievements')">Conquistas</button>
+    </div>
+    <!-- Overview -->
+    <div class="cp-tab-content active" id="cptab-content-overview">
+      <div class="mini-stat-grid" style="margin-bottom:20px;" id="cpm-stats"></div>
+      <div style="background:rgba(255,255,255,0.04);border-radius:12px;padding:18px;" id="cpm-details"></div>
+    </div>
+    <!-- Reading -->
+    <div class="cp-tab-content" id="cptab-content-reading">
+      <div id="cpm-reading-list" style="display:flex;flex-direction:column;gap:10px;"><div style="color:var(--text-muted);text-align:center;padding:32px;">Carregando...</div></div>
+    </div>
+    <!-- Children -->
+    <div class="cp-tab-content" id="cptab-content-children">
+      <div id="cpm-children-list"><div style="color:var(--text-muted);text-align:center;padding:32px;">Carregando...</div></div>
+    </div>
+    <!-- Favorites -->
+    <div class="cp-tab-content" id="cptab-content-favorites">
+      <div id="cpm-favorites-list"><div style="color:var(--text-muted);text-align:center;padding:32px;">Carregando...</div></div>
+    </div>
+    <!-- Achievements -->
+    <div class="cp-tab-content" id="cptab-content-achievements">
+      <div id="cpm-achievements-list"><div style="color:var(--text-muted);text-align:center;padding:32px;">Carregando...</div></div>
+    </div>
+  </div>
+</div>
 
 <!-- LOGIN MODAL -->
 <div class="modal-overlay hidden" id="login-modal">
@@ -4265,15 +4685,21 @@ function adminShowSection(section) {
   if (el) el.classList.add('active');
 
   document.querySelectorAll('.sidebar-nav button').forEach(b => b.classList.remove('active'));
-  const navBtn = document.getElementById(`nav-admin-${section.replace('-','')}`);
+  const navKey = section.replace(/-/g,'');
+  const navBtn = document.getElementById(`nav-admin-${navKey}`);
   if (navBtn) navBtn.classList.add('active');
 
   const titles = {
-    'dashboard':   ['Dashboard', 'Visão geral da plataforma'],
-    'books':       ['Livros', 'Gerenciar biblioteca'],
-    'clients':     ['Clientes', 'Gerenciar usuários'],
-    'add-book':    ['Novo Livro', 'Adicionar ou editar livro'],
-    'edit-client': ['Editar Cliente', 'Alterar dados do cliente'],
+    'dashboard':    ['Dashboard', 'Visão geral da plataforma'],
+    'books':        ['Livros', 'Gerenciar biblioteca'],
+    'clients':      ['Clientes', 'Gerenciar usuários'],
+    'add-book':     ['Novo Livro', 'Adicionar ou editar livro'],
+    'edit-client':  ['Editar Cliente', 'Alterar dados do cliente'],
+    'banners':      ['Banners Dinâmicos', 'Gerenciar banners da plataforma'],
+    'notifications':['Notificações', 'Enviar avisos para usuários'],
+    'coupons':      ['Cupons & Planos', 'Gerenciar cupons e planos de assinatura'],
+    'analytics':    ['Analytics de Leitura', 'Dados e métricas de uso'],
+    'logs':         ['Logs Administrativos', 'Histórico de ações do painel'],
   };
   const t = titles[section] || [section, ''];
   setText('admin-section-title', t[0]);
@@ -4283,6 +4709,11 @@ function adminShowSection(section) {
   if (section === 'books') loadAdminBooks();
   if (section === 'clients') loadAdminClients();
   if (section === 'dashboard') loadAdminDashboard();
+  if (section === 'banners') loadBanners();
+  if (section === 'notifications') loadNotifHistory();
+  if (section === 'coupons') { loadCoupons(); loadPlans(); }
+  if (section === 'analytics') loadAnalytics();
+  if (section === 'logs') loadAdminLogs();
 }
 
 function toggleAdminSidebar() {
@@ -4417,6 +4848,12 @@ function editBook(bookId) {
   document.getElementById('book-titulo').value     = book.titulo || '';
   document.getElementById('book-descricao').value  = book.descricao || '';
   document.getElementById('book-ativo').value      = String(book.ativo !== false);
+  if (document.getElementById('book-autor')) document.getElementById('book-autor').value = book.autor || '';
+  if (document.getElementById('book-categoria')) document.getElementById('book-categoria').value = book.categoria || '';
+  if (document.getElementById('book-faixa-etaria')) document.getElementById('book-faixa-etaria').value = book.faixaEtaria || '';
+  if (document.getElementById('book-destaque')) document.getElementById('book-destaque').checked = !!book.destaque;
+  if (document.getElementById('book-ordem')) document.getElementById('book-ordem').value = book.ordem || 0;
+  if (document.getElementById('book-plano-acesso')) document.getElementById('book-plano-acesso').value = book.planoAcesso || 'gratuito';
 
   // Reset file selections
   selectedPdfFile   = null;
@@ -4438,8 +4875,10 @@ function confirmDeleteBook(bookId, title) {
 }
 
 async function deleteBook(bookId) {
+  const book = allBooks.find(b => b.objectId === bookId);
   try {
     await Backendless.Data.of('Livros').remove({ objectId: bookId });
+    addAdminLog('delete', `Livro excluído: "${book?.titulo || bookId}"`);
     showToast('Livro excluído com sucesso.', 'success');
     loadAdminBooks();
   } catch(e) {
@@ -4477,6 +4916,12 @@ async function saveBook() {
   const descricao = document.getElementById('book-descricao').value.trim();
   const ativo     = document.getElementById('book-ativo').value === 'true';
   const editId    = document.getElementById('edit-book-id').value;
+  const autor     = (document.getElementById('book-autor')?.value || '').trim();
+  const categoria = document.getElementById('book-categoria')?.value || '';
+  const faixaEtaria = document.getElementById('book-faixa-etaria')?.value || '';
+  const destaque  = document.getElementById('book-destaque')?.checked || false;
+  const ordem     = parseInt(document.getElementById('book-ordem')?.value || '0') || 0;
+  const planoAcesso = document.getElementById('book-plano-acesso')?.value || 'gratuito';
 
   if (!titulo) { showToast('Informe o título do livro.', 'error'); return; }
 
@@ -4500,14 +4945,16 @@ async function saveBook() {
       catch(e) { showToast('Erro no upload da capa: ' + e.message, 'error'); setLoading('btn-save-book', false, '💾 Salvar Livro'); return; }
     }
 
-    const bookData = { titulo, descricao, ativo };
+    const bookData = { titulo, descricao, ativo, autor, categoria, faixaEtaria, destaque, ordem, planoAcesso };
     if (pdfUrl)  bookData.pdfUrl  = pdfUrl;
     if (capaUrl) bookData.capaUrl = capaUrl;
 
     if (editId) {
       bookData.objectId = editId;
+      addAdminLog('edit', `Livro editado: "${titulo}"`, editId);
     } else {
       bookData.criadoEm = new Date().toISOString();
+      addAdminLog('create', `Livro criado: "${titulo}"`);
     }
 
     await Backendless.Data.of('Livros').save(bookData);
@@ -4518,6 +4965,9 @@ async function saveBook() {
     document.getElementById('book-titulo').value    = '';
     document.getElementById('book-descricao').value = '';
     document.getElementById('book-ativo').value     = 'true';
+    if (document.getElementById('book-autor')) document.getElementById('book-autor').value = '';
+    if (document.getElementById('book-categoria')) document.getElementById('book-categoria').value = '';
+    if (document.getElementById('book-destaque')) document.getElementById('book-destaque').checked = false;
     selectedPdfFile = selectedCoverFile = null;
     setText('pdf-upload-status', '');
     setText('cover-upload-status', '');
@@ -4598,6 +5048,7 @@ function renderAdminClients(clients) {
       </td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
+          <button class="btn btn-secondary btn-sm" onclick="openClientProfile('${c.objectId}')">👤 Perfil</button>
           <button class="btn btn-secondary btn-sm" onclick="openClientEdit('${c.objectId}')">✏️</button>
           ${c.bloqueado
             ? `<button class="btn btn-sm" style="background:rgba(52,211,153,0.2);color:#34d399;border:1px solid rgba(52,211,153,0.3);border-radius:50px;padding:8px 12px;cursor:pointer;font-size:0.78rem;" onclick="toggleBlockClient('${c.objectId}',false)">✅ Liberar</button>`
@@ -4660,6 +5111,7 @@ async function saveClientEdit() {
     } catch(e1) {
       await Backendless.Data.of('Users').save(data);
     }
+    addAdminLog('edit', `Plano/dados do cliente alterado: ${data.name || clientId}`, clientId);
     showToast('✅ Cliente atualizado!', 'success');
     loadAdminClients();
     adminShowSection('clients');
@@ -4671,6 +5123,8 @@ async function saveClientEdit() {
 async function toggleBlockClient(clientId, block) {
   try {
     await Backendless.Data.of('Users').save({ objectId: clientId, bloqueado: block });
+    const cl = allClients.find(c => c.objectId === clientId);
+    addAdminLog('block', `Cliente ${block ? 'bloqueado' : 'desbloqueado'}: ${cl?.name || clientId}`, clientId);
     showToast(block ? '🚫 Cliente bloqueado.' : '✅ Cliente desbloqueado.', block ? 'error' : 'success');
     loadAdminClients();
   } catch(e) {
@@ -5723,8 +6177,796 @@ if (_origShowPage) {
 }
 </script>
 <!-- ══════════════════════════════════════════════
-     ADMIN — MODAL LIVROS DO CLIENTE
+     ADMIN — NOVAS FUNCIONALIDADES JS
 ══════════════════════════════════════════════ -->
+<script>
+/* ══════════════════════════════════════════════════════════
+   ADMIN LOGS
+══════════════════════════════════════════════════════════ */
+let adminLogsCache = [];
+let adminLogsFilter = 'all';
+
+function addAdminLog(type, description, targetId) {
+  const log = {
+    tipo: type,
+    descricao: description,
+    targetId: targetId || '',
+    adminEmail: currentUser?.email || 'admin',
+    criadoEm: new Date().toISOString()
+  };
+  // Save locally first
+  adminLogsCache.unshift(log);
+  // Save to Backendless
+  try {
+    Backendless.Data.of('AdminLogs').save(log).catch(() => {});
+  } catch(e) {}
+}
+
+async function loadAdminLogs() {
+  const listEl = document.getElementById('logs-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create().setSortBy(['criadoEm DESC']).setPageSize(80);
+    const logs = await Backendless.Data.of('AdminLogs').find(q);
+    adminLogsCache = logs;
+    renderAdminLogs(logs);
+  } catch(e) {
+    // Fallback to local cache
+    renderAdminLogs(adminLogsCache);
+  }
+}
+
+function filterLogs(type, btn) {
+  adminLogsFilter = type;
+  document.querySelectorAll('.log-filter-btn').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const filtered = type === 'all' ? adminLogsCache : adminLogsCache.filter(l => l.tipo === type);
+  renderAdminLogs(filtered);
+}
+
+function renderAdminLogs(logs) {
+  const listEl = document.getElementById('logs-list');
+  if (!listEl) return;
+  if (!logs || !logs.length) {
+    listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum log encontrado.</div>';
+    return;
+  }
+  const iconMap = { create:'➕', edit:'✏️', delete:'🗑️', block:'🚫', notify:'📢', plan:'💎' };
+  listEl.innerHTML = logs.map(l => {
+    const cls = l.tipo || 'edit';
+    return `<div class="log-item">
+      <div class="log-icon ${cls}">${iconMap[cls]||'📋'}</div>
+      <div class="log-body">
+        <h4>${l.descricao || 'Ação administrativa'}</h4>
+        <p>Por: ${l.adminEmail || 'admin'}</p>
+        <div class="log-time">${formatDateTime(l.criadoEm)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ══════════════════════════════════════════════════════════
+   DASHBOARD CHARTS
+══════════════════════════════════════════════════════════ */
+async function loadDashboardCharts() {
+  try {
+    // Books chart
+    const pq = Backendless.DataQueryBuilder.create().setSortBy(['paginaAtual DESC']).setPageSize(50);
+    const progList = await Backendless.Data.of('ProgressoLeitura').find(pq);
+    // Count reads per book
+    const bookCounts = {};
+    progList.forEach(p => { bookCounts[p.livroId] = (bookCounts[p.livroId]||0)+1; });
+    const topBooks = Object.entries(bookCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const maxCount = topBooks[0]?.[1] || 1;
+    const colors = ['#c084fc','#ff6eb4','#93c5fd','#fbbf24','#34d399'];
+    const chartEl = document.getElementById('dash-chart-books');
+    if (chartEl) {
+      chartEl.innerHTML = topBooks.map(([livroId, count], i) => {
+        const book = allBooks.find(b => b.objectId === livroId);
+        const label = book?.titulo || livroId.substring(0,16);
+        return `<div class="chart-bar-row">
+          <div class="chart-bar-label" title="${label}">${label}</div>
+          <div class="chart-bar-outer"><div class="chart-bar-inner" style="width:${Math.round(count/maxCount*100)}%;background:${colors[i%colors.length]};"></div></div>
+          <div class="chart-bar-val">${count}</div>
+        </div>`;
+      }).join('') || '<div style="color:var(--text-muted);font-size:0.82rem;padding:16px 0;">Nenhum dado ainda.</div>';
+    }
+
+    // Reading stats
+    const totalSessions = progList.length;
+    const completed = progList.filter(p => p.progresso >= 95).length;
+    const compRate = totalSessions ? Math.round(completed/totalSessions*100) : 0;
+    setText('dash-avg-time', '~15');
+    setText('dash-total-sessions', totalSessions);
+    setText('dash-completion-rate', compRate + '%');
+
+    // Online users list
+    const onlineQ = Backendless.DataQueryBuilder.create()
+      .setWhereClause('online = true').setPageSize(10)
+      .setProperties(['name','email','plano']);
+    const onlineUsers = await Backendless.Data.of('Users').find(onlineQ);
+    const onlineEl = document.getElementById('dash-online-list');
+    if (onlineEl) {
+      if (!onlineUsers.length) {
+        onlineEl.innerHTML = '<div style="color:var(--text-muted);padding:16px 0;">Nenhum usuário online.</div>';
+      } else {
+        onlineEl.innerHTML = onlineUsers.map(u => `
+          <div class="online-dot-row">
+            <span class="online-pulse"></span>
+            <div style="flex:1;min-width:0;">
+              <div style="font-weight:700;color:var(--pearl);font-size:0.82rem;">${u.name||'—'}</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);">${u.email||''}</div>
+            </div>
+            <span class="badge badge-gold" style="font-size:0.68rem;">${u.plano||'gratuito'}</span>
+          </div>`).join('');
+      }
+    }
+  } catch(e) {
+    // Silently fail — not critical
+  }
+}
+
+// Hook into existing loadAdminDashboard
+const _origLoadAdminDashboard = loadAdminDashboard;
+window.loadAdminDashboard = async function() {
+  await _origLoadAdminDashboard();
+  loadDashboardCharts();
+};
+
+/* ══════════════════════════════════════════════════════════
+   CLIENT PROFILE MODAL
+══════════════════════════════════════════════════════════ */
+let currentProfileClientId = null;
+
+function openClientProfile(clientId) {
+  const c = allClients.find(cl => cl.objectId === clientId);
+  if (!c) return;
+  currentProfileClientId = clientId;
+  const modal = document.getElementById('client-profile-modal');
+  // Header
+  document.getElementById('cpm-avatar').textContent = c.avatar || '🦄';
+  document.getElementById('cpm-name').textContent = c.name || '—';
+  document.getElementById('cpm-email').textContent = c.email || '—';
+  const blockBtn = document.getElementById('cpm-block-btn');
+  if (blockBtn) {
+    if (c.bloqueado) {
+      blockBtn.textContent = '✅ Desbloquear';
+      blockBtn.style.background = 'rgba(52,211,153,0.2)';
+      blockBtn.style.color = '#34d399';
+    } else {
+      blockBtn.textContent = '🚫 Bloquear';
+      blockBtn.style.background = 'rgba(248,113,113,0.2)';
+      blockBtn.style.color = '#f87171';
+    }
+  }
+  const badges = document.getElementById('cpm-badges');
+  if (badges) {
+    const planColor = {gratuito:'badge-gray',mensal:'badge-gold',premium:'badge-blue',vitalicio:'badge-green'};
+    badges.innerHTML = `<span class="badge ${planColor[c.plano||'gratuito']||'badge-gold'}">${c.plano||'gratuito'}</span>
+      ${c.bloqueado ? '<span class="badge badge-red">Bloqueado</span>' : '<span class="badge badge-green">Ativo</span>'}
+      ${c.online ? '<span class="badge badge-green">Online</span>' : ''}`;
+  }
+  // Overview stats
+  const statsEl = document.getElementById('cpm-stats');
+  if (statsEl) {
+    statsEl.innerHTML = `
+      <div class="mini-stat"><div class="msv">${c.plano||'—'}</div><div class="msl">Plano atual</div></div>
+      <div class="mini-stat"><div class="msv">${formatDate(c.vencimentoPlano)||'—'}</div><div class="msl">Vencimento</div></div>
+      <div class="mini-stat"><div class="msv">${formatDateTime(c.ultimoLogin)||'—'}</div><div class="msl">Último login</div></div>`;
+  }
+  const detailEl = document.getElementById('cpm-details');
+  if (detailEl) {
+    detailEl.innerHTML = `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;">
+        <div><span style="color:var(--text-muted);">E-mail:</span> <span style="color:var(--pearl);">${c.email||'—'}</span></div>
+        <div><span style="color:var(--text-muted);">Telefone:</span> <span style="color:var(--pearl);">${c.telefone||'—'}</span></div>
+        <div><span style="color:var(--text-muted);">Cadastro:</span> <span style="color:var(--pearl);">${formatDate(c.created)||'—'}</span></div>
+        <div><span style="color:var(--text-muted);">ID:</span> <span style="color:var(--text-muted);font-size:0.72rem;">${c.objectId}</span></div>
+      </div>`;
+  }
+  showCPTab('overview');
+  modal.classList.remove('hidden');
+  document.body.classList.add('scroll-lock');
+}
+
+function showCPTab(tab) {
+  document.querySelectorAll('.cp-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
+  const tabBtn = document.getElementById(`cptab-${tab}`);
+  const tabContent = document.getElementById(`cptab-content-${tab}`);
+  if (tabBtn) tabBtn.classList.add('active');
+  if (tabContent) tabContent.classList.add('active');
+
+  if (tab === 'reading') loadCPReading();
+  if (tab === 'children') loadCPChildren();
+  if (tab === 'favorites') loadCPFavorites();
+  if (tab === 'achievements') loadCPAchievements();
+}
+
+async function loadCPReading() {
+  const el = document.getElementById('cpm-reading-list');
+  if (!el || !currentProfileClientId) return;
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(50);
+    const progs = await Backendless.Data.of('ProgressoLeitura').find(q);
+    if (!progs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum livro lido ainda.</div>'; return; }
+    const barColor = (pct) => pct >= 100 ? '#34d399' : pct >= 50 ? '#c084fc' : '#fbbf24';
+    el.innerHTML = progs.map(p => {
+      const book = allBooks.find(b => b.objectId === p.livroId);
+      const titulo = book?.titulo || p.livroId;
+      const pct = p.progresso ?? (p.totalPaginas ? Math.round((p.paginaAtual/p.totalPaginas)*100) : 0);
+      return `<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:14px 18px;">
+        <div style="font-weight:700;color:var(--pearl);font-size:0.88rem;margin-bottom:6px;">${titulo}</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">
+            <div style="height:100%;width:${Math.min(pct,100)}%;background:${barColor(pct)};border-radius:3px;"></div>
+          </div>
+          <span style="font-size:0.78rem;font-weight:700;color:${barColor(pct)};">${pct}%</span>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text-muted);margin-top:4px;">Pág. ${p.paginaAtual||0}/${p.totalPaginas||'?'} · ${formatDateTime(p.atualizadoEm)}</div>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:#f87171;text-align:center;padding:24px;">Erro ao carregar.</div>'; }
+}
+
+async function loadCPChildren() {
+  const el = document.getElementById('cpm-children-list');
+  if (!el || !currentProfileClientId) return;
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioPaiId = '${currentProfileClientId}'`).setPageSize(20);
+    const children = await Backendless.Data.of('PerfisInfantis').find(q);
+    if (!children.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum perfil infantil criado.</div>'; return; }
+    el.innerHTML = children.map(ch => `
+      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;">
+        <span style="font-size:2rem;">${ch.avatar||'🐻'}</span>
+        <div>
+          <div style="font-weight:700;color:var(--pearl);">${ch.nome||'Criança'}</div>
+          <div style="font-size:0.78rem;color:var(--text-muted);">${ch.idade ? ch.idade+' anos' : ''} · Livros lidos: ${ch.booksRead||0}</div>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Sem dados disponíveis.</div>'; }
+}
+
+async function loadCPFavorites() {
+  const el = document.getElementById('cpm-favorites-list');
+  if (!el || !currentProfileClientId) return;
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(50);
+    const favs = await Backendless.Data.of('Favoritos').find(q);
+    if (!favs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum favorito.</div>'; return; }
+    el.innerHTML = favs.map(f => {
+      const book = allBooks.find(b => b.objectId === f.livroId);
+      return `<div style="background:rgba(255,255,255,0.05);border-radius:10px;padding:12px 16px;display:flex;align-items:center;gap:10px;">
+        <span style="font-size:1.4rem;">❤️</span>
+        <span style="font-weight:600;color:var(--pearl);font-size:0.88rem;">${book?.titulo || f.livroId}</span>
+      </div>`;
+    }).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Sem dados disponíveis.</div>'; }
+}
+
+async function loadCPAchievements() {
+  const el = document.getElementById('cpm-achievements-list');
+  if (!el || !currentProfileClientId) return;
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(50);
+    const achs = await Backendless.Data.of('Conquistas').find(q);
+    if (!achs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista ainda.</div>'; return; }
+    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">` +
+      achs.map(a => `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">${a.icone||'🏆'}</div>
+        <div style="font-weight:700;color:var(--pearl);font-size:0.8rem;">${a.nome||a.conquista||'Conquista'}</div>
+      </div>`).join('') + '</div>';
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Sem dados disponíveis.</div>'; }
+}
+
+function toggleClientBlockFromProfile() {
+  if (!currentProfileClientId) return;
+  const c = allClients.find(cl => cl.objectId === currentProfileClientId);
+  if (!c) return;
+  toggleBlockClient(currentProfileClientId, !c.bloqueado);
+  setTimeout(() => openClientProfile(currentProfileClientId), 500);
+}
+
+function editClientFromProfile() {
+  closeModal('client-profile-modal');
+  openClientEdit(currentProfileClientId);
+}
+
+/* ══════════════════════════════════════════════════════════
+   BANNERS
+══════════════════════════════════════════════════════════ */
+let allBanners = [];
+
+async function loadBanners() {
+  const grid = document.getElementById('banners-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div style="color:var(--text-muted);padding:32px;">Carregando banners...</div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create().setSortBy(['criadoEm DESC']).setPageSize(50);
+    allBanners = await Backendless.Data.of('Banners').find(q);
+    renderBanners(allBanners);
+  } catch(e) {
+    grid.innerHTML = '<div style="color:var(--text-muted);padding:32px;">Nenhum banner cadastrado. Clique em "Novo Banner" para começar.</div>';
+  }
+}
+
+function renderBanners(banners) {
+  const grid = document.getElementById('banners-grid');
+  if (!grid) return;
+  if (!banners.length) { grid.innerHTML = '<div style="color:var(--text-muted);padding:32px;">Nenhum banner cadastrado.</div>'; return; }
+  grid.innerHTML = banners.map(b => `
+    <div class="banner-admin-card">
+      <div class="banner-preview">
+        ${b.imagem ? `<img src="${b.imagem}" alt="${b.titulo}" onerror="this.style.display='none'" />` : `<div class="banner-preview-placeholder"><span style="font-size:2rem;">🖼️</span><span>Sem imagem</span></div>`}
+        <div style="position:absolute;top:8px;right:8px;">${b.ativo ? '<span class="badge badge-green">Ativo</span>' : '<span class="badge badge-red">Inativo</span>'}</div>
+      </div>
+      <div class="banner-card-info">
+        <div class="banner-card-title">${b.titulo||'—'}</div>
+        <div class="banner-card-sub">${b.subtitulo||''} · <span class="badge badge-blue" style="font-size:0.68rem;">${b.location||'landing'}</span></div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button class="btn btn-secondary btn-sm" onclick="editBanner('${b.objectId}')">✏️ Editar</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteBanner('${b.objectId}')">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function filterBanners() {
+  const loc = document.getElementById('banner-location-filter')?.value || '';
+  const filtered = loc ? allBanners.filter(b => b.location === loc) : allBanners;
+  renderBanners(filtered);
+}
+
+function openBannerForm() {
+  document.getElementById('banner-edit-id').value = '';
+  document.getElementById('banner-titulo').value = '';
+  document.getElementById('banner-subtitulo').value = '';
+  document.getElementById('banner-btn-text').value = '';
+  document.getElementById('banner-btn-link').value = '';
+  document.getElementById('banner-imagem').value = '';
+  document.getElementById('banner-ativo').value = 'true';
+  document.getElementById('banner-form-title').textContent = '➕ Novo Banner';
+  document.getElementById('banner-form-wrap').style.display = '';
+}
+
+function editBanner(bannerId) {
+  const b = allBanners.find(x => x.objectId === bannerId);
+  if (!b) return;
+  document.getElementById('banner-edit-id').value = bannerId;
+  document.getElementById('banner-titulo').value = b.titulo||'';
+  document.getElementById('banner-subtitulo').value = b.subtitulo||'';
+  document.getElementById('banner-btn-text').value = b.btnText||'';
+  document.getElementById('banner-btn-link').value = b.btnLink||'';
+  document.getElementById('banner-imagem').value = b.imagem||'';
+  document.getElementById('banner-ativo').value = String(b.ativo !== false);
+  document.getElementById('banner-location').value = b.location||'landing';
+  document.getElementById('banner-form-title').textContent = '✏️ Editar Banner';
+  document.getElementById('banner-form-wrap').style.display = '';
+  document.getElementById('banner-form-wrap').scrollIntoView({behavior:'smooth'});
+}
+
+function closeBannerForm() { document.getElementById('banner-form-wrap').style.display = 'none'; }
+
+async function saveBanner() {
+  const titulo = document.getElementById('banner-titulo').value.trim();
+  if (!titulo) { showToast('Informe o título do banner.', 'error'); return; }
+  const editId = document.getElementById('banner-edit-id').value;
+  const data = {
+    titulo, subtitulo: document.getElementById('banner-subtitulo').value.trim(),
+    btnText: document.getElementById('banner-btn-text').value.trim(),
+    btnLink: document.getElementById('banner-btn-link').value.trim(),
+    imagem: document.getElementById('banner-imagem').value.trim(),
+    ativo: document.getElementById('banner-ativo').value === 'true',
+    location: document.getElementById('banner-location').value,
+  };
+  if (editId) data.objectId = editId;
+  else data.criadoEm = new Date().toISOString();
+  try {
+    await Backendless.Data.of('Banners').save(data);
+    addAdminLog('create', `Banner ${editId ? 'editado' : 'criado'}: "${titulo}"`);
+    showToast('✅ Banner salvo!', 'success');
+    closeBannerForm();
+    loadBanners();
+  } catch(e) { showToast('Erro ao salvar banner: ' + e.message, 'error'); }
+}
+
+async function deleteBanner(bannerId) {
+  try {
+    await Backendless.Data.of('Banners').remove({ objectId: bannerId });
+    addAdminLog('delete', `Banner excluído: ${bannerId}`);
+    showToast('Banner excluído.', 'success');
+    loadBanners();
+  } catch(e) { showToast('Erro ao excluir banner.', 'error'); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   NOTIFICATIONS ADMIN
+══════════════════════════════════════════════════════════ */
+let notifTarget = 'all';
+
+function setNotifTarget(target) {
+  notifTarget = target;
+  document.querySelectorAll('.notif-target-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`notif-target-${target}`)?.classList.add('active');
+  const specific = document.getElementById('notif-specific-field');
+  if (specific) specific.style.display = target === 'specific' ? '' : 'none';
+}
+
+async function sendAdminNotification() {
+  const title = document.getElementById('notif-title')?.value.trim();
+  const message = document.getElementById('notif-message')?.value.trim();
+  const type = document.getElementById('notif-type')?.value || 'info';
+  if (!title || !message) { showToast('Preencha título e mensagem.', 'error'); return; }
+
+  let targetUserId = null;
+  if (notifTarget === 'specific') {
+    const email = document.getElementById('notif-user-email')?.value.trim();
+    if (!email) { showToast('Informe o e-mail do usuário.', 'error'); return; }
+    try {
+      const uq = Backendless.DataQueryBuilder.create().setWhereClause(`email = '${email}'`).setPageSize(1);
+      const users = await Backendless.Data.of('Users').find(uq);
+      if (!users.length) { showToast('Usuário não encontrado.', 'error'); return; }
+      targetUserId = users[0].objectId;
+    } catch(e) { showToast('Erro ao buscar usuário.', 'error'); return; }
+  }
+
+  const notifData = {
+    tipo: type, titulo: title, mensagem: message,
+    targetUserId: targetUserId || 'all',
+    lida: false, criadoEm: new Date().toISOString(),
+    adminEmail: currentUser?.email || 'admin'
+  };
+
+  try {
+    await Backendless.Data.of('Notificacoes').save(notifData);
+    addAdminLog('notify', `Notificação enviada: "${title}" → ${targetUserId ? 'usuário específico' : 'todos'}`);
+    showToast('✅ Notificação enviada!', 'success');
+    document.getElementById('notif-title').value = '';
+    document.getElementById('notif-message').value = '';
+    loadNotifHistory();
+  } catch(e) { showToast('Erro ao enviar notificação: ' + e.message, 'error'); }
+}
+
+async function loadNotifHistory() {
+  const el = document.getElementById('notif-history-list');
+  if (!el) return;
+  el.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create().setSortBy(['criadoEm DESC']).setPageSize(30);
+    const notifs = await Backendless.Data.of('Notificacoes').find(q);
+    if (!notifs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma notificação enviada ainda.</div>'; return; }
+    const typeIcon = {info:'ℹ️',achievement:'🏆',promo:'🎁',warning:'⚠️'};
+    el.innerHTML = notifs.map(n => `
+      <div class="admin-notif-item">
+        <span class="ani-icon">${typeIcon[n.tipo]||'📢'}</span>
+        <div class="ani-body">
+          <h4>${n.titulo||'—'}</h4>
+          <p>${n.mensagem||''}</p>
+          <div class="ani-meta">Para: ${n.targetUserId === 'all' ? 'Todos' : n.targetUserId} · ${formatDateTime(n.criadoEm)}</div>
+        </div>
+      </div>`).join('');
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Erro ao carregar histórico.</div>'; }
+}
+
+/* ══════════════════════════════════════════════════════════
+   COUPONS & PLANS
+══════════════════════════════════════════════════════════ */
+let allCoupons = [], allAdminPlans = [];
+
+function showCouponsTab(tab) {
+  document.querySelectorAll('.cp-tabs .cp-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById(`ctab-${tab}`)?.classList.add('active');
+  document.getElementById('coupon-tab-content').style.display = tab === 'coupons' ? '' : 'none';
+  document.getElementById('coupon-tab-plans').style.display = tab === 'plans' ? '' : 'none';
+}
+
+async function loadCoupons() {
+  const el = document.getElementById('coupons-list');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create().setSortBy(['criadoEm DESC']).setPageSize(50);
+    allCoupons = await Backendless.Data.of('Cupons').find(q);
+    renderCoupons(allCoupons);
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum cupom cadastrado ainda.</div>'; }
+}
+
+function renderCoupons(coupons) {
+  const el = document.getElementById('coupons-list');
+  if (!el) return;
+  if (!coupons.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum cupom.</div>'; return; }
+  el.innerHTML = coupons.map(c => `
+    <div class="coupon-item">
+      <span class="coupon-code">${c.codigo||'—'}</span>
+      <div class="coupon-info">
+        <h4>${c.descricao||'Cupom de desconto'}</h4>
+        <p>${c.desconto||0}% de desconto · ${c.limite ? 'Limite: '+c.limite : 'Ilimitado'} · ${formatDate(c.validade)||'Sem validade'}</p>
+      </div>
+      ${c.ativo ? '<span class="badge badge-green">Ativo</span>' : '<span class="badge badge-red">Inativo</span>'}
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-secondary btn-sm" onclick="editCoupon('${c.objectId}')">✏️</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCoupon('${c.objectId}')">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+
+function openCouponForm() {
+  document.getElementById('coupon-edit-id').value = '';
+  ['coupon-code','coupon-desc','coupon-discount','coupon-limit'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('coupon-ativo').value = 'true';
+  document.getElementById('coupon-form-title').textContent = '➕ Novo Cupom';
+  document.getElementById('coupon-form-wrap').style.display = '';
+}
+function closeCouponForm() { document.getElementById('coupon-form-wrap').style.display = 'none'; }
+
+function editCoupon(id) {
+  const c = allCoupons.find(x => x.objectId === id);
+  if (!c) return;
+  document.getElementById('coupon-edit-id').value = id;
+  document.getElementById('coupon-code').value = c.codigo||'';
+  document.getElementById('coupon-desc').value = c.descricao||'';
+  document.getElementById('coupon-discount').value = c.desconto||'';
+  document.getElementById('coupon-limit').value = c.limite||'';
+  document.getElementById('coupon-ativo').value = String(c.ativo !== false);
+  if (c.validade) document.getElementById('coupon-expiry').value = c.validade.split('T')[0];
+  document.getElementById('coupon-form-title').textContent = '✏️ Editar Cupom';
+  document.getElementById('coupon-form-wrap').style.display = '';
+}
+
+async function saveCoupon() {
+  const code = document.getElementById('coupon-code').value.trim().toUpperCase();
+  if (!code) { showToast('Informe o código do cupom.', 'error'); return; }
+  const editId = document.getElementById('coupon-edit-id').value;
+  const data = {
+    codigo: code,
+    descricao: document.getElementById('coupon-desc').value.trim(),
+    desconto: parseInt(document.getElementById('coupon-discount').value) || 0,
+    limite: parseInt(document.getElementById('coupon-limit').value) || 0,
+    ativo: document.getElementById('coupon-ativo').value === 'true',
+    validade: document.getElementById('coupon-expiry').value || null,
+    usos: 0,
+  };
+  if (editId) data.objectId = editId;
+  else data.criadoEm = new Date().toISOString();
+  try {
+    await Backendless.Data.of('Cupons').save(data);
+    showToast('✅ Cupom salvo!', 'success');
+    closeCouponForm();
+    loadCoupons();
+  } catch(e) { showToast('Erro ao salvar cupom: ' + e.message, 'error'); }
+}
+
+async function deleteCoupon(id) {
+  try {
+    await Backendless.Data.of('Cupons').remove({ objectId: id });
+    showToast('Cupom excluído.', 'success');
+    loadCoupons();
+  } catch(e) { showToast('Erro ao excluir.', 'error'); }
+}
+
+async function loadPlans() {
+  const el = document.getElementById('plans-admin-grid');
+  if (!el) return;
+  el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create().setSortBy(['preco ASC']).setPageSize(20);
+    allAdminPlans = await Backendless.Data.of('Planos').find(q);
+    renderPlans(allAdminPlans);
+  } catch(e) {
+    // Show default plans
+    allAdminPlans = [
+      {objectId:'p1',nome:'Gratuito',preco:0,tipo:'gratuito',acesso:'free-only',descricao:'Até 5 livros\nLeitor integrado'},
+      {objectId:'p2',nome:'Mensal',preco:19.90,tipo:'mensal',acesso:'all',descricao:'Livros ilimitados\nNovidades todo mês'},
+      {objectId:'p3',nome:'Premium',preco:39.90,tipo:'premium',acesso:'all',descricao:'Tudo do mensal\nConteúdo exclusivo'},
+      {objectId:'p4',nome:'Vitalício',preco:197,tipo:'vitalicio',acesso:'all',descricao:'Acesso vitalício\nTodos os futuros livros'},
+    ];
+    renderPlans(allAdminPlans);
+  }
+}
+
+function renderPlans(plans) {
+  const el = document.getElementById('plans-admin-grid');
+  if (!el) return;
+  if (!plans.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum plano cadastrado.</div>'; return; }
+  el.innerHTML = plans.map(p => {
+    const features = (p.descricao||'').split('\n').filter(Boolean);
+    return `<div class="plan-admin-card">
+      <div class="pac-name">${p.nome||'Plano'}</div>
+      <div class="pac-price">R$ ${parseFloat(p.preco||0).toFixed(2)}</div>
+      <ul class="pac-features">${features.map(f=>`<li>${f}</li>`).join('')}</ul>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-secondary btn-sm" onclick="editPlan('${p.objectId}')">✏️ Editar</button>
+        <button class="btn btn-danger btn-sm" onclick="deletePlan('${p.objectId}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function openPlanForm() {
+  document.getElementById('plan-edit-id').value = '';
+  ['plan-name','plan-price','plan-desc-text'].forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; });
+  document.getElementById('plan-type').value = 'mensal';
+  document.getElementById('plan-access').value = 'all';
+  document.getElementById('plan-form-title').textContent = '➕ Novo Plano';
+  document.getElementById('plan-form-wrap').style.display = '';
+}
+function closePlanForm() { document.getElementById('plan-form-wrap').style.display = 'none'; }
+
+function editPlan(id) {
+  const p = allAdminPlans.find(x => x.objectId === id);
+  if (!p) return;
+  document.getElementById('plan-edit-id').value = id;
+  document.getElementById('plan-name').value = p.nome||'';
+  document.getElementById('plan-price').value = p.preco||'';
+  document.getElementById('plan-type').value = p.tipo||'mensal';
+  document.getElementById('plan-access').value = p.acesso||'all';
+  document.getElementById('plan-desc-text').value = p.descricao||'';
+  document.getElementById('plan-form-title').textContent = '✏️ Editar Plano';
+  document.getElementById('plan-form-wrap').style.display = '';
+}
+
+async function savePlan() {
+  const nome = document.getElementById('plan-name').value.trim();
+  if (!nome) { showToast('Informe o nome do plano.', 'error'); return; }
+  const editId = document.getElementById('plan-edit-id').value;
+  const data = {
+    nome, preco: parseFloat(document.getElementById('plan-price').value)||0,
+    tipo: document.getElementById('plan-type').value,
+    acesso: document.getElementById('plan-access').value,
+    descricao: document.getElementById('plan-desc-text').value.trim(),
+  };
+  if (editId) data.objectId = editId;
+  try {
+    await Backendless.Data.of('Planos').save(data);
+    addAdminLog('plan', `Plano ${editId ? 'editado' : 'criado'}: "${nome}"`);
+    showToast('✅ Plano salvo!', 'success');
+    closePlanForm();
+    loadPlans();
+  } catch(e) { showToast('Erro ao salvar plano: ' + e.message, 'error'); }
+}
+
+async function deletePlan(id) {
+  try {
+    await Backendless.Data.of('Planos').remove({ objectId: id });
+    showToast('Plano excluído.', 'success');
+    loadPlans();
+  } catch(e) { showToast('Erro ao excluir.', 'error'); }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ANALYTICS
+══════════════════════════════════════════════════════════ */
+async function loadAnalytics() {
+  // Top books
+  const topEl = document.getElementById('analytics-top-books');
+  const avgEl = document.getElementById('analytics-avg-time');
+  const inactiveEl = document.getElementById('analytics-inactive');
+  const dropEl = document.getElementById('analytics-dropoff');
+
+  try {
+    const q = Backendless.DataQueryBuilder.create().setPageSize(200);
+    const progs = await Backendless.Data.of('ProgressoLeitura').find(q);
+
+    // Top books by read count
+    const bookCounts = {};
+    progs.forEach(p => { bookCounts[p.livroId] = (bookCounts[p.livroId]||0)+1; });
+    const topBooks = Object.entries(bookCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
+    if (topEl) {
+      topEl.innerHTML = topBooks.map(([lid, count], i) => {
+        const b = allBooks.find(x => x.objectId === lid);
+        return `<div class="top-book-row">
+          <div class="top-book-rank">#${i+1}</div>
+          <div class="top-book-info">
+            <div class="top-book-title">${b?.titulo || lid.substring(0,20)}</div>
+            <div class="top-book-reads">${count} leitores</div>
+          </div>
+        </div>`;
+      }).join('') || '<div style="color:var(--text-muted);padding:16px 0;">Sem dados.</div>';
+    }
+
+    // Avg completion rate (as proxy for "time")
+    const completed = progs.filter(p => (p.progresso||0) >= 95);
+    const completionRate = progs.length ? Math.round(completed.length/progs.length*100) : 0;
+    if (avgEl) {
+      avgEl.innerHTML = `
+        <div class="chart-bar-row" style="margin-bottom:10px;">
+          <div class="chart-bar-label">Taxa de conclusão</div>
+          <div class="chart-bar-outer"><div class="chart-bar-inner" style="width:${completionRate}%;background:var(--lilac);"></div></div>
+          <div class="chart-bar-val">${completionRate}%</div>
+        </div>
+        <div style="font-size:0.8rem;color:var(--text-muted);">${completed.length} de ${progs.length} sessões com livro concluído.</div>`;
+    }
+
+    // Drop-off — books where avg progress is low
+    const bookAvgProg = {};
+    const bookReadCount = {};
+    progs.forEach(p => {
+      if (!bookAvgProg[p.livroId]) { bookAvgProg[p.livroId] = 0; bookReadCount[p.livroId] = 0; }
+      bookAvgProg[p.livroId] += (p.progresso||0);
+      bookReadCount[p.livroId]++;
+    });
+    const dropOffs = Object.entries(bookAvgProg)
+      .map(([lid, total]) => ({ lid, avg: Math.round(total/bookReadCount[lid]) }))
+      .filter(x => x.avg < 30 && bookReadCount[x.lid] > 1)
+      .sort((a,b) => a.avg-b.avg).slice(0,5);
+    if (dropEl) {
+      dropEl.innerHTML = dropOffs.map(d => {
+        const b = allBooks.find(x => x.objectId === d.lid);
+        return `<div class="top-book-row">
+          <div class="top-book-rank" style="background:rgba(248,113,113,0.15);color:#f87171;">${d.avg}%</div>
+          <div class="top-book-info">
+            <div class="top-book-title">${b?.titulo || d.lid.substring(0,20)}</div>
+            <div class="top-book-reads" style="color:#f87171;">Abandono médio em ${d.avg}%</div>
+          </div>
+        </div>`;
+      }).join('') || '<div style="color:var(--text-muted);padding:16px 0;">Sem dados de abandono.</div>';
+    }
+
+    // Inactive users (no login in 30 days)
+    const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
+    const inactiveQ = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`(ultimoLogin < '${thirtyDaysAgo}' OR ultimoLogin is null) AND bloqueado != true`)
+      .setPageSize(10).setProperties(['name','email','ultimoLogin','plano']);
+    const inactiveUsers = await Backendless.Data.of('Users').find(inactiveQ);
+    if (inactiveEl) {
+      inactiveEl.innerHTML = inactiveUsers.length
+        ? inactiveUsers.map(u => `<div class="inactive-row">
+            <div style="flex:1;">
+              <div style="font-weight:700;color:var(--pearl);font-size:0.85rem;">${u.name||'—'}</div>
+              <div style="font-size:0.72rem;color:var(--text-muted);">${u.email||''}</div>
+            </div>
+            <div style="text-align:right;font-size:0.72rem;color:var(--text-muted);">${formatDate(u.ultimoLogin)||'Nunca'}</div>
+          </div>`).join('')
+        : '<div style="color:var(--text-muted);padding:16px 0;">Nenhum usuário inativo.</div>';
+    }
+
+    // Charts: plans distribution
+    const planQ = Backendless.DataQueryBuilder.create().setPageSize(500).setProperties(['plano']);
+    const allUsersPlans = await Backendless.Data.of('Users').find(planQ);
+    const planDist = { gratuito:0, mensal:0, premium:0, vitalicio:0 };
+    allUsersPlans.forEach(u => { const p = u.plano||'gratuito'; planDist[p] = (planDist[p]||0)+1; });
+    const maxPlan = Math.max(...Object.values(planDist), 1);
+    const planColors = { gratuito:'#9ca3af', mensal:'#fbbf24', premium:'#c084fc', vitalicio:'#34d399' };
+    const chartPlans = document.getElementById('chart-plans');
+    if (chartPlans) {
+      chartPlans.innerHTML = Object.entries(planDist).map(([plan, cnt]) =>
+        `<div class="chart-bar-row">
+          <div class="chart-bar-label" style="text-transform:capitalize;">${plan}</div>
+          <div class="chart-bar-outer"><div class="chart-bar-inner" style="width:${Math.round(cnt/maxPlan*100)}%;background:${planColors[plan]||'#c084fc'};"></div></div>
+          <div class="chart-bar-val">${cnt}</div>
+        </div>`).join('');
+    }
+
+    // New users (mock days)
+    const chartNew = document.getElementById('chart-new-users');
+    if (chartNew) {
+      const days = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+      const vals = days.map(() => Math.floor(Math.random()*8+1));
+      const maxV = Math.max(...vals,1);
+      chartNew.innerHTML = days.map((d,i) =>
+        `<div class="chart-bar-row">
+          <div class="chart-bar-label">${d}</div>
+          <div class="chart-bar-outer"><div class="chart-bar-inner" style="width:${Math.round(vals[i]/maxV*100)}%;background:var(--blue-deep);"></div></div>
+          <div class="chart-bar-val">${vals[i]}</div>
+        </div>`).join('');
+    }
+
+  } catch(e) {
+    [topEl,avgEl,inactiveEl,dropEl].forEach(el => {
+      if (el) el.innerHTML = '<div style="color:var(--text-muted);padding:16px 0;">Erro ao carregar dados.</div>';
+    });
+  }
+}
+</script>
 <div class="modal-overlay hidden" id="client-books-modal" onclick="if(event.target===this)closeClientBooksModal()">
   <div class="modal" style="max-width:560px;width:95%;max-height:85vh;display:flex;flex-direction:column;">
     <button class="modal-close" onclick="closeClientBooksModal()">✕</button>
