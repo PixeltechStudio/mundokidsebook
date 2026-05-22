@@ -778,6 +778,200 @@ body {
 ::-webkit-scrollbar-track { background: var(--bg-mid); }
 ::-webkit-scrollbar-thumb { background: var(--lilac); border-radius: 3px; }
 
+/* ══════════════════════════════════════════════
+   NOVAS FUNCIONALIDADES CSS
+══════════════════════════════════════════════ */
+
+/* ── CONTINUAR LENDO CARD DESTAQUE ── */
+.continue-reading-hero {
+  background: linear-gradient(135deg, rgba(192,132,252,0.18) 0%, rgba(255,110,180,0.14) 100%);
+  border: 1px solid rgba(192,132,252,0.3);
+  border-radius: 20px; padding: 24px 28px; margin-bottom: 40px;
+  display: flex; align-items: center; gap: 24px;
+  position: relative; overflow: hidden;
+  animation: fadeInUp 0.5s ease;
+}
+.continue-reading-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 80% 50%, rgba(192,132,252,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.cr-cover {
+  width: 72px; height: 100px; border-radius: 8px; flex-shrink: 0;
+  background: linear-gradient(135deg, var(--rose), var(--lilac-deep));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  overflow: hidden;
+}
+.cr-cover img { width: 100%; height: 100%; object-fit: cover; }
+.cr-info { flex: 1; min-width: 0; }
+.cr-label { font-size: 0.72rem; color: var(--lilac); font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+.cr-title { font-family: var(--font-title); font-size: 1.2rem; color: var(--pearl); margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cr-progress-wrap { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.cr-progress-bar { flex: 1; height: 5px; background: rgba(255,255,255,0.15); border-radius: 3px; overflow: hidden; max-width: 200px; }
+.cr-progress-fill { height: 100%; background: linear-gradient(90deg, var(--rose), var(--lilac)); border-radius: 3px; transition: width 0.6s; }
+.cr-progress-pct { font-size: 0.8rem; color: var(--lilac); font-weight: 700; }
+.cr-btn { flex-shrink: 0; }
+
+/* ── MODO HORA DE DORMIR ── */
+body.bedtime-mode {
+  filter: brightness(0.55) saturate(0.5);
+}
+body.bedtime-mode .magic-bg {
+  background:
+    radial-gradient(ellipse at 30% 40%, rgba(20,10,60,0.95) 0%, transparent 70%),
+    linear-gradient(135deg, #05020f 0%, #0a0420 100%);
+}
+body.bedtime-mode .netflix-nav,
+body.bedtime-mode .stars-layer { filter: none; }
+.bedtime-toggle-btn {
+  position: fixed; bottom: 88px; right: 24px; z-index: 500;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, #1a0a38, #0f0520);
+  border: 2px solid rgba(147,197,253,0.4); color: #93c5fd;
+  font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.3s; display: none;
+}
+.bedtime-toggle-btn:hover { transform: scale(1.1); border-color: #93c5fd; }
+.bedtime-toggle-btn.active { background: linear-gradient(135deg, #1e3a5f, #0d2137); border-color: #fbbf24; color: #fbbf24; }
+.bedtime-panel {
+  position: fixed; bottom: 152px; right: 24px; z-index: 499;
+  background: rgba(10,5,25,0.96); border: 1px solid rgba(147,197,253,0.25);
+  border-radius: 18px; padding: 20px; min-width: 230px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.7); backdrop-filter: blur(20px);
+  display: none;
+}
+.bedtime-panel h4 { font-family: var(--font-title); color: #93c5fd; margin-bottom: 14px; font-size: 1rem; }
+.bedtime-music-btn {
+  width: 100%; padding: 10px; border-radius: 10px;
+  background: rgba(147,197,253,0.1); border: 1px solid rgba(147,197,253,0.2);
+  color: var(--text-light); font-family: var(--font-body); font-size: 0.85rem;
+  cursor: pointer; text-align: left; margin-bottom: 8px; transition: all 0.2s;
+}
+.bedtime-music-btn:hover { background: rgba(147,197,253,0.2); }
+.bedtime-music-btn.playing { color: #93c5fd; border-color: #93c5fd; background: rgba(147,197,253,0.15); }
+
+/* ── CONQUISTAS ── */
+.achievements-modal-inner { max-width: 600px; width: 95%; }
+.achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; padding: 4px 0; }
+.achievement-card {
+  background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px 12px; text-align: center; position: relative;
+  transition: all 0.3s;
+}
+.achievement-card.unlocked {
+  border-color: rgba(251,191,36,0.4); background: rgba(251,191,36,0.08);
+  box-shadow: 0 4px 20px rgba(251,191,36,0.15);
+}
+.achievement-card.locked { filter: grayscale(1); opacity: 0.45; }
+.achievement-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; }
+.achievement-name { font-weight: 700; font-size: 0.8rem; color: var(--pearl); margin-bottom: 4px; line-height: 1.3; }
+.achievement-desc { font-size: 0.7rem; color: var(--text-muted); line-height: 1.4; }
+.achievement-badge {
+  position: absolute; top: -8px; right: -8px;
+  background: var(--gold); color: var(--bg-deep); border-radius: 50%;
+  width: 22px; height: 22px; font-size: 0.6rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+}
+.achievements-nav-btn {
+  position: relative; font-size: 1.3rem; cursor: pointer;
+  padding: 6px; border-radius: 50%; transition: transform 0.2s;
+}
+.achievements-nav-btn:hover { transform: scale(1.2); }
+.achievement-notif {
+  position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--gold), #f59e0b);
+  color: var(--bg-deep); border-radius: 50px; padding: 14px 28px;
+  font-weight: 800; font-size: 0.95rem; z-index: 9999;
+  box-shadow: 0 8px 32px rgba(251,191,36,0.5);
+  animation: achievement-pop 3.5s ease forwards;
+  display: flex; align-items: center; gap: 12px;
+  white-space: nowrap;
+}
+@keyframes achievement-pop {
+  0% { opacity: 0; transform: translateX(-50%) translateY(20px) scale(0.8); }
+  15% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.05); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* ── PERFIL INFANTIL ── */
+.child-profiles-section { margin-bottom: 32px; }
+.child-profile-create {
+  background: rgba(255,255,255,0.05); border: 2px dashed rgba(255,255,255,0.15);
+  border-radius: 16px; padding: 24px; margin-top: 16px;
+  display: none;
+}
+.child-profile-create.open { display: block; }
+.child-avatar-select { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.child-avatar-opt {
+  font-size: 1.6rem; padding: 8px; border-radius: 10px; cursor: pointer;
+  border: 2px solid transparent; background: rgba(255,255,255,0.06);
+  transition: all 0.2s;
+}
+.child-avatar-opt:hover { background: rgba(255,255,255,0.12); border-color: var(--lilac); }
+.child-avatar-opt.selected { border-color: var(--gold); background: rgba(251,191,36,0.12); }
+
+/* ── ÁREA DOS PAIS ── */
+.parent-area-modal-inner { max-width: 650px; width: 95%; }
+.parent-child-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 20px; margin-bottom: 16px;
+}
+.parent-child-header { display: flex; align-items: center; gap: 14px; margin-bottom: 16px; }
+.parent-child-avatar { width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--rose), var(--lilac-deep)); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; }
+.parent-child-name { font-weight: 800; color: var(--pearl); font-size: 1rem; }
+.parent-child-age { font-size: 0.8rem; color: var(--text-muted); }
+.parent-stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.parent-stat-mini {
+  background: rgba(255,255,255,0.05); border-radius: 10px; padding: 12px;
+  text-align: center;
+}
+.parent-stat-mini .value { font-family: var(--font-title); font-size: 1.4rem; color: var(--gold); }
+.parent-stat-mini .label { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ── NOTIFICAÇÕES PAINEL ── */
+.notif-panel {
+  position: absolute; top: calc(100% + 12px); right: 0;
+  min-width: 320px; max-width: 360px;
+  background: rgba(18, 8, 40, 0.97); border: 1px solid rgba(255,255,255,0.12);
+  border-radius: var(--radius-md); padding: 0;
+  backdrop-filter: blur(20px); box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+  opacity: 0; transform: translateY(-8px) scale(0.97);
+  pointer-events: none; transition: all 0.25s ease; z-index: 300;
+}
+.notif-panel.open { opacity: 1; transform: translateY(0) scale(1); pointer-events: all; }
+.notif-panel-header { padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: space-between; }
+.notif-panel-title { font-weight: 800; color: var(--pearl); font-size: 0.9rem; }
+.notif-mark-read { background: none; border: none; color: var(--lilac); font-size: 0.75rem; cursor: pointer; font-family: var(--font-body); font-weight: 600; }
+.notif-item {
+  padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex; gap: 12px; align-items: flex-start; cursor: pointer;
+  transition: background 0.2s;
+}
+.notif-item:hover { background: rgba(255,255,255,0.05); }
+.notif-item.unread { background: rgba(192,132,252,0.06); }
+.notif-item-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+.notif-item-text { flex: 1; }
+.notif-item-title { font-weight: 700; color: var(--pearl); font-size: 0.85rem; margin-bottom: 3px; }
+.notif-item-body { color: var(--text-muted); font-size: 0.78rem; line-height: 1.4; }
+.notif-item-time { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+.notif-empty { padding: 32px; text-align: center; color: var(--text-muted); font-size: 0.9rem; }
+.notif-panel-footer { padding: 12px 18px; text-align: center; }
+.notif-dot-wrap { position: relative; }
+
+/* ── RECOMENDAÇÕES ── */
+.rec-section { margin-bottom: 48px; }
+.rec-section-title { font-family: var(--font-title); font-size: 1.3rem; color: var(--pearl); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+
+/* ── DASH NAV EXTRA BUTTONS ── */
+.nlink-icon { background: none; border: none; color: rgba(255,255,255,0.7); font-size: 1rem; padding: 8px 14px; border-radius: 8px; cursor: pointer; transition: all 0.25s ease; font-family: var(--font-body); font-weight: 600; }
+.nlink-icon:hover { color: white; background: rgba(255,255,255,0.1); }
+
+@keyframes fadeInUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
 /* ── TYPOGRAPHY ── */
 h1, h2, h3 { font-family: var(--font-title); line-height: 1.2; }
 h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
@@ -2079,12 +2273,26 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
         <button class="nlink" onclick="showDashSection('series')">Aventuras</button>
         <button class="nlink" onclick="showDashSection('kids')">Para Crianças</button>
         <button class="nlink" onclick="showDashSection('favorites')">Meus Favoritos</button>
+        <button class="nlink" onclick="showDashSection('recommendations')">🌟 Para Você</button>
+        <button class="nlink" onclick="openAchievementsModal()">🏆 Conquistas</button>
       </div>
     </div>
     <div class="netflix-nav-right">
       <button class="netflix-search-btn" onclick="toggleSearchBar()" title="Buscar">🔍</button>
-      <div class="netflix-notif-btn" onclick="showToast('Nenhuma notificação nova.','info')">
-        🔔<span class="notif-dot"></span>
+      <div class="notif-dot-wrap" style="position:relative;">
+        <div class="netflix-notif-btn" onclick="toggleNotifPanel(event)" id="notif-btn-wrap">
+          🔔<span class="notif-dot" id="notif-main-dot"></span>
+        </div>
+        <div class="notif-panel" id="notif-panel">
+          <div class="notif-panel-header">
+            <span class="notif-panel-title">🔔 Notificações</span>
+            <button class="notif-mark-read" onclick="markAllNotifsRead()">Marcar tudo como lido</button>
+          </div>
+          <div id="notif-list"></div>
+          <div class="notif-panel-footer">
+            <button class="btn btn-secondary btn-sm" onclick="toggleNotifPanel(event)" style="width:100%;justify-content:center;">Fechar</button>
+          </div>
+        </div>
       </div>
       <div class="netflix-profile-menu" onclick="toggleProfileMenu()">
         <div class="netflix-avatar" id="nav-avatar">🦄</div>
@@ -2101,6 +2309,8 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
           <hr class="pd-divider" />
           <button class="pd-item" onclick="openSettingsModal()">⚙️ Configurações</button>
           <button class="pd-item" onclick="openProfilesModal()">👤 Perfis</button>
+          <button class="pd-item" onclick="openParentAreaModal()">👨‍👩‍👧 Área dos Pais</button>
+          <button class="pd-item" onclick="openAchievementsModal()">🏆 Conquistas</button>
           <button class="pd-item" onclick="showDashSection('favorites')">❤️ Favoritos</button>
           <button class="pd-item" onclick="showDashSection('history')">📖 Histórico</button>
           <hr class="pd-divider" />
@@ -2198,6 +2408,22 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
 
     <!-- Section: HOME -->
     <div class="dash-section active" id="dash-section-home">
+
+      <!-- CONTINUAR LENDO — CARD DESTAQUE -->
+      <div id="continue-reading-hero" style="display:none;">
+        <div class="continue-reading-hero">
+          <div class="cr-cover" id="cr-cover">📚</div>
+          <div class="cr-info">
+            <div class="cr-label">▶ Continuar lendo</div>
+            <div class="cr-title" id="cr-title">Carregando...</div>
+            <div class="cr-progress-wrap">
+              <div class="cr-progress-bar"><div class="cr-progress-fill" id="cr-progress-fill" style="width:0%"></div></div>
+              <span class="cr-progress-pct" id="cr-progress-pct">0%</span>
+            </div>
+            <button class="btn btn-primary btn-sm cr-btn" onclick="continueLeituraHero()">▶ Continuar de onde parei</button>
+          </div>
+        </div>
+      </div>
 
       <!-- CONTINUE READING ROW -->
       <div class="carousel-row" id="row-continue" style="display:none;">
@@ -2327,6 +2553,43 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
       <div class="carousel-track grid-view" id="kids-grid"></div>
     </div>
 
+    <!-- Section: RECOMMENDATIONS -->
+    <div class="dash-section" id="dash-section-recommendations">
+      <div class="section-page-header">
+        <h1>🌟 Recomendado Para Você</h1>
+        <p>Escolhas personalizadas com base no seu histórico e perfil</p>
+      </div>
+      <div id="rec-loading" style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
+      <!-- Por Idade -->
+      <div class="rec-section" id="rec-age-section" style="display:none;">
+        <div class="rec-section-title">🎈 Por Faixa Etária</div>
+        <div class="carousel-track-wrap">
+          <button class="carousel-arrow left" onclick="scrollCarousel('rec-age',-1)">‹</button>
+          <div class="carousel-track" id="carousel-rec-age"></div>
+          <button class="carousel-arrow right" onclick="scrollCarousel('rec-age',1)">›</button>
+        </div>
+      </div>
+      <!-- Por Categoria -->
+      <div class="rec-section" id="rec-cat-section" style="display:none;">
+        <div class="rec-section-title">📚 Baseado nas Suas Categorias Favoritas</div>
+        <div class="carousel-track-wrap">
+          <button class="carousel-arrow left" onclick="scrollCarousel('rec-cat',-1)">‹</button>
+          <div class="carousel-track" id="carousel-rec-cat"></div>
+          <button class="carousel-arrow right" onclick="scrollCarousel('rec-cat',1)">›</button>
+        </div>
+      </div>
+      <!-- Não lidos -->
+      <div class="rec-section" id="rec-new-section" style="display:none;">
+        <div class="rec-section-title">✨ Novidades que Você Ainda Não Leu</div>
+        <div class="carousel-track-wrap">
+          <button class="carousel-arrow left" onclick="scrollCarousel('rec-new',-1)">‹</button>
+          <div class="carousel-track" id="carousel-rec-new"></div>
+          <button class="carousel-arrow right" onclick="scrollCarousel('rec-new',1)">›</button>
+        </div>
+      </div>
+      <div id="rec-empty" style="display:none;" class="empty-section-msg">Explore mais livros para receber recomendações personalizadas! 📚</div>
+    </div>
+
   </div><!-- /netflix-content -->
 
   <!-- Hidden stat trackers (for compatibility) -->
@@ -2412,20 +2675,55 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
      PROFILES MODAL
 ══════════════════════════════════════════════ -->
 <div class="modal-overlay hidden" id="profiles-modal">
-  <div class="modal profiles-modal-inner">
+  <div class="modal profiles-modal-inner" style="max-width:540px;">
     <button class="modal-close" onclick="closeModal('profiles-modal')">✕</button>
     <h2 style="text-align:center;margin-bottom:8px;font-family:var(--font-title);color:var(--pearl);">Quem está lendo?</h2>
-    <p style="text-align:center;color:var(--text-muted);margin-bottom:32px;">Selecione ou crie um perfil</p>
+    <p style="text-align:center;color:var(--text-muted);margin-bottom:24px;">Selecione um perfil ou adicione um perfil infantil</p>
     <div class="profiles-grid" id="profiles-grid">
-      <div class="profile-card-item active-profile" onclick="closeModal('profiles-modal')">
+      <div class="profile-card-item active-profile" onclick="switchToMainProfile()">
         <div class="profile-card-avatar" id="main-profile-avatar">🦄</div>
         <div class="profile-card-name" id="main-profile-name">Leitor</div>
         <div class="profile-card-badge">Principal</div>
       </div>
-      <div class="profile-card-item add-profile" onclick="showToast('Em breve: adicionar perfis de crianças!','info')">
+      <!-- child profiles rendered here by JS -->
+      <div class="profile-card-item" onclick="toggleAddChildForm()">
         <div class="profile-card-avatar add">+</div>
-        <div class="profile-card-name">Adicionar</div>
+        <div class="profile-card-name">Adicionar Criança</div>
       </div>
+    </div>
+    <!-- Formulário de criação de perfil infantil -->
+    <div class="child-profile-create" id="child-profile-create">
+      <h4 style="color:var(--pearl);font-family:var(--font-title);margin-bottom:16px;">👶 Novo Perfil Infantil</h4>
+      <div class="form-group"><label>Nome da criança</label><input type="text" id="child-name-input" placeholder="Ex: Maria, João..." /></div>
+      <div class="form-group"><label>Idade</label>
+        <select id="child-age-input" style="width:100%;">
+          <option value="3">3 anos</option><option value="4">4 anos</option><option value="5">5 anos</option>
+          <option value="6">6 anos</option><option value="7">7 anos</option><option value="8">8 anos</option>
+          <option value="9">9 anos</option><option value="10">10 anos</option><option value="11">11 anos</option><option value="12">12 anos</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Escolha um avatar</label>
+        <div class="child-avatar-select" id="child-avatar-select">
+          <span class="child-avatar-opt selected" data-avatar="🐻" onclick="selectChildAvatar(this)">🐻</span>
+          <span class="child-avatar-opt" data-avatar="🐰" onclick="selectChildAvatar(this)">🐰</span>
+          <span class="child-avatar-opt" data-avatar="🐸" onclick="selectChildAvatar(this)">🐸</span>
+          <span class="child-avatar-opt" data-avatar="🐼" onclick="selectChildAvatar(this)">🐼</span>
+          <span class="child-avatar-opt" data-avatar="🦁" onclick="selectChildAvatar(this)">🦁</span>
+          <span class="child-avatar-opt" data-avatar="🦊" onclick="selectChildAvatar(this)">🦊</span>
+          <span class="child-avatar-opt" data-avatar="🐯" onclick="selectChildAvatar(this)">🐯</span>
+          <span class="child-avatar-opt" data-avatar="🐧" onclick="selectChildAvatar(this)">🐧</span>
+          <span class="child-avatar-opt" data-avatar="🦄" onclick="selectChildAvatar(this)">🦄</span>
+          <span class="child-avatar-opt" data-avatar="🐉" onclick="selectChildAvatar(this)">🐉</span>
+          <span class="child-avatar-opt" data-avatar="🦋" onclick="selectChildAvatar(this)">🦋</span>
+          <span class="child-avatar-opt" data-avatar="🌟" onclick="selectChildAvatar(this)">🌟</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="saveChildProfile()">💾 Salvar Perfil</button>
+        <button class="btn btn-secondary" onclick="toggleAddChildForm()">Cancelar</button>
+      </div>
+      <div id="child-profile-msg" class="form-error hidden" style="margin-top:8px;"></div>
     </div>
   </div>
 </div>
@@ -4568,11 +4866,861 @@ document.addEventListener('mousemove', (e) => {
   });
 });
 
-function getBaseRotation(i) {
-  const rots = ['rotate(-8deg)', 'rotate(6deg)', 'rotate(-4deg)', 'rotate(10deg)', 'rotate(-12deg)'];
-  return rots[i] || '';
+/* ══════════════════════════════════════════════════════════
+   ██████  NOVAS FUNCIONALIDADES
+══════════════════════════════════════════════════════════ */
+
+/* ────────────────────────────────────────────
+   1. ESTADO GLOBAL ADICIONAL
+──────────────────────────────────────────── */
+let childProfiles        = [];
+let selectedChildAvatar  = '🐻';
+let currentChildProfile  = null; // null = perfil principal
+let bedtimeModeActive    = false;
+let ambientAudio         = null;
+let currentAmbientType   = null;
+let notifications        = [];
+let lastContinueBook     = null;
+let readingSessionStart  = null;
+let totalReadingMinutes  = 0;
+
+const ACHIEVEMENTS_DEF = [
+  { id:'first_book',   icon:'📖', name:'Primeiro Livro',         desc:'Abriu seu primeiro livro',          condition: s => s.booksOpened >= 1 },
+  { id:'books_3',      icon:'📚', name:'Trilogia',               desc:'Leu 3 livros completos',            condition: s => s.booksCompleted >= 3 },
+  { id:'books_5',      icon:'🌟', name:'Colecionador',           desc:'Completou 5 livros',               condition: s => s.booksCompleted >= 5 },
+  { id:'books_10',     icon:'🏆', name:'Devorador de Histórias', desc:'Completou 10 livros',              condition: s => s.booksCompleted >= 10 },
+  { id:'min_30',       icon:'⏰', name:'30 Minutos',             desc:'30 minutos de leitura',            condition: s => s.totalMinutes >= 30 },
+  { id:'min_60',       icon:'⌛', name:'Uma Hora de Leitura',    desc:'60 minutos de leitura',            condition: s => s.totalMinutes >= 60 },
+  { id:'min_300',      icon:'🕰️', name:'Maratonista',            desc:'5 horas de leitura ao total',      condition: s => s.totalMinutes >= 300 },
+  { id:'favorite',     icon:'❤️', name:'Favorito!',              desc:'Adicionou um livro aos favoritos', condition: s => s.favorites >= 1 },
+  { id:'favorites_5',  icon:'💝', name:'Coleção dos Sonhos',     desc:'5 livros nos favoritos',           condition: s => s.favorites >= 5 },
+  { id:'bedtime',      icon:'🌙', name:'Boa Noite!',             desc:'Usou o modo hora de dormir',       condition: s => s.usedBedtime },
+  { id:'streak_3',     icon:'🔥', name:'3 Dias Seguidos',        desc:'Leu por 3 dias consecutivos',     condition: s => s.streak >= 3 },
+  { id:'profile_child',icon:'👶', name:'Família Leitora',        desc:'Criou um perfil infantil',         condition: s => s.childProfiles >= 1 },
+];
+
+let achievementsUnlocked = {};
+let readingStats = { booksOpened:0, booksCompleted:0, totalMinutes:0, favorites:0, usedBedtime:false, streak:0, childProfiles:0 };
+
+/* ────────────────────────────────────────────
+   2. CONTINUAR LENDO — CARD DESTAQUE
+──────────────────────────────────────────── */
+async function loadContinueReadingHero() {
+  const user = Backendless.UserService.getCurrentUser();
+  if (!user) return;
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setSortBy(['atualizadoEm DESC'])
+      .setPageSize(1)
+      .setProperties(['livroId','paginaAtual','totalPaginas','progresso','atualizadoEm']);
+    const results = await Backendless.Data.of('ProgressoLeitura').find(q);
+    if (!results.length) return;
+    const prog = results[0];
+    if (!prog.livroId) return;
+
+    // Busca dados do livro
+    try {
+      const livro = await Backendless.Data.of('Livros').findById(prog.livroId);
+      if (!livro) return;
+      lastContinueBook = { livro, prog };
+
+      const heroEl = document.getElementById('continue-reading-hero');
+      const coverEl = document.getElementById('cr-cover');
+      const titleEl = document.getElementById('cr-title');
+      const fillEl  = document.getElementById('cr-progress-fill');
+      const pctEl   = document.getElementById('cr-progress-pct');
+
+      titleEl.textContent = livro.titulo || 'Livro';
+      const pct = prog.progresso ?? (prog.totalPaginas ? Math.round((prog.paginaAtual/prog.totalPaginas)*100) : 0);
+      fillEl.style.width = Math.min(pct,100) + '%';
+      pctEl.textContent  = pct + '%';
+
+      if (livro.capaUrl) {
+        coverEl.innerHTML = `<img src="${livro.capaUrl}" onerror="this.parentElement.textContent='📚'">`;
+      } else { coverEl.textContent = '📚'; }
+
+      heroEl.style.display = 'block';
+      updateReadingStats({ booksOpened: 1 });
+    } catch(e) { /* livro não encontrado */ }
+  } catch(e) { /* sem progresso */ }
 }
 
+function continueLeituraHero() {
+  if (!lastContinueBook) return;
+  const { livro, prog } = lastContinueBook;
+  // Usa o sistema existente de abertura de livro com progresso
+  if (typeof openBook === 'function') {
+    openBook(livro, prog.paginaAtual || 1);
+  } else if (typeof openReader === 'function') {
+    openReader(livro);
+  }
+}
+
+/* ────────────────────────────────────────────
+   3. PERFIS INFANTIS
+──────────────────────────────────────────── */
+function loadChildProfiles() {
+  try {
+    const stored = localStorage.getItem('childProfiles_' + (Backendless.UserService.getCurrentUser()?.objectId || 'guest'));
+    if (stored) childProfiles = JSON.parse(stored);
+  } catch(e) { childProfiles = []; }
+  renderChildProfilesInModal();
+  renderChildProfilesInParentArea();
+  updateReadingStats({ childProfiles: childProfiles.length });
+}
+
+function saveChildProfilesLocal() {
+  try {
+    const uid = Backendless.UserService.getCurrentUser()?.objectId || 'guest';
+    localStorage.setItem('childProfiles_' + uid, JSON.stringify(childProfiles));
+    // Salva no Backendless em background
+    saveChildProfilesToBackendless();
+  } catch(e) {}
+}
+
+async function saveChildProfilesToBackendless() {
+  try {
+    const user = Backendless.UserService.getCurrentUser();
+    if (!user) return;
+    await Backendless.Data.of('PerfilInfantil').save({
+      usuarioId: user.objectId,
+      perfis: JSON.stringify(childProfiles),
+      atualizadoEm: new Date().toISOString()
+    });
+  } catch(e) {}
+}
+
+function renderChildProfilesInModal() {
+  const grid = document.getElementById('profiles-grid');
+  if (!grid) return;
+  const mainCard = grid.querySelector('.active-profile') || grid.firstElementChild;
+  // Remove cartões antigos de criança
+  grid.querySelectorAll('.child-profile-card').forEach(c => c.remove());
+  // Remove botão add existente e re-adiciona no final
+  const addBtn = grid.querySelector('.profile-card-item:not(.active-profile):not(.child-profile-card)');
+  if (addBtn) addBtn.remove();
+
+  childProfiles.forEach((cp, idx) => {
+    const card = document.createElement('div');
+    card.className = 'profile-card-item child-profile-card' + (currentChildProfile === idx ? ' active-profile' : '');
+    card.innerHTML = `
+      <div class="profile-card-avatar">${cp.avatar}</div>
+      <div class="profile-card-name">${cp.name}</div>
+      <div class="profile-card-badge">${cp.age} anos</div>
+      <button onclick="event.stopPropagation();deleteChildProfile(${idx})" style="margin-top:4px;background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.7rem;">🗑️ Remover</button>
+    `;
+    card.onclick = () => switchToChildProfile(idx);
+    grid.insertBefore(card, addBtn || null);
+  });
+
+  // Re-adicionar botão de adicionar
+  const newAddBtn = document.createElement('div');
+  newAddBtn.className = 'profile-card-item';
+  newAddBtn.innerHTML = `<div class="profile-card-avatar add">+</div><div class="profile-card-name">Adicionar Criança</div>`;
+  newAddBtn.onclick = toggleAddChildForm;
+  grid.appendChild(newAddBtn);
+}
+
+function toggleAddChildForm() {
+  const form = document.getElementById('child-profile-create');
+  form.classList.toggle('open');
+}
+
+function selectChildAvatar(el) {
+  document.querySelectorAll('.child-avatar-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedChildAvatar = el.dataset.avatar;
+}
+
+function saveChildProfile() {
+  const name = document.getElementById('child-name-input').value.trim();
+  const age  = document.getElementById('child-age-input').value;
+  const msgEl = document.getElementById('child-profile-msg');
+  if (!name) { msgEl.textContent = 'Por favor, informe o nome da criança.'; msgEl.classList.remove('hidden'); return; }
+  msgEl.classList.add('hidden');
+
+  const profile = {
+    name, age: parseInt(age), avatar: selectedChildAvatar,
+    history: [], progress: {}, readingMinutes: 0,
+    createdAt: new Date().toISOString()
+  };
+  childProfiles.push(profile);
+  saveChildProfilesLocal();
+  renderChildProfilesInModal();
+  renderChildProfilesInParentArea();
+  document.getElementById('child-name-input').value = '';
+  document.getElementById('child-profile-create').classList.remove('open');
+  showToast(`Perfil de ${name} criado com sucesso! 🎉`, 'success');
+  updateReadingStats({ childProfiles: childProfiles.length });
+  checkAchievements();
+}
+
+function deleteChildProfile(idx) {
+  if (!confirm('Remover este perfil infantil?')) return;
+  childProfiles.splice(idx, 1);
+  if (currentChildProfile === idx) currentChildProfile = null;
+  saveChildProfilesLocal();
+  renderChildProfilesInModal();
+  renderChildProfilesInParentArea();
+  updateReadingStats({ childProfiles: childProfiles.length });
+}
+
+function switchToChildProfile(idx) {
+  currentChildProfile = idx;
+  const cp = childProfiles[idx];
+  showToast(`Lendo como: ${cp.avatar} ${cp.name}`, 'success');
+  closeModal('profiles-modal');
+  // Atualiza o avatar no nav
+  const navAvatar = document.getElementById('nav-avatar');
+  const pdAvatar  = document.getElementById('pd-avatar');
+  const navUser   = document.getElementById('nav-username');
+  const pdName    = document.getElementById('pd-name');
+  if (navAvatar) navAvatar.textContent = cp.avatar;
+  if (pdAvatar)  pdAvatar.textContent  = cp.avatar;
+  if (navUser)   navUser.textContent   = cp.name;
+  if (pdName)    pdName.textContent    = cp.name;
+}
+
+function switchToMainProfile() {
+  currentChildProfile = null;
+  closeModal('profiles-modal');
+  const user = Backendless.UserService.getCurrentUser();
+  if (user) {
+    const avatar = localStorage.getItem('userAvatar') || '🦄';
+    const name   = user.name || 'Leitor';
+    const navAvatar = document.getElementById('nav-avatar');
+    const pdAvatar  = document.getElementById('pd-avatar');
+    const navUser   = document.getElementById('nav-username');
+    const pdName    = document.getElementById('pd-name');
+    if (navAvatar) navAvatar.textContent = avatar;
+    if (pdAvatar)  pdAvatar.textContent  = avatar;
+    if (navUser)   navUser.textContent   = name.split(' ')[0];
+    if (pdName)    pdName.textContent    = name;
+  }
+}
+
+/* ────────────────────────────────────────────
+   4. ÁREA DOS PAIS
+──────────────────────────────────────────── */
+function openParentAreaModal() {
+  openModal('parent-area-modal');
+  loadParentAreaData();
+}
+
+async function loadParentAreaData() {
+  const loadEl = document.getElementById('parent-area-loading');
+  loadEl.style.display = 'block';
+  try {
+    const user = Backendless.UserService.getCurrentUser();
+    if (!user) return;
+
+    // Stats da conta principal
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(100)
+      .setProperties(['livroId','progresso','paginaAtual','totalPaginas','atualizadoEm']);
+    const progressos = await Backendless.Data.of('ProgressoLeitura').find(q);
+
+    const booksRead = progressos.filter(p => (p.progresso || 0) >= 100).length;
+    const lastAccess = progressos.length ? formatDateTime(progressos.sort((a,b) => new Date(b.atualizadoEm)-new Date(a.atualizadoEm))[0].atualizadoEm) : '—';
+
+    document.getElementById('pa-books-read').textContent  = booksRead;
+    document.getElementById('pa-reading-time').textContent = Math.round(totalReadingMinutes) + 'min';
+    document.getElementById('pa-last-access').textContent  = lastAccess.split(' ')[0] || '—';
+
+    // Perfis infantis
+    renderChildProfilesInParentArea();
+  } catch(e) {
+    console.error('Parent area error:', e);
+  } finally {
+    loadEl.style.display = 'none';
+  }
+}
+
+function renderChildProfilesInParentArea() {
+  const container = document.getElementById('parent-children-list');
+  if (!container) return;
+  if (!childProfiles.length) {
+    container.innerHTML = `<p style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum perfil infantil criado ainda.<br>
+      <button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="closeModal('parent-area-modal');openProfilesModal()">+ Criar Perfil Infantil</button></p>`;
+    return;
+  }
+  container.innerHTML = childProfiles.map((cp, idx) => `
+    <div class="parent-child-card">
+      <div class="parent-child-header">
+        <div class="parent-child-avatar">${cp.avatar}</div>
+        <div>
+          <div class="parent-child-name">${cp.name}</div>
+          <div class="parent-child-age">${cp.age} anos</div>
+        </div>
+      </div>
+      <div class="parent-stats-row">
+        <div class="parent-stat-mini"><div class="value">${cp.booksRead || 0}</div><div class="label">Livros lidos</div></div>
+        <div class="parent-stat-mini"><div class="value">${cp.readingMinutes || 0}min</div><div class="label">Tempo de leitura</div></div>
+        <div class="parent-stat-mini"><div class="value">${cp.lastAccess ? new Date(cp.lastAccess).toLocaleDateString('pt-BR') : '—'}</div><div class="label">Último acesso</div></div>
+      </div>
+      ${cp.currentBook ? `<div style="margin-top:12px;font-size:0.8rem;color:var(--text-muted);">📖 Lendo: <strong style="color:var(--pearl)">${cp.currentBook}</strong></div>` : ''}
+    </div>
+  `).join('');
+}
+
+/* ────────────────────────────────────────────
+   5. MODO HORA DE DORMIR
+──────────────────────────────────────────── */
+function toggleBedtimePanel() {
+  const panel = document.getElementById('bedtime-panel');
+  panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+}
+
+function toggleBedtimeMode() {
+  bedtimeModeActive = document.getElementById('bedtime-mode-toggle').checked;
+  const btn = document.getElementById('bedtime-toggle-btn');
+  if (bedtimeModeActive) {
+    document.body.classList.add('bedtime-mode');
+    btn.classList.add('active');
+    btn.title = 'Desativar modo noturno';
+    showToast('🌙 Modo Hora de Dormir ativado!', 'success');
+    updateReadingStats({ usedBedtime: true });
+    checkAchievements();
+  } else {
+    document.body.classList.remove('bedtime-mode');
+    btn.classList.remove('active');
+    btn.title = 'Hora de Dormir';
+    if (ambientAudio) { stopAmbientMusic(); }
+  }
+  localStorage.setItem('bedtimeMode', bedtimeModeActive ? '1' : '0');
+}
+
+function toggleAmbientMusic(type, btn) {
+  if (currentAmbientType === type) {
+    stopAmbientMusic();
+    return;
+  }
+  stopAmbientMusic();
+  // Usa Web Audio API para gerar ruído ambiente simples
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) { showToast('Áudio não suportado neste navegador.','info'); return; }
+    const ctx = new AudioContext();
+    const bufferSize = 2 * ctx.sampleRate;
+    const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+    const data = noiseBuffer.getChannelData(0);
+
+    // Diferentes "tipos" de ruído para os sons ambiente
+    const freq = { rain:0.3, forest:0.15, ocean:0.08, lullaby:0.5 }[type] || 0.2;
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = (Math.random() * 2 - 1) * freq;
+    }
+
+    const source  = ctx.createBufferSource();
+    source.buffer = noiseBuffer;
+    source.loop   = true;
+
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = 0.25;
+
+    // Filtro passa-baixa para som mais suave
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = { rain:1200, forest:800, ocean:400, lullaby:600 }[type] || 800;
+
+    source.connect(filter);
+    filter.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    source.start();
+
+    ambientAudio = { source, ctx, gainNode };
+    currentAmbientType = type;
+
+    document.querySelectorAll('.bedtime-music-btn').forEach(b => b.classList.remove('playing'));
+    btn.classList.add('playing');
+    const labels = { rain:'🌧️ Chuva ativada', forest:'🌲 Floresta ativada', ocean:'🌊 Oceano ativado', lullaby:'🎶 Música de ninar ativada' };
+    showToast(labels[type] || 'Música ativada', 'success');
+  } catch(e) {
+    showToast('Erro ao ativar música ambiente.','error');
+  }
+}
+
+function stopAmbientMusic() {
+  if (ambientAudio) {
+    try { ambientAudio.source.stop(); ambientAudio.ctx.close(); } catch(e){}
+    ambientAudio = null;
+  }
+  currentAmbientType = null;
+  document.querySelectorAll('.bedtime-music-btn').forEach(b => b.classList.remove('playing'));
+}
+
+/* ────────────────────────────────────────────
+   6. CONQUISTAS
+──────────────────────────────────────────── */
+function openAchievementsModal() {
+  openModal('achievements-modal');
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const grid    = document.getElementById('achievements-grid');
+  const textEl  = document.getElementById('ach-progress-text');
+  const barEl   = document.getElementById('ach-progress-bar');
+  if (!grid) return;
+
+  const unlocked = ACHIEVEMENTS_DEF.filter(a => achievementsUnlocked[a.id]);
+  textEl.textContent = `${unlocked.length} de ${ACHIEVEMENTS_DEF.length} conquistas desbloqueadas`;
+  barEl.style.width  = Math.round((unlocked.length / ACHIEVEMENTS_DEF.length) * 100) + '%';
+
+  grid.innerHTML = ACHIEVEMENTS_DEF.map(ach => {
+    const isUnlocked = !!achievementsUnlocked[ach.id];
+    return `
+      <div class="achievement-card ${isUnlocked ? 'unlocked' : 'locked'}">
+        ${isUnlocked ? '<div class="achievement-badge">✓</div>' : ''}
+        <span class="achievement-icon">${ach.icon}</span>
+        <div class="achievement-name">${ach.name}</div>
+        <div class="achievement-desc">${ach.desc}</div>
+        ${isUnlocked && achievementsUnlocked[ach.id] !== true ? `<div style="font-size:0.65rem;color:var(--gold);margin-top:6px;">${new Date(achievementsUnlocked[ach.id]).toLocaleDateString('pt-BR')}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+function updateReadingStats(updates) {
+  Object.assign(readingStats, updates);
+  // Salva localmente
+  try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+  checkAchievements();
+}
+
+function checkAchievements() {
+  let newlyUnlocked = [];
+  ACHIEVEMENTS_DEF.forEach(ach => {
+    if (!achievementsUnlocked[ach.id] && ach.condition(readingStats)) {
+      achievementsUnlocked[ach.id] = new Date().toISOString();
+      newlyUnlocked.push(ach);
+    }
+  });
+  if (newlyUnlocked.length) {
+    try { localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked)); } catch(e){}
+    saveAchievementsToBackendless();
+    newlyUnlocked.forEach(ach => showAchievementNotif(ach));
+  }
+}
+
+function showAchievementNotif(ach) {
+  const el = document.createElement('div');
+  el.className = 'achievement-notif';
+  el.innerHTML = `<span style="font-size:1.6rem">${ach.icon}</span><div><div style="font-size:0.75rem;opacity:0.8">Nova conquista desbloqueada!</div><div>${ach.name}</div></div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3600);
+  // Atualiza badge no nav
+  updateNavAchievementBadge();
+}
+
+function updateNavAchievementBadge() {
+  const total = Object.keys(achievementsUnlocked).length;
+  // Adiciona badge visual no botão de conquistas
+}
+
+async function saveAchievementsToBackendless() {
+  try {
+    const user = Backendless.UserService.getCurrentUser();
+    if (!user) return;
+    await Backendless.Data.of('Conquistas').save({
+      usuarioId: user.objectId,
+      conquistas: JSON.stringify(achievementsUnlocked),
+      stats: JSON.stringify(readingStats),
+      atualizadoEm: new Date().toISOString()
+    });
+  } catch(e) {}
+}
+
+async function loadAchievementsFromBackendless() {
+  try {
+    const user = Backendless.UserService.getCurrentUser();
+    if (!user) return;
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setPageSize(1);
+    const results = await Backendless.Data.of('Conquistas').find(q);
+    if (results.length) {
+      const rec = results[0];
+      if (rec.conquistas) achievementsUnlocked = JSON.parse(rec.conquistas);
+      if (rec.stats) Object.assign(readingStats, JSON.parse(rec.stats));
+    }
+  } catch(e) {}
+  // Carrega localmente como fallback
+  try {
+    const local = localStorage.getItem('achievements');
+    if (local) achievementsUnlocked = { ...JSON.parse(local), ...achievementsUnlocked };
+    const stats = localStorage.getItem('readingStats');
+    if (stats) Object.assign(readingStats, JSON.parse(stats));
+  } catch(e) {}
+}
+
+/* ────────────────────────────────────────────
+   7. RECOMENDAÇÕES
+──────────────────────────────────────────── */
+async function loadRecommendations() {
+  const loadEl    = document.getElementById('rec-loading');
+  const emptyEl   = document.getElementById('rec-empty');
+  const ageSection = document.getElementById('rec-age-section');
+  const catSection = document.getElementById('rec-cat-section');
+  const newSection = document.getElementById('rec-new-section');
+  if (loadEl) loadEl.style.display = 'block';
+
+  try {
+    // Busca todos os livros
+    const q = Backendless.DataQueryBuilder.create().setPageSize(100);
+    const allBooks = await Backendless.Data.of('Livros').find(q);
+    if (!allBooks.length) { if(loadEl) loadEl.style.display='none'; if(emptyEl) emptyEl.style.display='block'; return; }
+
+    // Busca progresso do usuário
+    const user = Backendless.UserService.getCurrentUser();
+    let readIds = new Set();
+    let favCategories = {};
+    if (user) {
+      try {
+        const pq = Backendless.DataQueryBuilder.create()
+          .setWhereClause(`usuarioId = '${user.objectId}'`)
+          .setPageSize(100).setProperties(['livroId','progresso']);
+        const progs = await Backendless.Data.of('ProgressoLeitura').find(pq);
+        progs.forEach(p => { if(p.livroId) readIds.add(p.livroId); });
+      } catch(e){}
+      try {
+        const fq = Backendless.DataQueryBuilder.create()
+          .setWhereClause(`usuarioId = '${user.objectId}'`)
+          .setPageSize(100).setProperties(['livroId']);
+        const favs = await Backendless.Data.of('Favoritos').find(fq);
+        favs.forEach(f => {
+          const book = allBooks.find(b => b.objectId === f.livroId);
+          if (book?.categoria) favCategories[book.categoria] = (favCategories[book.categoria]||0)+1;
+        });
+      } catch(e){}
+    }
+
+    // Por faixa etária (pega a idade do perfil ativo ou usa 6-10 padrão)
+    const userAge = currentChildProfile !== null ? childProfiles[currentChildProfile]?.age || 7 : 8;
+    const byAge = allBooks.filter(b => {
+      if (!b.idadeMin && !b.idadeMax) return true;
+      const min = b.idadeMin || 0, max = b.idadeMax || 99;
+      return userAge >= min-2 && userAge <= max+2;
+    }).slice(0, 12);
+
+    // Por categoria favorita
+    const topCat = Object.entries(favCategories).sort((a,b)=>b[1]-a[1])[0]?.[0];
+    const byCat  = topCat ? allBooks.filter(b => b.categoria === topCat).slice(0, 10) : [];
+
+    // Não lidos ainda
+    const unread = allBooks.filter(b => !readIds.has(b.objectId)).slice(0, 12);
+
+    if(loadEl) loadEl.style.display = 'none';
+
+    if (byAge.length) {
+      ageSection.style.display = 'block';
+      const track = document.getElementById('carousel-rec-age');
+      if (track) track.innerHTML = byAge.map(b => buildNfCard(b)).join('');
+    }
+    if (byCat.length) {
+      catSection.style.display = 'block';
+      const track = document.getElementById('carousel-rec-cat');
+      if (track) track.innerHTML = byCat.map(b => buildNfCard(b)).join('');
+    }
+    if (unread.length) {
+      newSection.style.display = 'block';
+      const track = document.getElementById('carousel-rec-new');
+      if (track) track.innerHTML = unread.map(b => buildNfCard(b)).join('');
+    }
+    if (!byAge.length && !byCat.length && !unread.length) {
+      if(emptyEl) emptyEl.style.display = 'block';
+    }
+  } catch(e) {
+    if(loadEl) loadEl.style.display='none';
+    if(emptyEl) emptyEl.style.display='block';
+  }
+}
+
+// Helper to build card HTML (usado pelas recomendações)
+function buildNfCard(book) {
+  const emoji = book.emoji || '📚';
+  const title = book.titulo || 'Sem título';
+  const cat   = book.categoria || '';
+  const coverHtml = book.capaUrl
+    ? `<img src="${book.capaUrl}" alt="${title}" onerror="this.parentElement.innerHTML='<div class=nf-card-cover-placeholder><span class=cover-emoji>${emoji}</span><span class=cover-title>${title}</span></div>'">`
+    : `<div class="nf-card-cover-placeholder"><span class="cover-emoji">${emoji}</span><span class="cover-title">${title}</span></div>`;
+  return `
+    <div class="nf-card" onclick="openBookDetail('${book.objectId}')">
+      <div class="nf-card-cover">
+        ${coverHtml}
+        ${cat ? `<div class="nf-card-cat">${cat}</div>` : ''}
+        <div class="nf-card-overlay">
+          <div class="nf-card-overlay-title">${title}</div>
+          <div class="nf-card-overlay-btns">
+            <button class="nf-card-play-btn" onclick="event.stopPropagation();openBookById('${book.objectId}')">▶ Ler</button>
+            <button class="nf-card-fav-btn" onclick="event.stopPropagation();toggleFavoriteById('${book.objectId}')">♡</button>
+          </div>
+        </div>
+      </div>
+      <div class="nf-card-info">
+        <div class="nf-card-title">${title}</div>
+        <div class="nf-card-sub">${cat}</div>
+      </div>
+    </div>`;
+}
+
+/* ────────────────────────────────────────────
+   8. NOTIFICAÇÕES
+──────────────────────────────────────────── */
+function toggleNotifPanel(e) {
+  e.stopPropagation();
+  const panel = document.getElementById('notif-panel');
+  panel.classList.toggle('open');
+  if (panel.classList.contains('open')) {
+    renderNotifications();
+  }
+}
+
+function markAllNotifsRead() {
+  notifications.forEach(n => n.read = true);
+  saveNotificationsLocal();
+  renderNotifications();
+  updateNotifDot();
+}
+
+function addNotification(type, title, body) {
+  const notif = { id: Date.now(), type, title, body, time: new Date().toISOString(), read: false };
+  notifications.unshift(notif);
+  if (notifications.length > 20) notifications = notifications.slice(0,20);
+  saveNotificationsLocal();
+  renderNotifications();
+  updateNotifDot();
+}
+
+function saveNotificationsLocal() {
+  try { localStorage.setItem('notifications_v2', JSON.stringify(notifications)); } catch(e){}
+}
+
+function loadNotificationsLocal() {
+  try {
+    const stored = localStorage.getItem('notifications_v2');
+    if (stored) notifications = JSON.parse(stored);
+  } catch(e) { notifications = []; }
+}
+
+function renderNotifications() {
+  const list = document.getElementById('notif-list');
+  if (!list) return;
+  if (!notifications.length) {
+    list.innerHTML = '<div class="notif-empty">Nenhuma notificação por enquanto! 🎉</div>';
+    return;
+  }
+  const icons = { book:'📚', plan:'💳', progress:'📈', achievement:'🏆', info:'ℹ️' };
+  list.innerHTML = notifications.slice(0,8).map(n => `
+    <div class="notif-item ${n.read ? '' : 'unread'}" onclick="markNotifRead(${n.id})">
+      <div class="notif-item-icon">${icons[n.type]||'🔔'}</div>
+      <div class="notif-item-text">
+        <div class="notif-item-title">${n.title}</div>
+        <div class="notif-item-body">${n.body}</div>
+        <div class="notif-item-time">${formatRelativeTime(n.time)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function markNotifRead(id) {
+  const n = notifications.find(n => n.id === id);
+  if (n) { n.read = true; saveNotificationsLocal(); renderNotifications(); updateNotifDot(); }
+}
+
+function updateNotifDot() {
+  const dot = document.getElementById('notif-main-dot');
+  const hasUnread = notifications.some(n => !n.read);
+  if (dot) dot.style.display = hasUnread ? 'block' : 'none';
+}
+
+function formatRelativeTime(isoStr) {
+  if (!isoStr) return '';
+  const diff = Date.now() - new Date(isoStr).getTime();
+  const mins = Math.floor(diff/60000);
+  if (mins < 1) return 'agora mesmo';
+  if (mins < 60) return `há ${mins} min`;
+  const hrs = Math.floor(mins/60);
+  if (hrs < 24) return `há ${hrs}h`;
+  const days = Math.floor(hrs/24);
+  return `há ${days} dia${days>1?'s':''}`;
+}
+
+async function checkPlatformNotifications() {
+  // Verifica plano vencendo
+  try {
+    const user = Backendless.UserService.getCurrentUser();
+    if (!user) return;
+    if (user.planoValidade) {
+      const expiry = new Date(user.planoValidade);
+      const daysLeft = Math.ceil((expiry - Date.now()) / 86400000);
+      if (daysLeft <= 7 && daysLeft > 0) {
+        addNotification('plan', '⚠️ Plano vencendo em breve', `Seu plano vence em ${daysLeft} dia${daysLeft>1?'s':''}. Renove para continuar lendo!`);
+      } else if (daysLeft <= 0) {
+        addNotification('plan', '❌ Plano expirado', 'Seu plano expirou. Renove agora para acessar todos os livros!');
+      }
+    }
+    // Verifica livros novos (busca livros adicionados nos últimos 7 dias)
+    const sevenDaysAgo = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+    const nq = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`created > '${sevenDaysAgo}'`)
+      .setPageSize(3).setProperties(['titulo','objectId']);
+    const newBooks = await Backendless.Data.of('Livros').find(nq);
+    if (newBooks.length) {
+      const titles = newBooks.map(b=>b.titulo||'Novo livro').join(', ');
+      addNotification('book', '📚 Novos livros disponíveis!', `Confira as novidades: ${titles}`);
+    }
+  } catch(e){}
+}
+
+/* ────────────────────────────────────────────
+   9. RASTREAMENTO DE TEMPO DE LEITURA
+──────────────────────────────────────────── */
+function startReadingSession() {
+  readingSessionStart = Date.now();
+  // Se há perfil infantil ativo, atualiza lastAccess
+  if (currentChildProfile !== null && childProfiles[currentChildProfile]) {
+    childProfiles[currentChildProfile].lastAccess = new Date().toISOString();
+    saveChildProfilesLocal();
+  }
+}
+
+function endReadingSession(bookTitle) {
+  if (!readingSessionStart) return;
+  const mins = Math.round((Date.now() - readingSessionStart) / 60000);
+  readingSessionStart = null;
+  totalReadingMinutes += mins;
+  updateReadingStats({ totalMinutes: totalReadingMinutes });
+
+  // Atualiza perfil infantil
+  if (currentChildProfile !== null && childProfiles[currentChildProfile]) {
+    const cp = childProfiles[currentChildProfile];
+    cp.readingMinutes = (cp.readingMinutes || 0) + mins;
+    if (bookTitle) cp.currentBook = bookTitle;
+    saveChildProfilesLocal();
+  }
+
+  // Notificação de progresso
+  if (mins >= 5) {
+    addNotification('progress', '📈 Sessão de leitura', `Você leu por ${mins} minuto${mins>1?'s':''} hoje!`);
+  }
+  checkAchievements();
+}
+
+/* ────────────────────────────────────────────
+   10. INICIALIZAÇÃO DAS NOVAS FUNCS NO LOGIN
+──────────────────────────────────────────── */
+const _origShowDashboard = typeof showDashboard === 'function' ? showDashboard : null;
+
+function initNewFeatures() {
+  // Mostra botão de modo noturno na dashboard
+  const bedtimeBtn = document.getElementById('bedtime-toggle-btn');
+  if (bedtimeBtn) bedtimeBtn.style.display = 'flex';
+
+  // Carrega dados locais
+  loadNotificationsLocal();
+  loadChildProfiles();
+  loadAchievementsFromBackendless().then(() => checkAchievements());
+
+  // Carrega totalReadingMinutes do localStorage
+  try {
+    const stored = localStorage.getItem('totalReadingMinutes');
+    if (stored) totalReadingMinutes = parseFloat(stored) || 0;
+  } catch(e){}
+
+  // Restaura modo bedtime se estava ativo
+  try {
+    if (localStorage.getItem('bedtimeMode') === '1') {
+      document.getElementById('bedtime-mode-toggle').checked = true;
+      toggleBedtimeMode();
+    }
+  } catch(e){}
+
+  // Carrega continuar lendo
+  setTimeout(loadContinueReadingHero, 800);
+
+  // Verifica notificações da plataforma
+  setTimeout(checkPlatformNotifications, 2000);
+
+  // Fecha notif panel ao clicar fora
+  document.addEventListener('click', (e) => {
+    const panel = document.getElementById('notif-panel');
+    const wrap  = document.getElementById('notif-btn-wrap');
+    if (panel && !panel.contains(e.target) && !wrap?.contains(e.target)) {
+      panel.classList.remove('open');
+    }
+  });
+
+  // Primeira visita — notificação de boas-vindas
+  const hasVisited = localStorage.getItem('hasVisited');
+  if (!hasVisited) {
+    setTimeout(() => addNotification('info', '👋 Bem-vindo ao Mundo Encantado!', 'Explore nossa biblioteca, crie perfis infantis e acompanhe seu progresso de leitura!'), 3000);
+    localStorage.setItem('hasVisited', '1');
+  }
+
+  updateNotifDot();
+
+  // Atualiza conquistas a cada abertura de livro
+  document.addEventListener('bookOpened', (e) => {
+    updateReadingStats({ booksOpened: (readingStats.booksOpened||0) + 1 });
+    startReadingSession();
+  });
+  document.addEventListener('bookClosed', (e) => {
+    endReadingSession(e.detail?.title);
+    try { localStorage.setItem('totalReadingMinutes', totalReadingMinutes); } catch(err){}
+  });
+  document.addEventListener('bookCompleted', (e) => {
+    updateReadingStats({ booksCompleted: (readingStats.booksCompleted||0) + 1 });
+    addNotification('achievement', '🎉 Livro concluído!', `Parabéns! Você terminou "${e.detail?.title||'um livro'}"!`);
+    if (currentChildProfile !== null && childProfiles[currentChildProfile]) {
+      childProfiles[currentChildProfile].booksRead = (childProfiles[currentChildProfile].booksRead||0)+1;
+      saveChildProfilesLocal();
+    }
+    checkAchievements();
+  });
+  document.addEventListener('bookFavorited', () => {
+    updateReadingStats({ favorites: (readingStats.favorites||0) + 1 });
+    checkAchievements();
+  });
+}
+
+/* ── Hook no showDashSection para carregar recomendações on demand ── */
+const _origShowDashSection = typeof showDashSection === 'function' ? showDashSection.bind(window) : null;
+if (_origShowDashSection) {
+  window.showDashSection = function(section) {
+    _origShowDashSection(section);
+    if (section === 'recommendations') {
+      // Só carrega se ainda não carregou
+      const ageSection = document.getElementById('rec-age-section');
+      const loadEl     = document.getElementById('rec-loading');
+      if (loadEl && loadEl.style.display !== 'none' && ageSection && ageSection.style.display === 'none') {
+        loadRecommendations();
+      }
+    }
+  };
+}
+
+/* ── Hook para detectar quando o dashboard é mostrado ── */
+const _origShowPage = typeof showPage === 'function' ? showPage.bind(window) : null;
+if (_origShowPage) {
+  window.showPage = function(page) {
+    _origShowPage(page);
+    if (page === 'dashboard') { setTimeout(initNewFeatures, 300); }
+  };
+} else {
+  // Fallback: observa visibilidade do dashboard
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach(m => {
+      if (m.target.id === 'page-dashboard' && !m.target.classList.contains('hidden')) {
+        observer.disconnect();
+        setTimeout(initNewFeatures, 300);
+      }
+    });
+  });
+  const dashEl = document.getElementById('page-dashboard');
+  if (dashEl) observer.observe(dashEl, { attributes: true, attributeFilter: ['class'] });
+}
 </script>
 <!-- ══════════════════════════════════════════════
      ADMIN — MODAL LIVROS DO CLIENTE
@@ -4587,6 +5735,78 @@ function getBaseRotation(i) {
     <div id="cbm-loading" style="text-align:center;padding:32px;display:none;"><div class="spinner" style="margin:0 auto;"></div></div>
     <div id="cbm-books-list" style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:4px;"></div>
   </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     ACHIEVEMENTS MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="achievements-modal" onclick="if(event.target===this)closeModal('achievements-modal')">
+  <div class="modal achievements-modal-inner">
+    <button class="modal-close" onclick="closeModal('achievements-modal')">✕</button>
+    <div style="text-align:center;padding:4px 0 20px;">
+      <h2 style="font-family:var(--font-title);color:var(--gold);font-size:1.6rem;">🏆 Conquistas</h2>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-top:6px;">Colecione medalhas e estrelas lendo mais histórias!</p>
+    </div>
+    <div id="achievements-count-bar" style="display:flex;align-items:center;gap:14px;margin-bottom:24px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px 18px;">
+      <span style="font-size:1.8rem;">⭐</span>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--pearl);font-size:0.9rem;" id="ach-progress-text">0 de 0 conquistas desbloqueadas</div>
+        <div style="height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;margin-top:8px;">
+          <div id="ach-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--gold),var(--rose));border-radius:3px;transition:width 0.5s;width:0%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="achievements-grid" id="achievements-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PARENT AREA MODAL
+══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="parent-area-modal" onclick="if(event.target===this)closeModal('parent-area-modal')">
+  <div class="modal parent-area-modal-inner">
+    <button class="modal-close" onclick="closeModal('parent-area-modal')">✕</button>
+    <div style="padding:4px 0 20px;">
+      <h2 style="font-family:var(--font-title);color:var(--pearl);font-size:1.4rem;">👨‍👩‍👧 Área dos Pais</h2>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Acompanhe o progresso de leitura de cada criança</p>
+    </div>
+    <!-- Stats da conta principal -->
+    <div style="background:rgba(192,132,252,0.1);border:1px solid rgba(192,132,252,0.2);border-radius:14px;padding:18px;margin-bottom:24px;">
+      <div style="font-weight:800;color:var(--pearl);margin-bottom:12px;">📊 Sua conta</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;" id="parent-main-stats">
+        <div class="parent-stat-mini"><div class="value" id="pa-books-read">0</div><div class="label">Livros lidos</div></div>
+        <div class="parent-stat-mini"><div class="value" id="pa-reading-time">0h</div><div class="label">Tempo de leitura</div></div>
+        <div class="parent-stat-mini"><div class="value" id="pa-last-access">—</div><div class="label">Último acesso</div></div>
+      </div>
+    </div>
+    <!-- Perfis infantis -->
+    <div id="parent-children-section">
+      <div style="font-weight:800;color:var(--pearl);margin-bottom:16px;">👶 Perfis Infantis</div>
+      <div id="parent-children-list">
+        <p style="color:var(--text-muted);text-align:center;padding:24px;">Nenhum perfil infantil criado ainda.<br><button class="btn btn-secondary btn-sm" style="margin-top:12px;" onclick="closeModal('parent-area-modal');openProfilesModal()">+ Criar Perfil Infantil</button></p>
+      </div>
+    </div>
+    <div id="parent-area-loading" style="text-align:center;padding:24px;display:none;"><div class="spinner" style="margin:0 auto;"></div></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     BEDTIME MODE BUTTON (flutuante)
+══════════════════════════════════════════════ -->
+<button class="bedtime-toggle-btn" id="bedtime-toggle-btn" onclick="toggleBedtimePanel()" title="Hora de Dormir">🌙</button>
+<div class="bedtime-panel" id="bedtime-panel">
+  <h4>🌙 Modo Hora de Dormir</h4>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+    <span style="color:var(--text-light);font-size:0.88rem;font-weight:600;">Ativar modo noturno estrelado</span>
+    <label class="toggle-switch"><input type="checkbox" id="bedtime-mode-toggle" onchange="toggleBedtimeMode()" /><span class="toggle-slider"></span></label>
+  </div>
+  <div style="color:var(--text-muted);font-size:0.78rem;margin-bottom:14px;">Reduz brilho e ativa tema noturno especial para leitura antes de dormir.</div>
+  <div style="font-weight:700;color:var(--text-light);font-size:0.82rem;margin-bottom:8px;">🎵 Música Ambiente</div>
+  <button class="bedtime-music-btn" id="music-btn-rain" onclick="toggleAmbientMusic('rain',this)">🌧️ Chuva suave</button>
+  <button class="bedtime-music-btn" id="music-btn-forest" onclick="toggleAmbientMusic('forest',this)">🌲 Sons da floresta</button>
+  <button class="bedtime-music-btn" id="music-btn-ocean" onclick="toggleAmbientMusic('ocean',this)">🌊 Ondas do mar</button>
+  <button class="bedtime-music-btn" id="music-btn-lullaby" onclick="toggleAmbientMusic('lullaby',this)">🎶 Música de ninar</button>
+  <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="toggleBedtimePanel()">Fechar</button>
 </div>
 
 </body>
