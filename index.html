@@ -4194,7 +4194,7 @@ async function loadNetflixLibrary() {
       } catch(e) {}
     }
 
-    // Carrega favoritos do Backendless (com fallback para localStorage)
+    // Carrega favoritos do Backendless
     await loadFavoritesFromBackendless();
 
     setText('stat-books-read', Object.keys(progressMap).length);
@@ -4431,9 +4431,8 @@ function toggleFavorite(bookId, btnEl) {
     if(btnEl){btnEl.classList.add('favorited');btnEl.innerHTML='♥';}
     showToast('❤️ Adicionado aos favoritos!','success',2000);
   }
-  // Salva no Backendless (fonte primária) e localStorage como cache
+  // Salva exclusivamente no Backendless
   saveFavoritesToBackendless();
-  try { localStorage.setItem(`favs_${currentUser?.objectId}`,JSON.stringify([...favoritesSet])); } catch(e){}
   renderFavoritesGrid();
 }
 
@@ -4464,16 +4463,13 @@ async function loadFavoritesFromBackendless() {
     const results = await Backendless.Data.of('Favoritos').find(q);
     if (results.length && results[0].livros) {
       favoritesSet = new Set(JSON.parse(results[0].livros));
-      // Sincroniza cache local
-      try { localStorage.setItem(`favs_${currentUser.objectId}`, JSON.stringify([...favoritesSet])); } catch(e){}
-      return;
+    } else {
+      favoritesSet = new Set();
     }
-  } catch(e) {}
-  // Fallback para localStorage se Backendless falhar
-  try {
-    const stored = localStorage.getItem(`favs_${currentUser.objectId}`);
-    if (stored) favoritesSet = new Set(JSON.parse(stored));
-  } catch(e) {}
+  } catch(e) {
+    console.warn('Erro ao carregar favoritos do Backendless:', e);
+    favoritesSet = new Set();
+  }
 }
 function toggleFavoriteHero() {
   if(!heroBookObj) return;
@@ -5606,21 +5602,12 @@ async function loadChildProfiles() {
     const results = await Backendless.Data.of('PerfilInfantil').find(q);
     if (results.length && results[0].perfis) {
       childProfiles = JSON.parse(results[0].perfis);
-      // Sincroniza cache local
-      try { localStorage.setItem('childProfiles_' + currentUser.objectId, JSON.stringify(childProfiles)); } catch(e){}
     } else {
-      // Fallback para localStorage
-      try {
-        const stored = localStorage.getItem('childProfiles_' + currentUser.objectId);
-        if (stored) childProfiles = JSON.parse(stored);
-      } catch(e) { childProfiles = []; }
+      childProfiles = [];
     }
   } catch(e) {
-    // Fallback para localStorage se Backendless falhar
-    try {
-      const stored = localStorage.getItem('childProfiles_' + (currentUser?.objectId || 'guest'));
-      if (stored) childProfiles = JSON.parse(stored);
-    } catch(e2) { childProfiles = []; }
+    console.warn('Erro ao carregar perfis infantis do Backendless:', e);
+    childProfiles = [];
   }
   renderChildProfilesInModal();
   renderChildProfilesInParentArea();
@@ -5628,12 +5615,8 @@ async function loadChildProfiles() {
 }
 
 function saveChildProfilesLocal() {
-  // Salva no Backendless (fonte primária) e localStorage como cache
+  // Salva exclusivamente no Backendless
   saveChildProfilesToBackendless();
-  try {
-    const uid = currentUser?.objectId || 'guest';
-    localStorage.setItem('childProfiles_' + uid, JSON.stringify(childProfiles));
-  } catch(e) {}
 }
 
 async function saveChildProfilesToBackendless() {
@@ -5749,10 +5732,9 @@ function switchToChildProfile(idx) {
 function switchToMainProfile() {
   currentChildProfile = null;
   closeModal('profiles-modal');
-  const user = Backendless.UserService.getCurrentUser();
-  if (user) {
-    const avatar = localStorage.getItem('userAvatar') || '🦄';
-    const name   = user.name || 'Leitor';
+  if (currentUser) {
+    const avatar = currentUser.avatar || '🦄';
+    const name   = currentUser.name || 'Leitor';
     const navAvatar = document.getElementById('nav-avatar');
     const pdAvatar  = document.getElementById('pd-avatar');
     const navUser   = document.getElementById('nav-username');
@@ -5853,7 +5835,13 @@ function toggleBedtimeMode() {
     btn.title = 'Hora de Dormir';
     if (ambientAudio) { stopAmbientMusic(); }
   }
-  localStorage.setItem('bedtimeMode', bedtimeModeActive ? '1' : '0');
+  // Salva preferência no Backendless (campo na tabela Users)
+  if (currentUser) {
+    Backendless.Data.of('Users').save({
+      objectId: currentUser.objectId,
+      bedtimeMode: bedtimeModeActive
+    }).catch(() => {});
+  }
 }
 
 function toggleAmbientMusic(type, btn) {
@@ -5948,16 +5936,9 @@ function renderAchievements() {
 
 function updateReadingStats(updates) {
   Object.assign(readingStats, updates);
-  // Salva no Backendless (fonte primária) e localStorage como cache
-  saveStatsToBothStorages();
-  checkAchievements();
-}
-
-function saveStatsToBothStorages() {
-  // Cache local imediato
-  try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
-  // Backendless em background
+  // Salva exclusivamente no Backendless
   saveStatsToBackendless();
+  checkAchievements();
 }
 
 async function saveStatsToBackendless() {
@@ -5991,8 +5972,7 @@ function checkAchievements() {
   });
   if (newlyUnlocked.length) {
     readingStats.totalAchievements = Object.keys(achievementsUnlocked).length;
-    try { localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked)); } catch(e){}
-    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
+    // Salva exclusivamente no Backendless
     saveStatsToBackendless();
     newlyUnlocked.forEach(ach => showAchievementNotif(ach));
   }
@@ -6030,19 +6010,13 @@ async function loadAchievementsFromBackendless() {
       const rec = results[0];
       if (rec.conquistas) achievementsUnlocked = JSON.parse(rec.conquistas);
       if (rec.stats) Object.assign(readingStats, JSON.parse(rec.stats));
-      // Sincroniza localStorage como cache
-      try { localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked)); } catch(e){}
-      try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
-      return;
+    } else {
+      achievementsUnlocked = {};
     }
-  } catch(e) {}
-  // Fallback para localStorage se Backendless falhar
-  try {
-    const local = localStorage.getItem('achievements');
-    if (local) achievementsUnlocked = JSON.parse(local);
-    const stats = localStorage.getItem('readingStats');
-    if (stats) Object.assign(readingStats, JSON.parse(stats));
-  } catch(e) {}
+  } catch(e) {
+    console.warn('Erro ao carregar conquistas do Backendless:', e);
+    achievementsUnlocked = {};
+  }
 }
 
 /* ────────────────────────────────────────────
@@ -6184,8 +6158,7 @@ function addNotification(type, title, body) {
 }
 
 function saveNotificationsLocal() {
-  // Salva no Backendless (fonte primária) e localStorage como cache
-  try { localStorage.setItem('notifications_v2', JSON.stringify(notifications)); } catch(e){}
+  // Salva exclusivamente no Backendless
   saveNotificationsToBackendless();
 }
 
@@ -6217,19 +6190,17 @@ async function loadNotificationsFromBackendless() {
     const results = await Backendless.Data.of('Notificacoes').find(q);
     if (results.length && results[0].dados) {
       notifications = JSON.parse(results[0].dados);
-      try { localStorage.setItem('notifications_v2', JSON.stringify(notifications)); } catch(e){}
-      return;
+    } else {
+      notifications = [];
     }
-  } catch(e) {}
-  // Fallback para localStorage
-  loadNotificationsLocal();
+  } catch(e) {
+    console.warn('Erro ao carregar notificações do Backendless:', e);
+    notifications = [];
+  }
 }
 
 function loadNotificationsLocal() {
-  try {
-    const stored = localStorage.getItem('notifications_v2');
-    if (stored) notifications = JSON.parse(stored);
-  } catch(e) { notifications = []; }
+  notifications = [];
 }
 
 function renderNotifications() {
@@ -6346,7 +6317,7 @@ function initNewFeatures() {
   const bedtimeBtn = document.getElementById('bedtime-toggle-btn');
   if (bedtimeBtn) bedtimeBtn.style.display = 'flex';
 
-  // Carrega notificações do Backendless (com fallback local)
+  // Carrega notificações do Backendless
   loadNotificationsFromBackendless().then(() => {
     updateNotifDot();
     renderNotifications();
@@ -6358,23 +6329,14 @@ function initNewFeatures() {
   // Carrega conquistas e stats do Backendless
   loadAchievementsFromBackendless().then(() => {
     checkAchievements();
-    // Restaura totalReadingMinutes das stats carregadas do Backendless
     if (readingStats.totalMinutes) totalReadingMinutes = readingStats.totalMinutes;
   });
 
-  // Fallback: carrega totalReadingMinutes do localStorage se não veio do Backendless
-  try {
-    const stored = localStorage.getItem('totalReadingMinutes');
-    if (stored && !totalReadingMinutes) totalReadingMinutes = parseFloat(stored) || 0;
-  } catch(e){}
-
-  // Restaura modo bedtime se estava ativo (preferência local de UI, não precisa Backendless)
-  try {
-    if (localStorage.getItem('bedtimeMode') === '1') {
-      document.getElementById('bedtime-mode-toggle').checked = true;
-      toggleBedtimeMode();
-    }
-  } catch(e){}
+  // Restaura preferência bedtimeMode do Backendless (campo salvo no usuário)
+  if (currentUser && currentUser.bedtimeMode === true) {
+    const toggle = document.getElementById('bedtime-mode-toggle');
+    if (toggle) { toggle.checked = true; toggleBedtimeMode(); }
+  }
 
   // Carrega continuar lendo
   setTimeout(loadContinueReadingHero, 800);
@@ -6391,11 +6353,10 @@ function initNewFeatures() {
     }
   });
 
-  // Primeira visita — notificação de boas-vindas
-  const hasVisited = localStorage.getItem('hasVisited_' + (currentUser?.objectId || ''));
-  if (!hasVisited) {
+  // Primeira visita — notificação de boas-vindas (verificado no Backendless via campo no usuário)
+  if (currentUser && !currentUser.primeiroAcessoFeito) {
     setTimeout(() => addNotification('info', '👋 Bem-vindo ao Mundo Encantado!', 'Explore nossa biblioteca, crie perfis infantis e acompanhe seu progresso de leitura!'), 3000);
-    try { localStorage.setItem('hasVisited_' + (currentUser?.objectId || ''), '1'); } catch(e){}
+    Backendless.Data.of('Users').save({ objectId: currentUser.objectId, primeiroAcessoFeito: true }).catch(() => {});
   }
 
   updateNotifDot();
@@ -6407,9 +6368,7 @@ function initNewFeatures() {
   });
   document.addEventListener('bookClosed', (e) => {
     endReadingSession(e.detail?.title);
-    // Salva tempo de leitura no Backendless via updateReadingStats
     updateReadingStats({ totalMinutes: totalReadingMinutes });
-    try { localStorage.setItem('totalReadingMinutes', totalReadingMinutes); } catch(err){}
   });
   document.addEventListener('bookCompleted', (e) => {
     updateReadingStats({ booksCompleted: (readingStats.booksCompleted||0) + 1 });
