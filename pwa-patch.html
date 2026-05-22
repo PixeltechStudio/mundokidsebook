@@ -1,0 +1,163 @@
+<!-- ============================================================
+  INSTRUÇÕES DE INTEGRAÇÃO PWA — Mundo Encantado dos Livros
+  Aplique as mudanças abaixo no seu index.html
+  ============================================================ -->
+
+<!-- ──────────────────────────────────────────────────────────
+  1. SUBSTITUA as linhas existentes no <head> (linhas 4–9)
+     pelas tags abaixo. As novas tags adicionam suporte a
+     iOS (Apple), Android e Windows.
+  ────────────────────────────────────────────────────────── -->
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Mundo Encantado dos Livros ✨</title>
+  <meta name="description" content="Plataforma mágica de eBooks infantis. Histórias incríveis para estimular a imaginação dos pequenos." />
+
+  <!-- PWA — Core -->
+  <meta name="theme-color" content="#7c3aed" />
+  <link rel="manifest" href="manifest.json" />
+
+  <!-- PWA — iOS / Safari -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="MundoLivros" />
+  <link rel="apple-touch-icon" href="icons/icon-192x192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icons/icon-152x152.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/icon-192x192.png" />
+
+  <!-- Splash screens iOS (opcional — melhor experiência de abertura) -->
+  <!-- Gere splash screens customizadas em: https://progressier.com/pwa-splash-screen-generator -->
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+  <!-- PWA — Windows / Edge -->
+  <meta name="msapplication-TileColor" content="#7c3aed" />
+  <meta name="msapplication-TileImage" content="icons/icon-144x144.png" />
+
+  <!-- Favicon padrão -->
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-96x96.png" />
+  <link rel="shortcut icon" href="icons/icon-96x96.png" />
+
+  <!-- Open Graph (compartilhamento) -->
+  <meta property="og:title" content="Mundo Encantado dos Livros ✨" />
+  <meta property="og:description" content="Plataforma mágica de eBooks infantis." />
+  <meta property="og:image" content="icons/icon-512x512.png" />
+  <meta property="og:type" content="website" />
+
+
+<!-- ──────────────────────────────────────────────────────────
+  2. ADICIONE este bloco <script> logo antes do </body>
+     (ou antes do último </script> já existente no fim do arquivo)
+  ────────────────────────────────────────────────────────── -->
+
+<script>
+/* ── Registro do Service Worker (PWA) ── */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('./service-worker.js', { scope: './' });
+      console.log('[PWA] Service Worker registrado:', reg.scope);
+
+      // Notifica usuário quando há atualização disponível
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // Há nova versão disponível — exibe toast
+            showPWAUpdateToast();
+          }
+        });
+      });
+    } catch (err) {
+      console.warn('[PWA] Falha ao registrar Service Worker:', err);
+    }
+  });
+}
+
+/* ── Banner "Adicionar à tela inicial" (Android/Chrome) ── */
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  showInstallBanner();
+});
+
+function showInstallBanner() {
+  // Cria banner flutuante na parte inferior
+  if (document.getElementById('pwa-install-banner')) return;
+
+  const banner = document.createElement('div');
+  banner.id = 'pwa-install-banner';
+  banner.innerHTML = `
+    <div style="
+      position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+      z-index:9999;background:linear-gradient(135deg,#7c3aed,#ec4899);
+      color:#fff;border-radius:50px;padding:14px 24px;
+      display:flex;align-items:center;gap:12px;
+      box-shadow:0 8px 32px rgba(124,58,237,0.5);
+      font-family:'Nunito',sans-serif;font-weight:700;font-size:0.9rem;
+      animation:slideUp 0.4s ease;max-width:90vw;
+    ">
+      <span style="font-size:1.3rem;">📚</span>
+      <span>Adicionar app à tela inicial</span>
+      <button id="pwa-install-btn" style="
+        background:rgba(255,255,255,0.25);border:none;color:#fff;
+        padding:6px 16px;border-radius:20px;cursor:pointer;font-weight:800;font-size:0.85rem;
+      ">Instalar</button>
+      <button id="pwa-dismiss-btn" style="
+        background:none;border:none;color:rgba(255,255,255,0.7);
+        cursor:pointer;font-size:1.1rem;padding:0 4px;
+      ">✕</button>
+    </div>
+    <style>
+      @keyframes slideUp{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+    </style>
+  `;
+  document.body.appendChild(banner);
+
+  document.getElementById('pwa-install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    console.log('[PWA] Install prompt outcome:', outcome);
+    deferredPrompt = null;
+    banner.remove();
+  });
+
+  document.getElementById('pwa-dismiss-btn').addEventListener('click', () => {
+    banner.remove();
+    sessionStorage.setItem('pwa-banner-dismissed', '1');
+  });
+}
+
+/* ── Toast de atualização disponível ── */
+function showPWAUpdateToast() {
+  if (document.getElementById('pwa-update-toast')) return;
+  const toast = document.createElement('div');
+  toast.id = 'pwa-update-toast';
+  toast.innerHTML = `
+    <div style="
+      position:fixed;top:80px;right:20px;z-index:9999;
+      background:#1a0a38;border:1px solid rgba(192,132,252,0.3);
+      color:#e9d5ff;border-radius:14px;padding:14px 18px;
+      font-family:'Nunito',sans-serif;font-size:0.85rem;
+      box-shadow:0 8px 32px rgba(0,0,0,0.4);max-width:280px;
+    ">
+      <div style="font-weight:700;margin-bottom:6px;">✨ Nova versão disponível!</div>
+      <div style="color:#a78bba;margin-bottom:12px;">Recarregue para usar a versão mais recente do app.</div>
+      <button onclick="location.reload()" style="
+        background:linear-gradient(135deg,#7c3aed,#ec4899);color:#fff;
+        border:none;border-radius:20px;padding:6px 16px;cursor:pointer;font-weight:700;
+      ">Atualizar agora</button>
+    </div>
+  `;
+  document.body.appendChild(toast);
+}
+
+/* ── Detecta se já está instalado como PWA ── */
+window.addEventListener('appinstalled', () => {
+  console.log('[PWA] App instalado com sucesso!');
+  const banner = document.getElementById('pwa-install-banner');
+  if (banner) banner.remove();
+});
+</script>
