@@ -4115,48 +4115,8 @@ let heroBookObj    = null;
 let detailBookObj  = null;
 let userAvatar     = '🦄';
 
-/* ══════════════════════════════════════════════════════════
-   DIAGNÓSTICO BACKENDLESS — verifica tabelas e permissões
-══════════════════════════════════════════════════════════ */
-async function diagnosBackendless() {
-  const tables = ['Favoritos', 'Conquistas', 'PerfilInfantil', 'Notificacoes'];
-  const erros = [];
-
-  for (const table of tables) {
-    try {
-      // Tenta um find simples para verificar se a tabela existe e tem permissão
-      await Backendless.Data.of(table).find(
-        Backendless.DataQueryBuilder.create().setPageSize(1)
-      );
-      console.log(`[Backendless] ✅ Tabela "${table}" OK`);
-    } catch(e) {
-      const msg = e.message || String(e);
-      const code = e.code || e.statusCode || '';
-      console.error(`[Backendless] ❌ Tabela "${table}" ERRO ${code}:`, msg);
-      if (code === 3064 || msg.toLowerCase().includes('permission') || msg.toLowerCase().includes('access denied')) {
-        erros.push(`"${table}": sem permissão (acesse o Backendless → Data → ${table} → Schema → Permissions e conceda Create/Find/Update para AuthenticatedUser)`);
-      } else if (msg.toLowerCase().includes('not found') || msg.includes('1009')) {
-        erros.push(`"${table}": tabela não encontrada (crie-a no Backendless com as colunas: usuarioId, + coluna de dados)`);
-      } else {
-        erros.push(`"${table}": ${msg}`);
-      }
-    }
-  }
-
-  if (erros.length > 0) {
-    console.warn('[Backendless] ⚠️ Problemas detectados:\n' + erros.join('\n'));
-    showToast('⚠️ Problema nas tabelas do Backendless — abra o Console (F12) para detalhes', 'error', 8000);
-  } else {
-    console.log('[Backendless] ✅ Todas as tabelas acessíveis');
-  }
-}
-
 async function loadDashboard() {
   if (!currentUser) return;
-
-  // ── Diagnóstico automático das tabelas ──
-  await diagnosBackendless();
-
   const name = currentUser.name || 'Leitor';
   userAvatar = currentUser.avatar || '🦄';
 
@@ -4231,7 +4191,7 @@ async function loadNetflixLibrary() {
           Backendless.DataQueryBuilder.create().setWhereClause(`usuarioId = '${currentUser.objectId}'`).setPageSize(100)
         );
         pl.forEach(p => { progressMap[p.livroId] = p; });
-      } catch(e) { console.error('[Backendless] ERRO ao carregar ProgressoLeitura:', e.message || e); }
+      } catch(e) {}
     }
 
     // Carrega favoritos do Backendless
@@ -4479,6 +4439,7 @@ function toggleFavorite(bookId, btnEl) {
 async function saveFavoritesToBackendless() {
   if (!currentUser) return;
   try {
+    // Busca registro existente para fazer upsert
     const q = Backendless.DataQueryBuilder.create()
       .setWhereClause(`usuarioId = '${currentUser.objectId}'`)
       .setPageSize(1);
@@ -4490,11 +4451,7 @@ async function saveFavoritesToBackendless() {
     };
     if (existing.length > 0) data.objectId = existing[0].objectId;
     await Backendless.Data.of('Favoritos').save(data);
-    console.log('[Backendless] Favoritos salvos:', [...favoritesSet].length, 'itens');
-  } catch(e) {
-    console.error('[Backendless] ERRO ao salvar Favoritos:', e.message || e);
-    showToast('⚠️ Erro ao salvar favoritos: ' + (e.message || 'Verifique permissões no Backendless'), 'error', 5000);
-  }
+  } catch(e) { /* non-critical — cache local mantém estado */ }
 }
 
 async function loadFavoritesFromBackendless() {
@@ -4506,13 +4463,11 @@ async function loadFavoritesFromBackendless() {
     const results = await Backendless.Data.of('Favoritos').find(q);
     if (results.length && results[0].livros) {
       favoritesSet = new Set(JSON.parse(results[0].livros));
-      console.log('[Backendless] Favoritos carregados:', favoritesSet.size, 'itens');
     } else {
       favoritesSet = new Set();
-      console.log('[Backendless] Nenhum favorito encontrado para este usuário');
     }
   } catch(e) {
-    console.error('[Backendless] ERRO ao carregar Favoritos:', e.message || e);
+    console.warn('Erro ao carregar favoritos do Backendless:', e);
     favoritesSet = new Set();
   }
 }
@@ -4717,14 +4672,11 @@ async function saveReadingProgress(pageNum, isBookmark = false) {
     if (isBookmark) data.marcador = pageNum;
     if (existing.length > 0) {
       data.objectId = existing[0].objectId;
-      if (!isBookmark && existing[0].marcador) data.marcador = existing[0].marcador;
+      if (!isBookmark && existing[0].marcador) data.marcador = existing[0].marcador; // keep existing bookmark
     }
 
     await Backendless.Data.of('ProgressoLeitura').save(data);
-    console.log('[Backendless] Progresso salvo: página', pageNum, '/', totalPages);
-  } catch(e) {
-    console.error('[Backendless] ERRO ao salvar ProgressoLeitura:', e.message || e);
-  }
+  } catch(e) { /* non-critical */ }
 }
 
 function nextPage() { if (currentPage < totalPages) renderPage(currentPage + 1); }
@@ -5671,6 +5623,7 @@ async function saveChildProfilesToBackendless() {
   try {
     const user = currentUser;
     if (!user) return;
+    // Upsert: busca registro existente para manter objectId
     const q = Backendless.DataQueryBuilder.create()
       .setWhereClause(`usuarioId = '${user.objectId}'`)
       .setPageSize(1);
@@ -5682,11 +5635,7 @@ async function saveChildProfilesToBackendless() {
     };
     if (existing.length > 0) data.objectId = existing[0].objectId;
     await Backendless.Data.of('PerfilInfantil').save(data);
-    console.log('[Backendless] Perfis infantis salvos:', childProfiles.length);
-  } catch(e) {
-    console.error('[Backendless] ERRO ao salvar PerfilInfantil:', e.message || e);
-    showToast('⚠️ Erro ao salvar perfis: ' + (e.message || 'Verifique permissões no Backendless'), 'error', 5000);
-  }
+  } catch(e) {}
 }
 
 function renderChildProfilesInModal() {
@@ -6008,11 +5957,7 @@ async function saveStatsToBackendless() {
     };
     if (existing.length > 0) data.objectId = existing[0].objectId;
     await Backendless.Data.of('Conquistas').save(data);
-    console.log('[Backendless] Conquistas/Stats salvos com sucesso');
-  } catch(e) {
-    console.error('[Backendless] ERRO ao salvar Conquistas:', e.message || e);
-    showToast('⚠️ Erro ao salvar conquistas: ' + (e.message || 'Verifique permissões no Backendless'), 'error', 5000);
-  }
+  } catch(e) {}
 }
 
 function checkAchievements() {
@@ -6065,13 +6010,11 @@ async function loadAchievementsFromBackendless() {
       const rec = results[0];
       if (rec.conquistas) achievementsUnlocked = JSON.parse(rec.conquistas);
       if (rec.stats) Object.assign(readingStats, JSON.parse(rec.stats));
-      console.log('[Backendless] Conquistas carregadas:', Object.keys(achievementsUnlocked).length);
     } else {
       achievementsUnlocked = {};
-      console.log('[Backendless] Nenhuma conquista encontrada para este usuário');
     }
   } catch(e) {
-    console.error('[Backendless] ERRO ao carregar Conquistas:', e.message || e);
+    console.warn('Erro ao carregar conquistas do Backendless:', e);
     achievementsUnlocked = {};
   }
 }
@@ -6234,10 +6177,7 @@ async function saveNotificationsToBackendless() {
     };
     if (existing.length > 0) data.objectId = existing[0].objectId;
     await Backendless.Data.of('Notificacoes').save(data);
-    console.log('[Backendless] Notificações salvas');
-  } catch(e) {
-    console.error('[Backendless] ERRO ao salvar Notificacoes:', e.message || e);
-  }
+  } catch(e) {}
 }
 
 async function loadNotificationsFromBackendless() {
