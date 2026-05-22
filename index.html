@@ -2641,7 +2641,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
         <div class="admin-table-wrap" id="admin-clients-table" style="display:none;">
           <table class="admin-table">
             <thead><tr>
-              <th>Nome</th><th>E-mail</th><th>Telefone</th><th>Plano</th><th>Vencimento</th><th>Último Login</th><th>Status</th><th>Ações</th>
+              <th>Nome</th><th>E-mail</th><th>Telefone</th><th>Plano</th><th>Vencimento</th><th>Último Login</th><th>Status</th><th>📚 Livros</th><th>Ações</th>
             </tr></thead>
             <tbody id="admin-clients-tbody"></tbody>
           </table>
@@ -4244,26 +4244,42 @@ async function loadAdminClients() {
   table.style.display   = 'none';
 
   try {
+    // Sem .setProperties() — alguns configs do Backendless rejeitam queries com
+    // propriedades customizadas na tabela Users por falta de permissão de coluna
     const q = Backendless.DataQueryBuilder.create()
-      .setSortBy(['created DESC']).setPageSize(100)
-      .setProperties(['objectId','name','email','telefone','plano','vencimentoPlano','bloqueado','online','ultimoLogin','created']);
+      .setSortBy(['created DESC'])
+      .setPageSize(100);
     allClients = (await Backendless.Data.of('Users').find(q)) || [];
 
     loading.style.display = 'none';
-    table.style.display   = '';
+    table.style.display   = 'block';
     renderAdminClients(allClients);
   } catch(e) {
     loading.style.display = 'none';
-    table.style.display   = '';
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">Erro ao carregar clientes.</td></tr>';
-    console.error(e);
+    table.style.display   = 'block';
+    const errCode = e.code || e.statusCode || '';
+    const errMsg  = e.message || String(e);
+    console.error('loadAdminClients error:', errCode, errMsg, e);
+
+    // Mensagem de diagnóstico útil para o admin
+    let hint = '';
+    if (errCode === 3064 || errMsg.includes('3064') || errMsg.toLowerCase().includes('permission') || errMsg.toLowerCase().includes('access denied')) {
+      hint = `<br><small style="color:#fbbf24;">⚠️ Permissão negada no Backendless. Vá em <b>App Settings → Users → Security</b> e conceda permissão <b>Find</b> na tabela <b>Users</b> para o papel <b>AuthenticatedUser</b> (ou crie um papel Admin).</small>`;
+    } else if (errMsg.toLowerCase().includes('network') || errMsg.toLowerCase().includes('fetch')) {
+      hint = `<br><small style="color:#fbbf24;">⚠️ Erro de rede. Verifique sua conexão.</small>`;
+    }
+
+    tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;color:#f87171;padding:32px;">
+      ❌ Erro ao carregar clientes: <code style="font-size:0.78rem;color:#fca5a5;">${errMsg}${errCode ? ' (código '+errCode+')' : ''}</code>${hint}
+      <br><br><button class="btn btn-secondary btn-sm" onclick="loadAdminClients()">↺ Tentar novamente</button>
+    </td></tr>`;
   }
 }
 
 function renderAdminClients(clients) {
   const tbody = document.getElementById('admin-clients-tbody');
   if (!clients.length) {
-    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum cliente encontrado.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:32px;">Nenhum cliente encontrado.</td></tr>';
     return;
   }
   tbody.innerHTML = clients.map(c => `
@@ -4278,6 +4294,9 @@ function renderAdminClients(clients) {
         ${c.bloqueado ? '<span class="badge badge-red">🚫 Bloqueado</span>' :
           c.online    ? '<span class="badge badge-green">🟢 Online</span>' :
                         '<span class="badge badge-gray">⚫ Offline</span>'}
+      </td>
+      <td>
+        <button class="btn btn-secondary btn-sm" onclick="openClientBooks('${c.objectId}','${(c.name||'').replace(/'/g,"\\'")}')">📚 Ver</button>
       </td>
       <td>
         <div style="display:flex;gap:6px;flex-wrap:wrap;">
@@ -4336,7 +4355,13 @@ async function saveClientEdit() {
   };
 
   try {
-    await Backendless.Data.of('Users').save(data);
+    // Tenta via UserService primeiro (correto para tabela Users)
+    // Se falhar por permissão, tenta via Data API
+    try {
+      await Backendless.UserService.update(data);
+    } catch(e1) {
+      await Backendless.Data.of('Users').save(data);
+    }
     showToast('✅ Cliente atualizado!', 'success');
     loadAdminClients();
     adminShowSection('clients');
@@ -4373,6 +4398,89 @@ async function deleteClient(clientId) {
   } catch(e) {
     showToast('Erro ao excluir cliente.', 'error');
   }
+}
+
+/* ══════════════════════════════════════════════════════════
+   ADMIN — CLIENTE: LIVROS ACESSADOS E PROGRESSO
+══════════════════════════════════════════════════════════ */
+async function openClientBooks(clientId, clientName) {
+  // Abre o modal e exibe loading
+  const modal = document.getElementById('client-books-modal');
+  const titleEl = document.getElementById('cbm-client-name');
+  const listEl  = document.getElementById('cbm-books-list');
+  const loadEl  = document.getElementById('cbm-loading');
+
+  titleEl.textContent = clientName || 'Cliente';
+  listEl.innerHTML = '';
+  loadEl.style.display = 'block';
+  modal.classList.remove('hidden');
+  document.body.classList.add('scroll-lock');
+
+  try {
+    // Busca progresso de leitura do cliente
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`usuarioId = '${clientId}'`)
+      .setPageSize(100)
+      .setProperties(['livroId','paginaAtual','totalPaginas','progresso','atualizadoEm','marcador']);
+    const progressos = await Backendless.Data.of('ProgressoLeitura').find(q);
+
+    loadEl.style.display = 'none';
+
+    if (!progressos.length) {
+      listEl.innerHTML = '<p style="color:var(--text-muted);text-align:center;padding:32px;">Nenhum livro acessado ainda.</p>';
+      return;
+    }
+
+    // Busca títulos dos livros
+    const livroIds = [...new Set(progressos.map(p => p.livroId).filter(Boolean))];
+    let livrosMap = {};
+    if (livroIds.length) {
+      try {
+        const whereIds = livroIds.map(id => `objectId = '${id}'`).join(' OR ');
+        const lq = Backendless.DataQueryBuilder.create()
+          .setWhereClause(whereIds)
+          .setProperties(['objectId','titulo','capaUrl'])
+          .setPageSize(100);
+        const livros = await Backendless.Data.of('Livros').find(lq);
+        livros.forEach(l => { livrosMap[l.objectId] = l; });
+      } catch(e) { /* continua sem títulos */ }
+    }
+
+    listEl.innerHTML = progressos.map(p => {
+      const livro  = livrosMap[p.livroId] || {};
+      const titulo = livro.titulo || p.livroId || '(livro desconhecido)';
+      const pct    = p.progresso ?? (p.totalPaginas ? Math.round((p.paginaAtual / p.totalPaginas) * 100) : 0);
+      const atualiz = p.atualizadoEm ? formatDateTime(p.atualizadoEm) : '—';
+      const pagAtual = p.paginaAtual || 0;
+      const pagTotal = p.totalPaginas || '?';
+      const marcador = p.marcador ? `🔖 Pág. ${p.marcador}` : '';
+      const barColor = pct >= 100 ? '#34d399' : pct >= 50 ? '#c084fc' : '#fbbf24';
+      return `
+        <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px 20px;display:flex;gap:16px;align-items:center;">
+          <div style="font-size:2rem;flex-shrink:0;">${livro.capaUrl ? `<img src="${livro.capaUrl}" style="width:44px;height:60px;object-fit:cover;border-radius:6px;" onerror="this.replaceWith('📚')">` : '📚'}</div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-weight:700;color:var(--pearl);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${titulo}</div>
+            <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:8px;">Página ${pagAtual} de ${pagTotal} ${marcador}</div>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <div style="flex:1;height:6px;background:rgba(255,255,255,0.1);border-radius:3px;overflow:hidden;">
+                <div style="height:100%;width:${Math.min(pct,100)}%;background:${barColor};border-radius:3px;transition:width 0.4s;"></div>
+              </div>
+              <span style="font-size:0.78rem;font-weight:700;color:${barColor};min-width:36px;text-align:right;">${pct}%</span>
+            </div>
+            <div style="font-size:0.72rem;color:var(--text-muted);margin-top:6px;">Atualizado: ${atualiz}</div>
+          </div>
+        </div>`;
+    }).join('');
+
+  } catch(e) {
+    loadEl.style.display = 'none';
+    listEl.innerHTML = `<p style="color:#f87171;text-align:center;padding:32px;">Erro ao carregar livros: ${e.message || e}</p>`;
+  }
+}
+
+function closeClientBooksModal() {
+  document.getElementById('client-books-modal').classList.add('hidden');
+  document.body.classList.remove('scroll-lock');
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -4466,5 +4574,20 @@ function getBaseRotation(i) {
 }
 
 </script>
+<!-- ══════════════════════════════════════════════
+     ADMIN — MODAL LIVROS DO CLIENTE
+══════════════════════════════════════════════ -->
+<div class="modal-overlay hidden" id="client-books-modal" onclick="if(event.target===this)closeClientBooksModal()">
+  <div class="modal" style="max-width:560px;width:95%;max-height:85vh;display:flex;flex-direction:column;">
+    <button class="modal-close" onclick="closeClientBooksModal()">✕</button>
+    <div style="padding:4px 0 20px;">
+      <h2 style="font-family:var(--font-title);color:var(--pearl);font-size:1.3rem;">📚 Livros de <span id="cbm-client-name"></span></h2>
+      <p style="color:var(--text-muted);font-size:0.85rem;margin-top:4px;">Livros acessados e progresso de leitura</p>
+    </div>
+    <div id="cbm-loading" style="text-align:center;padding:32px;display:none;"><div class="spinner" style="margin:0 auto;"></div></div>
+    <div id="cbm-books-list" style="display:flex;flex-direction:column;gap:12px;overflow-y:auto;padding-right:4px;"></div>
+  </div>
+</div>
+
 </body>
 </html>
