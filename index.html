@@ -853,8 +853,24 @@ body.bedtime-mode .stars-layer { filter: none; }
 .bedtime-music-btn.playing { color: #93c5fd; border-color: #93c5fd; background: rgba(147,197,253,0.15); }
 
 /* ── CONQUISTAS ── */
-.achievements-modal-inner { max-width: 600px; width: 95%; }
-.achievements-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 16px; padding: 4px 0; }
+.achievements-modal-inner {
+  max-width: 700px; width: 95%;
+  max-height: 90vh;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.achievements-modal-inner > div:last-child {
+  flex: 1; overflow-y: auto; min-height: 0;
+  padding-right: 4px;
+}
+.achievements-modal-inner > div:last-child::-webkit-scrollbar { width: 6px; }
+.achievements-modal-inner > div:last-child::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius: 3px; }
+.achievements-modal-inner > div:last-child::-webkit-scrollbar-thumb { background: rgba(192,132,252,0.4); border-radius: 3px; }
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 12px; padding: 4px 0 8px;
+}
 .achievement-card {
   background: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.08);
   border-radius: 16px; padding: 20px 12px; text-align: center; position: relative;
@@ -4081,6 +4097,28 @@ async function handleAdminLogin() {
 async function handleLogout(silent = false) {
   await updateOnlineStatus(false);
   try { await Backendless.UserService.logout(); } catch(e) {}
+  // Reset estado de conquistas para o próximo login
+  _newFeaturesInitialized = false;
+  _conquistasRecordId = null;
+  achievementsUnlocked = {};
+  readingStats = {
+    booksOpened:0, booksCompleted:0, totalMinutes:0, favorites:0,
+    usedBedtime:false, bedtimeUses:0, usedBedtimeMusic:false,
+    streak:0, childProfiles:0, plan:'gratuito',
+    genresRead:[], authorsRead:[], booksShared:0, booksRated:0,
+    hasProfilePhoto:false, profileComplete:false,
+    searchesDone:0, birthdayLogin:false, newYearRead:false,
+    halloweenRead:false, christmasRead:false,
+    bingeDayMax:0, perfectWeeks:0, perfectMonths:0,
+    chaptersRead:0, booksNoSkip:0, booksReread:0,
+    finishedAtNight:false, finishedInMorning:false,
+    readEarlyMorning:false, readLateNight:false,
+    readWeekend:false, readLunchtime:false,
+    fastPageRead:false, speedCompleted:false,
+    notificationsOn:false, totalSessions:0,
+    totalAchievements:0, loginStreak:0,
+    nightMarathon:false, topReader:false,
+  };
   currentUser = null;
   isAdmin = false;
   allBooks = [];
@@ -4126,6 +4164,10 @@ async function loadDashboard() {
   initDashParticles();
   initNetflixScroll();
   await loadNetflixLibrary();
+
+  // Inicializa as funcionalidades extras (conquistas, modo dormir, etc.)
+  // com delay para garantir que o DOM está pronto
+  setTimeout(initNewFeatures, 400);
 }
 
 function initNetflixScroll() {
@@ -4184,7 +4226,22 @@ async function loadNetflixLibrary() {
       if (stored) favoritesSet = new Set(JSON.parse(stored));
     } catch(e) {}
 
-    setText('stat-books-read', Object.keys(progressMap).length);
+    const progressCount = Object.keys(progressMap).length;
+    setText('stat-books-read', progressCount);
+
+    // Sincroniza stats de leitura com dados reais do Backendless
+    const completedCount = Object.values(progressMap).filter(p => p.progresso >= 100 || p.concluido === true).length;
+    if (progressCount > (readingStats.booksOpened||0)) {
+      readingStats.booksOpened = progressCount;
+    }
+    if (completedCount > (readingStats.booksCompleted||0)) {
+      readingStats.booksCompleted = completedCount;
+    }
+    // Sincroniza favoritos reais
+    if (typeof favoritesSet !== 'undefined' && favoritesSet.size > (readingStats.favorites||0)) {
+      readingStats.favorites = favoritesSet.size;
+    }
+    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
 
     if (allBooks.length === 0) {
       document.getElementById('carousel-all').innerHTML = '<div class="empty-section-msg">Nenhum livro disponível ainda!</div>';
@@ -4646,7 +4703,22 @@ function closeReader() {
         const pl = await Backendless.Data.of('ProgressoLeitura').find(pq);
         progressMap = {};
         pl.forEach(p => { progressMap[p.livroId] = p; });
-        setText('stat-books-read', Object.keys(progressMap).length);
+        const progressCount = Object.keys(progressMap).length;
+    setText('stat-books-read', progressCount);
+
+    // Sincroniza stats de leitura com dados reais do Backendless
+    const completedCount = Object.values(progressMap).filter(p => p.progresso >= 100 || p.concluido === true).length;
+    if (progressCount > (readingStats.booksOpened||0)) {
+      readingStats.booksOpened = progressCount;
+    }
+    if (completedCount > (readingStats.booksCompleted||0)) {
+      readingStats.booksCompleted = completedCount;
+    }
+    // Sincroniza favoritos reais
+    if (typeof favoritesSet !== 'undefined' && favoritesSet.size > (readingStats.favorites||0)) {
+      readingStats.favorites = favoritesSet.size;
+    }
+    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
         populateCarousels();
         setupHero();
       } catch(e) {}
@@ -5339,22 +5411,151 @@ let readingSessionStart  = null;
 let totalReadingMinutes  = 0;
 
 const ACHIEVEMENTS_DEF = [
-  { id:'first_book',   icon:'📖', name:'Primeiro Livro',         desc:'Abriu seu primeiro livro',          condition: s => s.booksOpened >= 1 },
-  { id:'books_3',      icon:'📚', name:'Trilogia',               desc:'Leu 3 livros completos',            condition: s => s.booksCompleted >= 3 },
-  { id:'books_5',      icon:'🌟', name:'Colecionador',           desc:'Completou 5 livros',               condition: s => s.booksCompleted >= 5 },
-  { id:'books_10',     icon:'🏆', name:'Devorador de Histórias', desc:'Completou 10 livros',              condition: s => s.booksCompleted >= 10 },
-  { id:'min_30',       icon:'⏰', name:'30 Minutos',             desc:'30 minutos de leitura',            condition: s => s.totalMinutes >= 30 },
-  { id:'min_60',       icon:'⌛', name:'Uma Hora de Leitura',    desc:'60 minutos de leitura',            condition: s => s.totalMinutes >= 60 },
-  { id:'min_300',      icon:'🕰️', name:'Maratonista',            desc:'5 horas de leitura ao total',      condition: s => s.totalMinutes >= 300 },
-  { id:'favorite',     icon:'❤️', name:'Favorito!',              desc:'Adicionou um livro aos favoritos', condition: s => s.favorites >= 1 },
-  { id:'favorites_5',  icon:'💝', name:'Coleção dos Sonhos',     desc:'5 livros nos favoritos',           condition: s => s.favorites >= 5 },
-  { id:'bedtime',      icon:'🌙', name:'Boa Noite!',             desc:'Usou o modo hora de dormir',       condition: s => s.usedBedtime },
-  { id:'streak_3',     icon:'🔥', name:'3 Dias Seguidos',        desc:'Leu por 3 dias consecutivos',     condition: s => s.streak >= 3 },
-  { id:'profile_child',icon:'👶', name:'Família Leitora',        desc:'Criou um perfil infantil',         condition: s => s.childProfiles >= 1 },
+  /* ── LEITURA: ABERTURA ── */
+  { id:'first_book',     icon:'📖', name:'Primeiro Livro',          desc:'Abriu seu primeiro livro',                   condition: s => s.booksOpened >= 1 },
+  { id:'books_open_5',   icon:'👀', name:'Explorador',              desc:'Abriu 5 livros diferentes',                 condition: s => s.booksOpened >= 5 },
+  { id:'books_open_10',  icon:'🔍', name:'Curioso',                 desc:'Abriu 10 livros diferentes',                condition: s => s.booksOpened >= 10 },
+  { id:'books_open_25',  icon:'🗺️', name:'Grande Explorador',       desc:'Abriu 25 livros diferentes',                condition: s => s.booksOpened >= 25 },
+  { id:'books_open_50',  icon:'🌍', name:'Viajante das Histórias',  desc:'Abriu 50 livros diferentes',                condition: s => s.booksOpened >= 50 },
+  /* ── LEITURA: CONCLUSÃO ── */
+  { id:'books_1',        icon:'✅', name:'Primeira Missão',         desc:'Completou seu primeiro livro',              condition: s => s.booksCompleted >= 1 },
+  { id:'books_3',        icon:'📚', name:'Trilogia',                desc:'Completou 3 livros',                        condition: s => s.booksCompleted >= 3 },
+  { id:'books_5',        icon:'🌟', name:'Colecionador',            desc:'Completou 5 livros',                        condition: s => s.booksCompleted >= 5 },
+  { id:'books_10',       icon:'🏆', name:'Devorador de Histórias',  desc:'Completou 10 livros',                       condition: s => s.booksCompleted >= 10 },
+  { id:'books_15',       icon:'🎖️', name:'Leitor Dedicado',         desc:'Completou 15 livros',                       condition: s => s.booksCompleted >= 15 },
+  { id:'books_20',       icon:'🥇', name:'Campeão da Leitura',      desc:'Completou 20 livros',                       condition: s => s.booksCompleted >= 20 },
+  { id:'books_30',       icon:'💎', name:'Lendário',                desc:'Completou 30 livros',                       condition: s => s.booksCompleted >= 30 },
+  { id:'books_50',       icon:'👑', name:'Rei das Histórias',       desc:'Completou 50 livros',                       condition: s => s.booksCompleted >= 50 },
+  { id:'books_75',       icon:'🌠', name:'Astro da Leitura',        desc:'Completou 75 livros',                       condition: s => s.booksCompleted >= 75 },
+  { id:'books_100',      icon:'🚀', name:'Leitor do Século',        desc:'Completou 100 livros! Incrível!',           condition: s => s.booksCompleted >= 100 },
+  /* ── TEMPO DE LEITURA ── */
+  { id:'min_10',         icon:'⏱️', name:'Aquecendo',               desc:'10 minutos de leitura',                     condition: s => s.totalMinutes >= 10 },
+  { id:'min_30',         icon:'⏰', name:'30 Minutos',              desc:'30 minutos de leitura',                     condition: s => s.totalMinutes >= 30 },
+  { id:'min_60',         icon:'⌛', name:'Uma Hora',                desc:'1 hora de leitura',                         condition: s => s.totalMinutes >= 60 },
+  { id:'min_120',        icon:'🕑', name:'Duas Horas',              desc:'2 horas de leitura acumuladas',             condition: s => s.totalMinutes >= 120 },
+  { id:'min_300',        icon:'🕰️', name:'Maratonista',             desc:'5 horas de leitura ao total',               condition: s => s.totalMinutes >= 300 },
+  { id:'min_600',        icon:'📅', name:'10 Horas',                desc:'10 horas de leitura acumuladas',            condition: s => s.totalMinutes >= 600 },
+  { id:'min_1200',       icon:'🌅', name:'20 Horas',                desc:'20 horas de leitura ao total',              condition: s => s.totalMinutes >= 1200 },
+  { id:'min_3000',       icon:'🌟', name:'50 Horas',                desc:'50 horas de leitura. Uau!',                 condition: s => s.totalMinutes >= 3000 },
+  { id:'min_6000',       icon:'🏅', name:'100 Horas',               desc:'100 horas de leitura. Lendário!',           condition: s => s.totalMinutes >= 6000 },
+  /* ── SEQUÊNCIA (STREAK) ── */
+  { id:'streak_2',       icon:'🔥', name:'2 Dias Seguidos',         desc:'Leu por 2 dias consecutivos',               condition: s => s.streak >= 2 },
+  { id:'streak_3',       icon:'🔥', name:'3 Dias Seguidos',         desc:'Leu por 3 dias consecutivos',               condition: s => s.streak >= 3 },
+  { id:'streak_5',       icon:'🔥', name:'5 Dias de Fogo',          desc:'Leu por 5 dias consecutivos',               condition: s => s.streak >= 5 },
+  { id:'streak_7',       icon:'📆', name:'Uma Semana Inteira',       desc:'Leu todos os dias da semana',               condition: s => s.streak >= 7 },
+  { id:'streak_14',      icon:'📆', name:'Duas Semanas',             desc:'14 dias seguidos de leitura',               condition: s => s.streak >= 14 },
+  { id:'streak_21',      icon:'🌈', name:'21 Dias',                  desc:'Um hábito formado! 21 dias seguidos',       condition: s => s.streak >= 21 },
+  { id:'streak_30',      icon:'🗓️', name:'Um Mês Leitor',            desc:'30 dias consecutivos de leitura',           condition: s => s.streak >= 30 },
+  { id:'streak_60',      icon:'🌙', name:'Dois Meses',               desc:'60 dias seguidos. Impressionante!',         condition: s => s.streak >= 60 },
+  { id:'streak_100',     icon:'💫', name:'100 Dias',                 desc:'100 dias seguidos de leitura!',             condition: s => s.streak >= 100 },
+  /* ── FAVORITOS ── */
+  { id:'favorite',       icon:'❤️', name:'Favorito!',               desc:'Adicionou um livro aos favoritos',          condition: s => s.favorites >= 1 },
+  { id:'favorites_3',    icon:'🧡', name:'Três Favoritos',           desc:'3 livros nos favoritos',                    condition: s => s.favorites >= 3 },
+  { id:'favorites_5',    icon:'💝', name:'Coleção dos Sonhos',       desc:'5 livros nos favoritos',                    condition: s => s.favorites >= 5 },
+  { id:'favorites_10',   icon:'💖', name:'Coração Cheio',            desc:'10 livros nos favoritos',                   condition: s => s.favorites >= 10 },
+  { id:'favorites_20',   icon:'💗', name:'Apaixonado por Livros',    desc:'20 livros nos favoritos',                   condition: s => s.favorites >= 20 },
+  /* ── MODO DORMIR ── */
+  { id:'bedtime',        icon:'🌙', name:'Boa Noite!',               desc:'Usou o modo hora de dormir',                condition: s => s.usedBedtime },
+  { id:'bedtime_5',      icon:'🌛', name:'Rotina Noturna',           desc:'Usou o modo dormir 5 vezes',                condition: s => s.bedtimeUses >= 5 },
+  { id:'bedtime_music',  icon:'🎵', name:'Melodia da Noite',         desc:'Ouviu música ambiente ao dormir',            condition: s => s.usedBedtimeMusic },
+  /* ── PERFIS E FAMÍLIA ── */
+  { id:'profile_child',  icon:'👶', name:'Família Leitora',          desc:'Criou um perfil infantil',                  condition: s => s.childProfiles >= 1 },
+  { id:'profiles_2',     icon:'👨‍👩‍👧', name:'Família Completa',        desc:'Criou 2 perfis infantis',                   condition: s => s.childProfiles >= 2 },
+  { id:'profiles_3',     icon:'👨‍👩‍👧‍👦', name:'Grande Família',          desc:'Criou 3 ou mais perfis infantis',           condition: s => s.childProfiles >= 3 },
+  /* ── PLANO / ASSINATURA ── */
+  { id:'plan_mensal',    icon:'💳', name:'Assinante',                desc:'Assinou o plano mensal',                    condition: s => s.plan === 'mensal' || s.plan === 'premium' || s.plan === 'vitalicio' },
+  { id:'plan_premium',   icon:'⭐', name:'Premium',                  desc:'Assinou o plano premium',                   condition: s => s.plan === 'premium' || s.plan === 'vitalicio' },
+  { id:'plan_vitalicio', icon:'♾️', name:'Vitalício',               desc:'Assinou o plano vitalício',                 condition: s => s.plan === 'vitalicio' },
+  /* ── GÊNEROS / CATEGORIAS ── */
+  { id:'genre_aventura', icon:'⚔️', name:'Aventureiro',              desc:'Leu um livro de aventura',                  condition: s => (s.genresRead||[]).includes('aventura') },
+  { id:'genre_fantasia', icon:'🧙', name:'Mago das Histórias',       desc:'Leu um livro de fantasia',                  condition: s => (s.genresRead||[]).includes('fantasia') },
+  { id:'genre_ciencia',  icon:'🔬', name:'Pequeno Cientista',        desc:'Leu um livro de ciência',                   condition: s => (s.genresRead||[]).includes('ciencia') },
+  { id:'genre_natureza', icon:'🌿', name:'Amigo da Natureza',        desc:'Leu um livro sobre natureza',               condition: s => (s.genresRead||[]).includes('natureza') },
+  { id:'genre_musica',   icon:'🎶', name:'Musical',                  desc:'Leu um livro sobre música',                 condition: s => (s.genresRead||[]).includes('musica') },
+  { id:'genre_5',        icon:'🎨', name:'Eclético',                 desc:'Leu livros de 5 gêneros diferentes',        condition: s => (s.genresRead||[]).length >= 5 },
+  { id:'genre_10',       icon:'🌈', name:'Multi-Gênero',             desc:'Leu livros de 10 gêneros diferentes',       condition: s => (s.genresRead||[]).length >= 10 },
+  /* ── HORÁRIOS ── */
+  { id:'early_bird',     icon:'🌅', name:'Madrugador',               desc:'Leu antes das 7h da manhã',                 condition: s => s.readEarlyMorning },
+  { id:'night_owl',      icon:'🦉', name:'Coruja Noturna',           desc:'Leu depois das 22h',                        condition: s => s.readLateNight },
+  { id:'weekend_reader', icon:'🏖️', name:'Fim de Semana Leitor',     desc:'Leu nos dois dias do fim de semana',        condition: s => s.readWeekend },
+  { id:'lunch_reader',   icon:'🍎', name:'Leitura do Almoço',        desc:'Leu durante o intervalo do almoço',         condition: s => s.readLunchtime },
+  /* ── VELOCIDADE ── */
+  { id:'fast_page',      icon:'⚡', name:'Relâmpago',                desc:'Leu uma página em menos de 1 minuto',       condition: s => s.fastPageRead },
+  { id:'speed_reader',   icon:'💨', name:'Leitor Veloz',             desc:'Completou um livro em menos de 30 min',     condition: s => s.speedCompleted },
+  /* ── SOCIAL / COMPARTILHAR ── */
+  { id:'first_share',    icon:'📤', name:'Compartilhador',           desc:'Compartilhou uma história',                 condition: s => s.booksShared >= 1 },
+  { id:'share_5',        icon:'📢', name:'Divulgador',               desc:'Compartilhou 5 histórias',                  condition: s => s.booksShared >= 5 },
+  /* ── AVALIAÇÕES ── */
+  { id:'first_rating',   icon:'⭐', name:'Crítico Literário',        desc:'Avaliou um livro pela primeira vez',        condition: s => s.booksRated >= 1 },
+  { id:'rating_10',      icon:'🌟', name:'Grande Crítico',           desc:'Avaliou 10 livros',                         condition: s => s.booksRated >= 10 },
+  /* ── PERFIL ── */
+  { id:'profile_photo',  icon:'🤳', name:'Com Estilo',               desc:'Atualizou a foto de perfil',                condition: s => s.hasProfilePhoto },
+  { id:'profile_complete',icon:'📋', name:'Perfil Completo',         desc:'Preencheu todos os dados do perfil',        condition: s => s.profileComplete },
+  /* ── PESQUISA ── */
+  { id:'first_search',   icon:'🔎', name:'Detetive',                 desc:'Fez sua primeira pesquisa de livro',        condition: s => s.searchesDone >= 1 },
+  { id:'searches_10',    icon:'🕵️', name:'Investigador',             desc:'Pesquisou 10 vezes',                        condition: s => s.searchesDone >= 10 },
+  /* ── ESPECIAIS / EVENTOS ── */
+  { id:'birthday',       icon:'🎂', name:'Aniversariante',           desc:'Acessou o app no seu aniversário',          condition: s => s.birthdayLogin },
+  { id:'new_year',       icon:'🎉', name:'Ano Novo Leitor',          desc:'Leu uma história no Ano Novo',              condition: s => s.newYearRead },
+  { id:'halloween',      icon:'🎃', name:'Monstro Leitor',           desc:'Leu uma história no Halloween',             condition: s => s.halloweenRead },
+  { id:'christmas',      icon:'🎄', name:'Presente de Natal',        desc:'Leu uma história no Natal',                 condition: s => s.christmasRead },
+  /* ── SEQUÊNCIAS ESPECIAIS ── */
+  { id:'binge_3',        icon:'🎯', name:'Maratona de 3',            desc:'Completou 3 livros no mesmo dia',           condition: s => s.bingeDayMax >= 3 },
+  { id:'binge_5',        icon:'🏋️', name:'Super Maratona',           desc:'Completou 5 livros no mesmo dia',           condition: s => s.bingeDayMax >= 5 },
+  { id:'perfect_week',   icon:'🌟', name:'Semana Perfeita',          desc:'Leu todos os dias de uma semana',           condition: s => s.perfectWeeks >= 1 },
+  { id:'perfect_month',  icon:'🗓️', name:'Mês Perfeito',             desc:'Leu todos os dias de um mês',               condition: s => s.perfectMonths >= 1 },
+  /* ── CAPÍTULOS ── */
+  { id:'chapters_10',    icon:'📄', name:'10 Capítulos',             desc:'Leu 10 capítulos ao total',                 condition: s => s.chaptersRead >= 10 },
+  { id:'chapters_50',    icon:'📑', name:'50 Capítulos',             desc:'Leu 50 capítulos ao total',                 condition: s => s.chaptersRead >= 50 },
+  { id:'chapters_100',   icon:'📒', name:'100 Capítulos',            desc:'Leu 100 capítulos! Incrível!',              condition: s => s.chaptersRead >= 100 },
+  { id:'chapters_500',   icon:'📗', name:'500 Capítulos',            desc:'Meio milhar de capítulos lidos!',           condition: s => s.chaptersRead >= 500 },
+  /* ── CONQUISTAS ESPECIAIS ── */
+  { id:'no_skip',        icon:'🎖️', name:'Sem Pular',                desc:'Leu um livro sem pular nenhuma página',     condition: s => s.booksNoSkip >= 1 },
+  { id:'rereader',       icon:'🔄', name:'Relendo',                  desc:'Releu um livro já completado',              condition: s => s.booksReread >= 1 },
+  { id:'night_finish',   icon:'🌃', name:'Noite até o Fim',          desc:'Terminou um livro depois da meia-noite',    condition: s => s.finishedAtNight },
+  { id:'morning_finish', icon:'☀️', name:'Manhã Gloriosa',           desc:'Terminou um livro antes das 8h',            condition: s => s.finishedInMorning },
+  /* ── METAS DE CONQUISTAS ── */
+  { id:'ach_10',         icon:'🏅', name:'10 Medalhas',              desc:'Desbloqueou 10 conquistas',                 condition: s => s.totalAchievements >= 10 },
+  { id:'ach_25',         icon:'🥈', name:'25 Medalhas',              desc:'Desbloqueou 25 conquistas',                 condition: s => s.totalAchievements >= 25 },
+  { id:'ach_50',         icon:'🥇', name:'50 Medalhas',              desc:'Desbloqueou 50 conquistas',                 condition: s => s.totalAchievements >= 50 },
+  { id:'ach_75',         icon:'🏆', name:'75 Medalhas',              desc:'Desbloqueou 75 conquistas',                 condition: s => s.totalAchievements >= 75 },
+  { id:'ach_100',        icon:'💎', name:'Colecionador Máximo',       desc:'Desbloqueou todas as 100 conquistas!',      condition: s => s.totalAchievements >= 100 },
+  /* ── NOTIFICAÇÕES ── */
+  { id:'notif_on',       icon:'🔔', name:'Bem Informado',            desc:'Ativou as notificações do app',             condition: s => s.notificationsOn },
+  /* ── SESSÕES ── */
+  { id:'sessions_5',     icon:'📱', name:'5 Visitas',                desc:'Acessou o app em 5 ocasiões diferentes',    condition: s => s.totalSessions >= 5 },
+  { id:'sessions_10',    icon:'📲', name:'Fiel ao App',              desc:'10 sessões de leitura',                     condition: s => s.totalSessions >= 10 },
+  { id:'sessions_30',    icon:'🏠', name:'Minha Casa',               desc:'30 sessões — o app virou seu lar!',         condition: s => s.totalSessions >= 30 },
+  { id:'sessions_100',   icon:'🌟', name:'100 Sessões',              desc:'100 sessões de leitura. Impressionante!',   condition: s => s.totalSessions >= 100 },
+  /* ── DIVERSIDADE ── */
+  { id:'authors_5',      icon:'✍️', name:'5 Autores',                desc:'Leu livros de 5 autores diferentes',        condition: s => (s.authorsRead||[]).length >= 5 },
+  { id:'authors_10',     icon:'📝', name:'10 Autores',               desc:'Leu livros de 10 autores diferentes',       condition: s => (s.authorsRead||[]).length >= 10 },
+  /* ── CONQUISTAS EXTRAS ── */
+  { id:'login_streak_7',  icon:'🗝️', name:'7 Logins Seguidos',         desc:'Entrou no app 7 dias seguidos',              condition: s => s.loginStreak >= 7 },
+  { id:'read_all_genres', icon:'🎭', name:'Gênios de Gêneros',          desc:'Explorou todos os gêneros disponíveis',      condition: s => (s.genresRead||[]).length >= 8 },
+  { id:'night_marathon',  icon:'🌌', name:'Maratona Noturna',           desc:'Leu por mais de 2h depois das 21h',         condition: s => s.nightMarathon },
+  { id:'top_reader',      icon:'🦁', name:'Leitor Supremo',             desc:'Ficou entre os 10 mais ativos do mês',       condition: s => s.topReader },
 ];
 
 let achievementsUnlocked = {};
-let readingStats = { booksOpened:0, booksCompleted:0, totalMinutes:0, favorites:0, usedBedtime:false, streak:0, childProfiles:0 };
+let readingStats = {
+  booksOpened:0, booksCompleted:0, totalMinutes:0, favorites:0,
+  usedBedtime:false, bedtimeUses:0, usedBedtimeMusic:false,
+  streak:0, childProfiles:0, plan:'gratuito',
+  genresRead:[], authorsRead:[], booksShared:0, booksRated:0,
+  hasProfilePhoto:false, profileComplete:false,
+  searchesDone:0, birthdayLogin:false, newYearRead:false,
+  halloweenRead:false, christmasRead:false,
+  bingeDayMax:0, perfectWeeks:0, perfectMonths:0,
+  chaptersRead:0, booksNoSkip:0, booksReread:0,
+  finishedAtNight:false, finishedInMorning:false,
+  readEarlyMorning:false, readLateNight:false,
+  readWeekend:false, readLunchtime:false,
+  fastPageRead:false, speedCompleted:false,
+  notificationsOn:false, totalSessions:0,
+  totalAchievements:0,
+  loginStreak:0, nightMarathon:false, topReader:false,
+};
 
 /* ────────────────────────────────────────────
    2. CONTINUAR LENDO — CARD DESTAQUE
@@ -5710,6 +5911,11 @@ function stopAmbientMusic() {
 ──────────────────────────────────────────── */
 function openAchievementsModal() {
   openModal('achievements-modal');
+  // Sincroniza plano antes de renderizar (para conquistas de plano)
+  try {
+    const u = Backendless.UserService.getCurrentUser();
+    if (u && u.plano) readingStats.plan = u.plano;
+  } catch(e) {}
   renderAchievements();
 }
 
@@ -5736,14 +5942,23 @@ function renderAchievements() {
   }).join('');
 }
 
+let _lastStatsSave = 0;
 function updateReadingStats(updates) {
   Object.assign(readingStats, updates);
-  // Salva localmente
+  // Salva localmente sempre
   try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
   checkAchievements();
+  // Persiste no Backendless (throttle: máx 1x a cada 30s para não sobrecarregar)
+  const now = Date.now();
+  if (now - _lastStatsSave > 30000) {
+    _lastStatsSave = now;
+    saveAchievementsToBackendless();
+  }
 }
 
 function checkAchievements() {
+  // Atualiza totalAchievements antes de checar conquistas sobre conquistas
+  readingStats.totalAchievements = Object.keys(achievementsUnlocked).length;
   let newlyUnlocked = [];
   ACHIEVEMENTS_DEF.forEach(ach => {
     if (!achievementsUnlocked[ach.id] && ach.condition(readingStats)) {
@@ -5752,7 +5967,9 @@ function checkAchievements() {
     }
   });
   if (newlyUnlocked.length) {
+    readingStats.totalAchievements = Object.keys(achievementsUnlocked).length;
     try { localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked)); } catch(e){}
+    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e){}
     saveAchievementsToBackendless();
     newlyUnlocked.forEach(ach => showAchievementNotif(ach));
   }
@@ -5777,35 +5994,61 @@ async function saveAchievementsToBackendless() {
   try {
     const user = Backendless.UserService.getCurrentUser();
     if (!user) return;
-    await Backendless.Data.of('Conquistas').save({
+    const payload = {
       usuarioId: user.objectId,
       conquistas: JSON.stringify(achievementsUnlocked),
-      stats: JSON.stringify(readingStats),
+      stats:      JSON.stringify(readingStats),
+      totalDesbloqueadas: Object.keys(achievementsUnlocked).length,
       atualizadoEm: new Date().toISOString()
-    });
-  } catch(e) {}
+    };
+    // Inclui objectId para fazer UPDATE ao invés de INSERT duplicado
+    if (_conquistasRecordId) payload.objectId = _conquistasRecordId;
+    const saved = await Backendless.Data.of('Conquistas').save(payload);
+    if (saved && saved.objectId) _conquistasRecordId = saved.objectId;
+  } catch(e) { console.warn('saveAchievements error:', e); }
 }
 
 async function loadAchievementsFromBackendless() {
+  // 1) Tenta carregar localStorage primeiro como base
+  try {
+    const local = localStorage.getItem('achievements');
+    if (local) achievementsUnlocked = JSON.parse(local);
+    const stats = localStorage.getItem('readingStats');
+    if (stats) Object.assign(readingStats, JSON.parse(stats));
+  } catch(e) {}
+
+  // 2) Backendless tem prioridade — sobrescreve o local (dados mais completos/atuais)
   try {
     const user = Backendless.UserService.getCurrentUser();
     if (!user) return;
+
+    // Sincroniza o plano atual do usuário em readingStats
+    if (user.plano) readingStats.plan = user.plano;
+
     const q = Backendless.DataQueryBuilder.create()
       .setWhereClause(`usuarioId = '${user.objectId}'`)
+      .setSortBy(['atualizadoEm DESC'])
       .setPageSize(1);
     const results = await Backendless.Data.of('Conquistas').find(q);
     if (results.length) {
       const rec = results[0];
-      if (rec.conquistas) achievementsUnlocked = JSON.parse(rec.conquistas);
-      if (rec.stats) Object.assign(readingStats, JSON.parse(rec.stats));
+      _conquistasRecordId = rec.objectId; // guarda para upsert futuro
+      // Merge: Backendless + localStorage (união de conquistas desbloqueadas)
+      let blUnlocked = {};
+      if (rec.conquistas) { try { blUnlocked = JSON.parse(rec.conquistas); } catch(e) {} }
+      achievementsUnlocked = Object.assign({}, achievementsUnlocked, blUnlocked);
+      if (rec.stats) {
+        try { Object.assign(readingStats, JSON.parse(rec.stats)); } catch(e) {}
+      }
+      // Garante plano atualizado mesmo após merge
+      if (user.plano) readingStats.plan = user.plano;
     }
-  } catch(e) {}
-  // Carrega localmente como fallback
+  } catch(e) { console.warn('loadAchievements BL error:', e); }
+
+  // Persiste o estado merged de volta ao localStorage
   try {
-    const local = localStorage.getItem('achievements');
-    if (local) achievementsUnlocked = { ...JSON.parse(local), ...achievementsUnlocked };
-    const stats = localStorage.getItem('readingStats');
-    if (stats) Object.assign(readingStats, JSON.parse(stats));
+    localStorage.setItem('achievements', JSON.stringify(achievementsUnlocked));
+    localStorage.setItem('readingStats', JSON.stringify(readingStats));
   } catch(e) {}
 }
 
@@ -6067,7 +6310,13 @@ function endReadingSession(bookTitle) {
 ──────────────────────────────────────────── */
 const _origShowDashboard = typeof showDashboard === 'function' ? showDashboard : null;
 
+let _conquistasRecordId = null; // objectId do registro de Conquistas (para upsert)
+let _newFeaturesInitialized = false;
 function initNewFeatures() {
+  // Evita dupla inicialização (loadDashboard E showPage hook podem chamar)
+  if (_newFeaturesInitialized) return;
+  _newFeaturesInitialized = true;
+
   // Mostra botão de modo noturno na dashboard
   const bedtimeBtn = document.getElementById('bedtime-toggle-btn');
   if (bedtimeBtn) bedtimeBtn.style.display = 'flex';
@@ -6075,13 +6324,31 @@ function initNewFeatures() {
   // Carrega dados locais
   loadNotificationsLocal();
   loadChildProfiles();
-  loadAchievementsFromBackendless().then(() => checkAchievements());
+  loadAchievementsFromBackendless().then(() => {
+    // Sincroniza totalSessions
+    readingStats.totalSessions = (readingStats.totalSessions || 0) + 1;
+    checkAchievements();
+    // Persiste sessão atualizada
+    try { localStorage.setItem('readingStats', JSON.stringify(readingStats)); } catch(e) {}
+  });
 
   // Carrega totalReadingMinutes do localStorage
   try {
     const stored = localStorage.getItem('totalReadingMinutes');
     if (stored) totalReadingMinutes = parseFloat(stored) || 0;
+    // Sincroniza com readingStats.totalMinutes (evita dessincronização)
+    if (totalReadingMinutes > readingStats.totalMinutes) {
+      readingStats.totalMinutes = totalReadingMinutes;
+    } else if (readingStats.totalMinutes > totalReadingMinutes) {
+      totalReadingMinutes = readingStats.totalMinutes;
+    }
   } catch(e){}
+
+  // Sincroniza o plano do usuário em readingStats
+  try {
+    const u = Backendless.UserService.getCurrentUser();
+    if (u && u.plano) readingStats.plan = u.plano;
+  } catch(e) {}
 
   // Restaura modo bedtime se estava ativo
   try {
@@ -6133,9 +6400,12 @@ function initNewFeatures() {
     }
     checkAchievements();
   });
-  document.addEventListener('bookFavorited', () => {
-    updateReadingStats({ favorites: (readingStats.favorites||0) + 1 });
-    checkAchievements();
+  document.addEventListener('bookFavorited', (e) => {
+    // Conta favoritos reais do favoritesSet se disponível
+    const favCount = (typeof favoritesSet !== 'undefined' && favoritesSet.size)
+      ? favoritesSet.size
+      : (readingStats.favorites||0) + 1;
+    updateReadingStats({ favorites: favCount });
   });
 }
 
@@ -6457,15 +6727,44 @@ async function loadCPAchievements() {
   el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
   try {
     const q = Backendless.DataQueryBuilder.create()
-      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(50);
+      .setWhereClause(`usuarioId = '${currentProfileClientId}'`)
+      .setSortBy(['atualizadoEm DESC'])
+      .setPageSize(1); // Um registro por usuário (upsert)
     const achs = await Backendless.Data.of('Conquistas').find(q);
-    if (!achs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista ainda.</div>'; return; }
-    el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">` +
-      achs.map(a => `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;">
-        <div style="font-size:1.8rem;margin-bottom:6px;">${a.icone||'🏆'}</div>
-        <div style="font-weight:700;color:var(--pearl);font-size:0.8rem;">${a.nome||a.conquista||'Conquista'}</div>
-      </div>`).join('') + '</div>';
-  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Sem dados disponíveis.</div>'; }
+    if (!achs.length || !achs[0].conquistas) {
+      el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista desbloqueada ainda.</div>';
+      return;
+    }
+    // Desserializa o JSON de conquistas
+    let unlockedMap = {};
+    try { unlockedMap = JSON.parse(achs[0].conquistas); } catch(e) {}
+    const unlockedIds = Object.keys(unlockedMap).filter(k => unlockedMap[k]);
+    if (!unlockedIds.length) {
+      el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista desbloqueada ainda.</div>';
+      return;
+    }
+    // Cruza com ACHIEVEMENTS_DEF para obter icon/nome
+    const cards = unlockedIds.map(id => {
+      const def = (typeof ACHIEVEMENTS_DEF !== 'undefined' ? ACHIEVEMENTS_DEF : []).find(a => a.id === id);
+      const icon = def ? def.icon : '🏆';
+      const name = def ? def.name : id;
+      const date = unlockedMap[id] && unlockedMap[id] !== true ? new Date(unlockedMap[id]).toLocaleDateString('pt-BR') : '';
+      return `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">${icon}</div>
+        <div style="font-weight:700;color:var(--pearl);font-size:0.78rem;line-height:1.3;">${name}</div>
+        ${date ? `<div style="font-size:0.65rem;color:var(--gold);margin-top:4px;">${date}</div>` : ''}
+      </div>`;
+    });
+    const stats = achs[0].stats ? (() => { try { return JSON.parse(achs[0].stats); } catch(e) { return {}; } })() : {};
+    el.innerHTML = `
+      <div style="background:rgba(192,132,252,0.08);border:1px solid rgba(192,132,252,0.2);border-radius:12px;padding:14px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;">
+        <div><span style="font-weight:800;color:var(--pearl);">${unlockedIds.length}</span><span style="color:var(--text-muted);font-size:0.8rem;"> / ${typeof ACHIEVEMENTS_DEF !== 'undefined' ? ACHIEVEMENTS_DEF.length : '100'} conquistas</span></div>
+        ${stats.booksCompleted ? `<div><span style="font-weight:800;color:var(--pearl);">${stats.booksCompleted}</span><span style="color:var(--text-muted);font-size:0.8rem;"> livros lidos</span></div>` : ''}
+        ${stats.totalMinutes ? `<div><span style="font-weight:800;color:var(--pearl);">${Math.round(stats.totalMinutes/60*10)/10}h</span><span style="color:var(--text-muted);font-size:0.8rem;"> de leitura</span></div>` : ''}
+        ${stats.streak ? `<div><span style="font-weight:800;color:var(--pearl);">${stats.streak}</span><span style="color:var(--text-muted);font-size:0.8rem;"> dias seguidos</span></div>` : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;">${cards.join('')}</div>`;
+  } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Erro ao carregar conquistas.</div>'; console.warn('loadCPAchievements:', e); }
 }
 
 function toggleClientBlockFromProfile() {
@@ -6985,11 +7284,13 @@ async function loadAnalytics() {
 <div class="modal-overlay hidden" id="achievements-modal" onclick="if(event.target===this)closeModal('achievements-modal')">
   <div class="modal achievements-modal-inner">
     <button class="modal-close" onclick="closeModal('achievements-modal')">✕</button>
-    <div style="text-align:center;padding:4px 0 20px;">
+    <!-- Cabeçalho fixo -->
+    <div style="flex-shrink:0;text-align:center;padding:4px 0 16px;">
       <h2 style="font-family:var(--font-title);color:var(--gold);font-size:1.6rem;">🏆 Conquistas</h2>
       <p style="color:var(--text-muted);font-size:0.88rem;margin-top:6px;">Colecione medalhas e estrelas lendo mais histórias!</p>
     </div>
-    <div id="achievements-count-bar" style="display:flex;align-items:center;gap:14px;margin-bottom:24px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px 18px;">
+    <!-- Barra de progresso fixo -->
+    <div id="achievements-count-bar" style="flex-shrink:0;display:flex;align-items:center;gap:14px;margin-bottom:16px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px 18px;">
       <span style="font-size:1.8rem;">⭐</span>
       <div style="flex:1;">
         <div style="font-weight:700;color:var(--pearl);font-size:0.9rem;" id="ach-progress-text">0 de 0 conquistas desbloqueadas</div>
@@ -6998,7 +7299,10 @@ async function loadAnalytics() {
         </div>
       </div>
     </div>
-    <div class="achievements-grid" id="achievements-grid"></div>
+    <!-- Grid com scroll -->
+    <div style="flex:1;overflow-y:auto;min-height:0;padding-right:4px;">
+      <div class="achievements-grid" id="achievements-grid"></div>
+    </div>
   </div>
 </div>
 
