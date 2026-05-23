@@ -127,7 +127,16 @@ body {
 .netflix-nav.scrolled { background: rgba(10,3,25,0.98); }
 .netflix-nav-left { display: flex; align-items: center; gap: 40px; }
 .netflix-logo { display: flex; align-items: center; gap: 10px; cursor: pointer; text-decoration: none; }
-.netflix-logo-icon { font-size: 1.8rem; filter: drop-shadow(0 0 12px rgba(251,191,36,0.7)); }
+.netflix-logo-icon { font-size: 1.8rem; filter: drop-shadow(0 0 12px rgba(251,191,36,0.7)); display: none; }
+/* Capa do livro na logo */
+.logo-cover-img {
+  width: 2rem; height: 2.6rem;
+  object-fit: cover; border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6), 0 0 14px rgba(251,191,36,0.4);
+  vertical-align: middle; display: inline-block;
+  opacity: 0; transition: opacity 0.4s ease;
+}
+.logo-cover-img.loaded { opacity: 1; }
 .netflix-logo-text {
   font-family: var(--font-title); font-size: 1.25rem; color: var(--gold);
   line-height: 1;
@@ -262,29 +271,47 @@ body {
 /* 3D Book */
 .book-3d-wrap {
   display: flex; align-items: center; justify-content: center;
-  position: relative; perspective: 1000px;
+  position: relative; perspective: 1200px;
 }
 .book-3d {
   width: 200px; height: 280px;
   transform-style: preserve-3d;
   transform: rotateY(-25deg) rotateX(5deg);
-  transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94);
+  transition: transform 0.15s ease-out;
   cursor: pointer; position: relative;
-  animation: book-float 5s ease-in-out infinite;
-  filter: drop-shadow(0 40px 60px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 40px 80px rgba(0,0,0,0.7));
+  will-change: transform;
 }
-.book-3d:hover { transform: rotateY(-15deg) rotateX(3deg) scale(1.05); }
+/* Quando não está em hover interativo (idle), flutua */
+.book-3d.floating {
+  animation: book-float 5s ease-in-out infinite;
+  transition: none;
+}
 .book-3d.opening {
-  animation: book-open-anim 1.2s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+  animation: book-open-anim 1.6s cubic-bezier(0.25,0.46,0.45,0.94) forwards !important;
+  transition: none;
+}
+/* Animação de entrada */
+.book-3d-wrap.entering .book-3d {
+  animation: book-enter 1s cubic-bezier(0.34,1.56,0.64,1) forwards;
+}
+@keyframes book-enter {
+  0%  { opacity:0; transform: rotateY(-90deg) rotateX(20deg) scale(0.6) translateY(60px); }
+  60% { opacity:1; transform: rotateY(-20deg) rotateX(3deg) scale(1.06) translateY(-8px); }
+  100%{ opacity:1; transform: rotateY(-25deg) rotateX(5deg) scale(1) translateY(0); }
 }
 @keyframes book-float {
   0%,100%{ transform: rotateY(-25deg) rotateX(5deg) translateY(0); }
-  50%{ transform: rotateY(-25deg) rotateX(5deg) translateY(-18px); }
+  50%{ transform: rotateY(-23deg) rotateX(4deg) translateY(-18px); }
 }
 @keyframes book-open-anim {
-  0%{ transform: rotateY(-25deg) rotateX(5deg); }
-  50%{ transform: rotateY(-90deg) rotateX(0deg) scale(1.1); }
-  100%{ transform: rotateY(-180deg) rotateX(0deg); }
+  0%   { transform: rotateY(-25deg)  rotateX(5deg)  scale(1);    filter: drop-shadow(0 40px 80px rgba(0,0,0,0.7)); }
+  15%  { transform: rotateY(-55deg)  rotateX(8deg)  scale(1.06); filter: drop-shadow(0 60px 120px rgba(192,132,252,0.5)); }
+  35%  { transform: rotateY(-100deg) rotateX(2deg)  scale(1.15); filter: drop-shadow(0 80px 160px rgba(255,110,180,0.6)); }
+  55%  { transform: rotateY(-145deg) rotateX(-4deg) scale(1.18); filter: drop-shadow(0 60px 140px rgba(251,191,36,0.5)); }
+  75%  { transform: rotateY(-170deg) rotateX(3deg)  scale(1.1);  filter: drop-shadow(0 50px 120px rgba(192,132,252,0.4)); }
+  90%  { transform: rotateY(-178deg) rotateX(1deg)  scale(1.04); filter: drop-shadow(0 40px 80px rgba(0,0,0,0.7)); }
+  100% { transform: rotateY(-180deg) rotateX(0deg)  scale(1);    filter: drop-shadow(0 40px 80px rgba(0,0,0,0.7)); }
 }
 .book-face {
   position: absolute;
@@ -376,6 +403,21 @@ body {
 
 /* Book sparkles */
 .book-sparkles { position: absolute; inset: -40px; pointer-events: none; }
+
+/* Cinematic book platform glow */
+.landing-book-wrap::after {
+  content: '';
+  position: absolute; bottom: -20px; left: 50%; transform: translateX(-50%);
+  width: 160px; height: 20px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(192,132,252,0.5) 0%, transparent 80%);
+  filter: blur(8px);
+  pointer-events: none; z-index: 0;
+  animation: book-shadow-pulse 5s ease-in-out infinite;
+}
+@keyframes book-shadow-pulse {
+  0%,100% { opacity: 0.5; width: 140px; }
+  50%      { opacity: 0.9; width: 180px; }
+}
 .bsp {
   position: absolute; font-size: 1.2rem;
   animation: bsp-float 3s ease-in-out infinite;
@@ -388,6 +430,12 @@ body {
 .bsp.s6 { bottom: 5%; right: 10%; animation-delay: 1.3s; }
 @keyframes bsp-float {
   0%,100%{ opacity:0.6; transform: translateY(0) scale(1); }
+
+@keyframes particle-burst {
+  0%   { opacity:1; transform: translate(0,0) scale(1) rotate(0deg); }
+  100% { opacity:0; transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(360deg); }
+}
+
   50%{ opacity:1; transform: translateY(-12px) scale(1.2); }
 }
 
@@ -987,6 +1035,8 @@ body.bedtime-mode .stars-layer { filter: none; }
 
 @keyframes fadeInUp { from { opacity:0; transform: translateY(16px); } to { opacity:1; transform: translateY(0); } }
 @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+@keyframes cinema-flash { 0%{opacity:0} 20%{opacity:1} 60%{opacity:0.4} 100%{opacity:0} }
+@keyframes flare-expand { 0%{opacity:0;transform:translate(-50%,-50%) scale(0)} 20%{opacity:1;transform:translate(-50%,-50%) scale(1)} 80%{opacity:0.3} 100%{opacity:0;transform:translate(-50%,-50%) scale(3)} }
 
 /* ── TYPOGRAPHY ── */
 h1, h2, h3 { font-family: var(--font-title); line-height: 1.2; }
@@ -1140,14 +1190,65 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
 /* Hamburger — hidden on desktop */
 .hamburger { display: none !important; }
 
-/* ─────────────────────────────────────
-   HERO  — 2-column on desktop
-───────────────────────────────────── */
+/* ── HERO  — 2-column on desktop — CINEMATIC UPGRADE ── */
 .hero {
   min-height: 100vh;
   display: flex; align-items: center;
   padding: 140px 0 80px;
   overflow: hidden; position: relative;
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(192,132,252,0.22) 0%, transparent 55%),
+    radial-gradient(ellipse at 78% 25%, rgba(255,110,180,0.18) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(59,130,246,0.12) 0%, transparent 50%),
+    linear-gradient(160deg, #0a021a 0%, #130730 45%, #06011a 100%);
+}
+
+/* Cinematic vignette overlay */
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 40%, rgba(0,0,0,0.55) 100%);
+  pointer-events: none; z-index: 1;
+}
+
+/* Animated film grain overlay */
+.hero::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 1; opacity: 0.3;
+  animation: grain 0.5s steps(1) infinite;
+}
+@keyframes grain {
+  0%   { transform: translate(0, 0); }
+  10%  { transform: translate(-2%, -1%); }
+  20%  { transform: translate(1%, 2%); }
+  30%  { transform: translate(-1%, 1%); }
+  40%  { transform: translate(2%, -2%); }
+  50%  { transform: translate(-2%, 2%); }
+  60%  { transform: translate(1%, -1%); }
+  70%  { transform: translate(-1%, 2%); }
+  80%  { transform: translate(2%, 1%); }
+  90%  { transform: translate(-1%, -2%); }
+  100% { transform: translate(0, 0); }
+}
+
+/* Cinematic light beam */
+.hero-beam {
+  position: absolute; top: -10%; left: 15%; width: 400px; height: 130%;
+  background: linear-gradient(180deg, rgba(192,132,252,0.07) 0%, rgba(255,110,180,0.04) 50%, transparent 100%);
+  transform: rotate(-20deg); pointer-events: none; z-index: 0;
+  animation: beam-drift 8s ease-in-out infinite alternate;
+}
+.hero-beam-2 {
+  position: absolute; top: -10%; right: 10%; width: 280px; height: 110%;
+  background: linear-gradient(180deg, rgba(59,130,246,0.06) 0%, transparent 70%);
+  transform: rotate(15deg); pointer-events: none; z-index: 0;
+  animation: beam-drift 11s ease-in-out infinite alternate-reverse;
+}
+@keyframes beam-drift {
+  from { opacity: 0.5; transform: rotate(-20deg) translateX(0); }
+  to   { opacity: 1;   transform: rotate(-20deg) translateX(30px); }
 }
 .hero-inner {
   max-width: 1280px; margin: 0 auto; padding: 0 40px;
@@ -1159,13 +1260,17 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
 }
 .hero-badge {
   display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(192,132,252,0.15); border: 1px solid rgba(192,132,252,0.3);
+  background: rgba(192,132,252,0.12); border: 1px solid rgba(192,132,252,0.35);
   border-radius: 50px; padding: 8px 20px; margin-bottom: 24px;
   font-size: 0.85rem; color: var(--lilac); font-weight: 700;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 0 20px rgba(192,132,252,0.15), inset 0 1px 0 rgba(255,255,255,0.08);
+  letter-spacing: 0.5px;
 }
 .hero-badge .dot {
   width: 8px; height: 8px; border-radius: 50%;
   background: var(--rose); animation: pulse 2s infinite;
+  box-shadow: 0 0 8px var(--rose);
 }
 @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.3)} }
 
@@ -1173,6 +1278,8 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
   font-family: var(--font-title);
   font-size: clamp(2.8rem, 4vw, 4.4rem);
   line-height: 1.15; margin-bottom: 24px; color: var(--pearl);
+  text-shadow: 0 2px 40px rgba(0,0,0,0.6), 0 0 80px rgba(192,132,252,0.2);
+  letter-spacing: -0.5px;
 }
 .hero-subtitle {
   font-size: 1.2rem; line-height: 1.8;
@@ -1181,10 +1288,11 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
 .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
 .hero-stats {
   display: flex; gap: 40px; margin-top: 56px;
-  padding-top: 36px; border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 36px; border-top: 1px solid rgba(255,255,255,0.08);
 }
 .hero-stat .num {
   font-family: var(--font-title); font-size: 2rem; color: var(--gold); display: block;
+  text-shadow: 0 0 20px rgba(251,191,36,0.4);
 }
 .hero-stat .label { font-size: 0.82rem; color: var(--text-muted); }
 
@@ -1195,6 +1303,37 @@ h4, h5, h6, button, input, select, textarea { font-family: var(--font-body); }
   display: flex !important;
   align-items: center; justify-content: center;
 }
+
+/* Cinematic aura behind the book */
+.hero-visual::before {
+  content: '';
+  position: absolute;
+  width: 320px; height: 420px;
+  background: radial-gradient(ellipse at 50% 50%,
+    rgba(192,132,252,0.35) 0%,
+    rgba(255,110,180,0.2) 40%,
+    transparent 75%);
+  border-radius: 50%;
+  filter: blur(40px);
+  animation: aura-pulse 4s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+@keyframes aura-pulse {
+  0%,100% { transform: scale(1);    opacity: 0.7; }
+  50%      { transform: scale(1.12); opacity: 1; }
+}
+
+/* Floor reflection */
+.hero-visual::after {
+  content: '';
+  position: absolute;
+  bottom: 20px; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 30px;
+  background: radial-gradient(ellipse at 50% 100%, rgba(192,132,252,0.3) 0%, transparent 70%);
+  filter: blur(12px);
+  pointer-events: none; z-index: 0;
+}
+
 .floating-books { position: relative; width: 380px; height: 420px; }
 
 .float-book {
@@ -2019,7 +2158,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
 
 <!-- ══ LOADING OVERLAY ══ -->
 <div class="loading-overlay" id="loading-overlay">
-  <span class="logo-text">✨ Mundo Encantado</span>
+  <span class="logo-text">Mundo Encantado</span>
   <div class="spinner"></div>
   <p>Preparando a magia...</p>
 </div>
@@ -2033,7 +2172,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
 <nav class="navbar" id="navbar">
   <div class="nav-inner">
     <a href="#" class="nav-logo" onclick="showPage('landing')">
-      <span class="nav-logo-icon">📚</span>
+      <span class="nav-logo-icon" style="display:none"><img id="logo-img-nav" class="logo-cover-img" src="" alt="" onerror="this.style.display='none'" /></span>
       <div>
         <span class="nav-logo-text">Mundo Encantado</span>
         <span class="nav-logo-sub">dos Livros</span>
@@ -2062,6 +2201,8 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
 
   <!-- HERO -->
   <section class="hero">
+    <div class="hero-beam"></div>
+    <div class="hero-beam-2"></div>
     <div class="hero-inner">
       <div class="hero-content">
         <div class="hero-badge">
@@ -2089,7 +2230,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
       </div>
       <div class="hero-visual">
         <!-- LIVRO 3D — igual à área logada -->
-        <div class="book-3d-wrap landing-book-wrap">
+        <div class="book-3d-wrap landing-book-wrap entering" id="landing-book-wrap">
           <div class="book-sparkles">
             <span class="bsp s1">✨</span>
             <span class="bsp s2">⭐</span>
@@ -2098,8 +2239,8 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
             <span class="bsp s5">⭐</span>
             <span class="bsp s6">🌟</span>
           </div>
-          <div class="book-3d" id="landing-book-3d" onclick="openModal('register-modal')">
-            <!-- Front Cover — mesma estrutura da área logada -->
+          <div class="book-3d" id="landing-book-3d">
+            <!-- Front Cover -->
             <div class="book-face book-front">
               <div class="book-cover-art" id="landing-hero-book-cover">
                 <div class="book-cover-gradient" id="landing-hero-cover-grad">
@@ -2108,7 +2249,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
                   <div class="book-cover-author" id="landing-hero-cover-author">Mundo Encantado</div>
                 </div>
               </div>
-              <div class="book-shine"></div>
+              <div class="book-shine" id="landing-book-shine"></div>
             </div>
             <!-- Spine -->
             <div class="book-face book-spine">
@@ -2120,7 +2261,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
             <div class="book-face book-pages"></div>
             <div class="book-face book-top"></div>
             <div class="book-face book-bottom"></div>
-            <button class="book-open-btn">🚀 Começar agora</button>
+            <button class="book-open-btn" id="landing-open-btn">🚀 Começar agora</button>
           </div>
 
         </div>
@@ -2188,7 +2329,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
         <div class="step-card glass-card">
           <div class="step-number">2</div>
           <h3>Escolha seu plano</h3>
-          <p>Opções para todos: teste grátis, mensal ou acesso vitalício. Cancele quando quiser.</p>
+          <p>Opções para todos: teste grátis, mensal ou anual. Cancele quando quiser.</p>
         </div>
         <div class="step-card glass-card">
           <div class="step-number">3</div>
@@ -2239,21 +2380,23 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
             <li><span class="check">✓</span> Suporte prioritário</li>
             <li><span class="check">✓</span> Cancele quando quiser</li>
           </ul>
-          <button class="btn btn-gold" onclick="openModal('register-modal')" style="width:100%">Assinar agora ⭐</button>
+          <button class="btn btn-gold" onclick="window.open('https://wa.me/5511967895115?text=Olá!%20Tenho%20interesse%20no%20Plano%20Mensal%20do%20Mundo%20Encantado%20dos%20Livros%20%F0%9F%93%9A','_blank')" style="width:100%">Assinar agora ⭐</button>
         </div>
         <div class="plan-card glass-card">
-          <div class="plan-name">Vitalício</div>
+          <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#fbbf24,#f59e0b);color:#1e0a3c;font-size:0.72rem;font-weight:800;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:0.5px;">💰 MELHOR PREÇO</div>
+          <div class="plan-name">Anual</div>
           <div class="plan-price">
-            <span class="currency">R$</span><span class="amount">197</span>
+            <span class="currency">R$</span><span class="amount">147</span><span class="period">/ano</span>
           </div>
-          <p class="plan-desc">Pague uma vez, leia para sempre.</p>
+          <p class="plan-desc">12 meses por um preço especial. Economize mais!</p>
           <ul class="plan-features">
-            <li><span class="check">✓</span> Acesso vitalício</li>
-            <li><span class="check">✓</span> Todos os livros futuros</li>
+            <li><span class="check">✓</span> Acesso por 12 meses</li>
+            <li><span class="check">✓</span> Todos os livros da biblioteca</li>
             <li><span class="check">✓</span> Múltiplos dispositivos</li>
             <li><span class="check">✓</span> Suporte VIP</li>
+            <li><span class="check">✓</span> Novidades incluídas</li>
           </ul>
-          <button class="btn btn-primary" onclick="openModal('register-modal')" style="width:100%">Garantir vitalício</button>
+          <button class="btn btn-primary" onclick="window.open('https://wa.me/5511967895115?text=Olá!%20Tenho%20interesse%20no%20Plano%20Anual%20do%20Mundo%20Encantado%20dos%20Livros%20%F0%9F%93%9A','_blank')" style="width:100%">Assinar Plano Anual 📅</button>
         </div>
       </div>
     </div>
@@ -2344,7 +2487,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
       <div class="footer-grid">
         <div class="footer-brand">
           <a href="#" class="nav-logo">
-            <span class="nav-logo-icon">📚</span>
+            <span class="nav-logo-icon"><img id="logo-img-footer" class="logo-cover-img" src="" alt="📚" onerror="this.style.display='none';this.nextSibling.style.display='inline'" /></span>
             <div><span class="nav-logo-text">Mundo Encantado</span><span class="nav-logo-sub">dos Livros</span></div>
           </a>
           <p>Uma plataforma mágica de eBooks infantis para estimular a imaginação, o aprendizado e o amor pela leitura.</p>
@@ -2386,7 +2529,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
   <nav class="netflix-nav" id="netflix-nav">
     <div class="netflix-nav-left">
       <div class="netflix-logo" onclick="scrollToTop()">
-        <span class="netflix-logo-icon">📚</span>
+        <span class="netflix-logo-icon" style="display:none"><img id="logo-img-netflix" class="logo-cover-img" src="" alt="" onerror="this.style.display='none'" /></span>
         <span class="netflix-logo-text">Mundo<span>Encantado</span></span>
       </div>
       <div class="netflix-nav-links">
@@ -2932,7 +3075,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
     <aside class="admin-sidebar" id="admin-sidebar">
       <div class="sidebar-logo">
         <a href="#" class="nav-logo" style="text-decoration:none;">
-          <span class="nav-logo-icon" style="font-size:1.6rem;">📚</span>
+          <span class="nav-logo-icon" style="font-size:1.6rem;"><img id="logo-img-dash" class="logo-cover-img" src="" alt="📚" onerror="this.style.display='none';this.nextSibling.style.display='inline'" /></span>
           <div><span class="nav-logo-text" style="font-size:1.1rem;">Admin</span><span class="nav-logo-sub">Mundo Encantado</span></div>
         </a>
       </div>
@@ -3097,7 +3240,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
                 <option value="gratuito">Gratuito (todos)</option>
                 <option value="mensal">Mensal ou superior</option>
                 <option value="premium">Premium ou superior</option>
-                <option value="vitalicio">Somente Vitalício</option>
+                <option value="anual">Somente Anual</option>
               </select>
             </div>
             <div class="form-group">
@@ -3178,7 +3321,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
                 <option value="gratuito">Gratuito</option>
                 <option value="mensal">Mensal</option>
                 <option value="premium">Premium</option>
-                <option value="vitalicio">Vitalício</option>
+                <option value="anual">Anual</option>
               </select>
             </div>
             <div class="form-group">
@@ -3312,7 +3455,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
                 <div class="form-group"><label>Nome do Plano *</label><input type="text" id="plan-name" placeholder="Ex: Premium Mensal" /></div>
                 <div class="form-group"><label>Preço (R$)</label><input type="number" id="plan-price" min="0" step="0.01" placeholder="19.90" /></div>
                 <div class="form-group"><label>Tipo</label>
-                  <select id="plan-type"><option value="gratuito">Gratuito</option><option value="mensal">Mensal</option><option value="premium">Premium</option><option value="vitalicio">Vitalício</option></select></div>
+                  <select id="plan-type"><option value="gratuito">Gratuito</option><option value="mensal">Mensal</option><option value="premium">Premium</option><option value="anual">Anual</option></select></div>
                 <div class="form-group"><label>Acesso aos Livros</label>
                   <select id="plan-access"><option value="all">Todos os livros</option><option value="limited">Selecionados</option><option value="free-only">Somente gratuitos</option></select></div>
                 <div class="form-group full-width"><label>Descrição / Benefícios</label><textarea id="plan-desc-text" placeholder="Liste os benefícios, um por linha..."></textarea></div>
@@ -3899,7 +4042,7 @@ async function checkSession() {
 
 function isPlanExpired(user) {
   if (!user) return true;
-  if (user.plano === 'vitalicio') return false;
+  if (user.plano === 'anual') return false;
   if (!user.vencimentoPlano) return user.plano !== 'gratuito' ? false : false; // gratuito never expires by date
   const expiry = new Date(user.vencimentoPlano);
   return expiry < new Date();
@@ -4124,7 +4267,7 @@ async function loadDashboard() {
   setHTML('nav-avatar', userAvatar);
   setHTML('pd-avatar', userAvatar);
   setText('pd-name', name);
-  const planLabels = { gratuito: 'Plano Gratuito', mensal: '⭐ Plano Mensal', premium: '💎 Premium', vitalicio: '♾️ Vitalício' };
+  const planLabels = { gratuito: 'Plano Gratuito', mensal: '⭐ Plano Mensal', premium: '💎 Premium', anual: '📅 Plano Anual' };
   setText('pd-plan', planLabels[currentUser.plano] || 'Plano Gratuito');
   setText('client-plan-badge', planLabels[currentUser.plano] || 'Plano Gratuito');
 
@@ -4135,7 +4278,7 @@ async function loadDashboard() {
   const mainPN = document.getElementById('main-profile-name');
   if (mainPN) mainPN.textContent = name.split(' ')[0];
 
-  if (currentUser.plano === 'vitalicio') setText('stat-plan-expiry', '♾️ Vitalício');
+  if (currentUser.plano === 'anual') setText('stat-plan-expiry', '📅 Plano Anual');
   else if (currentUser.vencimentoPlano) setText('stat-plan-expiry', formatDate(currentUser.vencimentoPlano));
   else setText('stat-plan-expiry', 'Sem vencimento');
 
@@ -4212,6 +4355,18 @@ async function loadNetflixLibrary() {
 }
 
 /* ── Carrega a capa do primeiro livro disponível no livro 3D da landing ── */
+// ── Atualiza a capa do livro em todas as logos ────────────────────
+function setLogoBookCover(url) {
+  if (!url) return;
+  ['logo-img-nav','logo-img-netflix','logo-img-footer','logo-img-dash'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.onload = () => el.classList.add('loaded');
+    el.onerror = () => el.style.display = 'none';
+    el.src = url;
+  });
+}
+
 async function loadLandingBookCover() {
   try {
     const books = await Backendless.Data.of('Livros').find(
@@ -4222,6 +4377,7 @@ async function loadLandingBookCover() {
     const landingGrad = document.getElementById('landing-hero-cover-grad');
     if (!landingGrad) return;
     if (b.capaUrl) {
+      setLogoBookCover(b.capaUrl);
       landingGrad.style.cssText = `background:url(${b.capaUrl}) center/cover no-repeat;`;
       ['book-cover-emoji','book-cover-title','book-cover-author'].forEach(cls => {
         const el = landingGrad.querySelector('.'+cls); if(el) el.style.display='none';
@@ -4250,6 +4406,7 @@ function setupHero() {
   const gradEl = document.getElementById('hero-cover-grad');
   if (gradEl) {
     if (b.capaUrl) {
+      setLogoBookCover(b.capaUrl);
       gradEl.style.cssText = `background:url(${b.capaUrl}) center/cover no-repeat;`;
       ['book-cover-emoji','book-cover-title','book-cover-author'].forEach(cls => {
         const el = gradEl.querySelector('.'+cls); if(el) el.style.display='none';
@@ -4356,11 +4513,11 @@ function createNFCard(book) {
   const safeId = (book.objectId||'').replace(/'/g,"\\'");
 
   // Verificação de acesso por plano
-  const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+  const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, anual: 3 };
   const _nivelLivro   = _planHierarquia[book.planoAcesso || 'gratuito'] ?? 0;
   const _nivelUsuario = _planHierarquia[currentUser?.plano || 'gratuito'] ?? 0;
   const _temAcesso    = _nivelUsuario >= _nivelLivro;
-  const _nomesPlano   = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+  const _nomesPlano   = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', anual: 'Anual' };
   const lockBadge = !_temAcesso
     ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:#fbbf24;font-size:0.68rem;font-weight:700;padding:3px 7px;border-radius:20px;display:flex;align-items:center;gap:4px;z-index:5;">🔒 ${_nomesPlano[book.planoAcesso] || book.planoAcesso}</div>`
     : '';
@@ -4421,12 +4578,12 @@ function openBookDetail(book) {
   if (favBtn) { favBtn.classList.toggle('favorited',isFav); favBtn.textContent=isFav?'♥ Favoritado':'♡ Favoritar'; }
   const readBtn = document.getElementById('bd-read-btn');
   if (readBtn) {
-    const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+    const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, anual: 3 };
     const _nivelLivro   = _planHierarquia[book.planoAcesso || 'gratuito'] ?? 0;
     const _nivelUsuario = _planHierarquia[currentUser?.plano || 'gratuito'] ?? 0;
     const _temAcesso    = _nivelUsuario >= _nivelLivro;
     if (!_temAcesso) {
-      const _nomesPlano = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+      const _nomesPlano = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', anual: 'Anual' };
       readBtn.textContent = `🔒 Requer Plano ${_nomesPlano[book.planoAcesso] || book.planoAcesso}`;
       readBtn.style.opacity = '0.7';
       readBtn.style.cursor  = 'pointer';
@@ -4613,9 +4770,9 @@ async function openBook(book) {
   }
 
   // ── VERIFICAÇÃO DE ACESSO POR PLANO ──────────────────────────────
-  // Hierarquia: gratuito < mensal < premium < vitalicio
-  // Um livro com planoAcesso='mensal' requer plano mensal, premium ou vitalicio.
-  const planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+  // Hierarquia: gratuito < mensal < premium < anual
+  // Um livro com planoAcesso='mensal' requer plano mensal, premium ou anual.
+  const planHierarquia = { gratuito: 0, mensal: 1, premium: 2, anual: 3 };
   const planoLivro   = book.planoAcesso || 'gratuito';
   const planoUsuario = currentUser?.plano || 'gratuito';
 
@@ -4624,7 +4781,7 @@ async function openBook(book) {
 
   if (nivelUsuario < nivelLivro) {
     // Determina nome amigável do plano necessário
-    const nomesPlano = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+    const nomesPlano = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', anual: 'Anual' };
     const planoNecessario = nomesPlano[planoLivro] || planoLivro;
     showToast(`🔒 Este livro requer o plano ${planoNecessario} ou superior. Faça um upgrade para acessar!`, 'error', 6000);
     // Redireciona para a seção de planos
@@ -5503,9 +5660,9 @@ const ACHIEVEMENTS_DEF = [
   { id:'profiles_2',     icon:'👨‍👩‍👧', name:'Família Completa',        desc:'Criou 2 perfis infantis',                   condition: s => s.childProfiles >= 2 },
   { id:'profiles_3',     icon:'👨‍👩‍👧‍👦', name:'Grande Família',          desc:'Criou 3 ou mais perfis infantis',           condition: s => s.childProfiles >= 3 },
   /* ── PLANO / ASSINATURA ── */
-  { id:'plan_mensal',    icon:'💳', name:'Assinante',                desc:'Assinou o plano mensal',                    condition: s => s.plan === 'mensal' || s.plan === 'premium' || s.plan === 'vitalicio' },
-  { id:'plan_premium',   icon:'⭐', name:'Premium',                  desc:'Assinou o plano premium',                   condition: s => s.plan === 'premium' || s.plan === 'vitalicio' },
-  { id:'plan_vitalicio', icon:'♾️', name:'Vitalício',               desc:'Assinou o plano vitalício',                 condition: s => s.plan === 'vitalicio' },
+  { id:'plan_mensal',    icon:'💳', name:'Assinante',                desc:'Assinou o plano mensal',                    condition: s => s.plan === 'mensal' || s.plan === 'premium' || s.plan === 'anual' },
+  { id:'plan_premium',   icon:'⭐', name:'Premium',                  desc:'Assinou o plano premium',                   condition: s => s.plan === 'premium' || s.plan === 'anual' },
+  { id:'plan_anual', icon:'📅', name:'Anual',               desc:'Assinou o plano anual (12 meses)',                 condition: s => s.plan === 'anual' },
   /* ── GÊNEROS / CATEGORIAS ── */
   { id:'genre_aventura', icon:'⚔️', name:'Aventureiro',              desc:'Leu um livro de aventura',                  condition: s => (s.genresRead||[]).includes('aventura') },
   { id:'genre_fantasia', icon:'🧙', name:'Mago das Histórias',       desc:'Leu um livro de fantasia',                  condition: s => (s.genresRead||[]).includes('fantasia') },
@@ -6170,11 +6327,11 @@ function buildNfCard(book) {
   const cat   = book.categoria || '';
 
   // Verificação de acesso por plano
-  const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+  const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, anual: 3 };
   const _nivelLivro   = _planHierarquia[book.planoAcesso || 'gratuito'] ?? 0;
   const _nivelUsuario = _planHierarquia[currentUser?.plano || 'gratuito'] ?? 0;
   const _temAcesso    = _nivelUsuario >= _nivelLivro;
-  const _nomesPlano   = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+  const _nomesPlano   = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', anual: 'Anual' };
   const lockBadge = !_temAcesso
     ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:#fbbf24;font-size:0.68rem;font-weight:700;padding:3px 7px;border-radius:20px;z-index:5;">🔒 ${_nomesPlano[book.planoAcesso] || book.planoAcesso}</div>`
     : '';
@@ -6678,7 +6835,7 @@ function openClientProfile(clientId) {
   }
   const badges = document.getElementById('cpm-badges');
   if (badges) {
-    const planColor = {gratuito:'badge-gray',mensal:'badge-gold',premium:'badge-blue',vitalicio:'badge-green'};
+    const planColor = {gratuito:'badge-gray',mensal:'badge-gold',premium:'badge-blue',anual:'badge-green'};
     badges.innerHTML = `<span class="badge ${planColor[c.plano||'gratuito']||'badge-gold'}">${c.plano||'gratuito'}</span>
       ${c.bloqueado ? '<span class="badge badge-red">Bloqueado</span>' : '<span class="badge badge-green">Ativo</span>'}
       ${c.online ? '<span class="badge badge-green">Online</span>' : ''}`;
@@ -7115,7 +7272,7 @@ async function loadPlans() {
       {objectId:'p1',nome:'Gratuito',preco:0,tipo:'gratuito',acesso:'free-only',descricao:'Até 5 livros\nLeitor integrado'},
       {objectId:'p2',nome:'Mensal',preco:19.90,tipo:'mensal',acesso:'all',descricao:'Livros ilimitados\nNovidades todo mês'},
       {objectId:'p3',nome:'Premium',preco:39.90,tipo:'premium',acesso:'all',descricao:'Tudo do mensal\nConteúdo exclusivo'},
-      {objectId:'p4',nome:'Vitalício',preco:197,tipo:'vitalicio',acesso:'all',descricao:'Acesso vitalício\nTodos os futuros livros'},
+      {objectId:'p4',nome:'Anual',preco:197,tipo:'anual',acesso:'all',descricao:'Acesso por 12 meses\nMelhor custo-benefício'},
     ];
     renderPlans(allAdminPlans);
   }
@@ -7295,10 +7452,10 @@ async function loadAnalytics() {
     // ── Distribuição por plano ───────────────────────────
     const planQ = Backendless.DataQueryBuilder.create().setPageSize(500).setProperties(['plano']);
     const allUsersPlans = await Backendless.Data.of('Users').find(planQ);
-    const planDist = { gratuito:0, mensal:0, premium:0, vitalicio:0 };
+    const planDist = { gratuito:0, mensal:0, premium:0, anual:0 };
     allUsersPlans.forEach(u => { const p = u.plano||'gratuito'; planDist[p] = (planDist[p]||0)+1; });
     const maxPlan = Math.max(...Object.values(planDist), 1);
-    const planColors = { gratuito:'#9ca3af', mensal:'#fbbf24', premium:'#c084fc', vitalicio:'#34d399' };
+    const planColors = { gratuito:'#9ca3af', mensal:'#fbbf24', premium:'#c084fc', anual:'#34d399' };
     const chartPlans = document.getElementById('chart-plans');
     if (chartPlans) {
       chartPlans.innerHTML = Object.entries(planDist).map(([plan, cnt]) =>
@@ -7439,6 +7596,267 @@ async function loadAnalytics() {
   <button class="bedtime-music-btn" id="music-btn-lullaby" onclick="toggleAmbientMusic('lullaby',this)">🎶 Música de ninar</button>
   <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:10px;" onclick="toggleBedtimePanel()">Fechar</button>
 </div>
+
+
+
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   LANDING BOOK — Interações 3D (parallax + abertura)
+══════════════════════════════════════════════════════════ */
+(function() {
+  function initLandingBook() {
+    const wrap = document.getElementById('landing-book-wrap');
+    const book = document.getElementById('landing-book-3d');
+    const btn  = document.getElementById('landing-open-btn');
+    const shine = document.getElementById('landing-book-shine');
+    if (!wrap || !book) return;
+
+    let isOpen = false, isAnimating = false;
+    let floatActive = true;
+    const BASE_RY = -25, BASE_RX = 5;
+
+    // ── 1. Animação de entrada ────────────────────────────
+    setTimeout(() => {
+      wrap.classList.remove('entering');
+      book.classList.add('floating');
+    }, 1050);
+
+    // ── 2. Parallax no mouse ──────────────────────────────
+    wrap.addEventListener('mouseenter', () => {
+      if (isOpen || isAnimating) return;
+      book.classList.remove('floating');
+      floatActive = false;
+    });
+
+    wrap.addEventListener('mousemove', (e) => {
+      if (isOpen || isAnimating) return;
+      const rect = wrap.getBoundingClientRect();
+      const nx = ((e.clientX - rect.left) / rect.width  - 0.5) * 2;
+      const ny = ((e.clientY - rect.top)  / rect.height - 0.5) * 2;
+
+      const ry = BASE_RY + nx * 22;
+      const rx = BASE_RX - ny * 14;
+      const tz = 12 + Math.abs(nx) * 8;
+
+      book.style.transform = `rotateY(${ry}deg) rotateX(${rx}deg) scale(${1 + tz * 0.003})`;
+
+      if (shine) {
+        const sx = 50 + nx * 35;
+        const sy = 50 + ny * 35;
+        shine.style.background = `radial-gradient(ellipse at ${sx}% ${sy}%, rgba(255,255,255,0.22) 0%, transparent 65%)`;
+      }
+    });
+
+    wrap.addEventListener('mouseleave', () => {
+      if (isOpen || isAnimating) return;
+      book.style.transition = 'transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94)';
+      book.style.transform = `rotateY(${BASE_RY}deg) rotateX(${BASE_RX}deg) scale(1)`;
+      if (shine) shine.style.background = 'linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%)';
+      setTimeout(() => {
+        book.style.transition = '';
+        book.classList.add('floating');
+        floatActive = true;
+      }, 820);
+    });
+
+    // ── 3. Clique — animação de abertura cinemática ─────────────────
+    function openBook() {
+      if (isAnimating || isOpen) return;
+      isAnimating = true;
+      book.classList.remove('floating');
+      book.style.transition = 'none';
+      book.classList.add('opening');
+
+      // Cinematic flash
+      const flash = document.createElement('div');
+      flash.style.cssText = `
+        position:fixed; inset:0; z-index:9998; pointer-events:none;
+        background: radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.12) 0%, transparent 70%);
+        animation: cinema-flash 1.6s ease forwards;
+      `;
+      document.body.appendChild(flash);
+      setTimeout(() => flash.remove(), 1700);
+
+      // Lens flare
+      const flare = document.createElement('div');
+      const rect = wrap.getBoundingClientRect();
+      flare.style.cssText = `
+        position:fixed; z-index:9999; pointer-events:none;
+        left:${rect.left + rect.width/2}px; top:${rect.top + rect.height/2}px;
+        width:8px; height:8px; border-radius:50%;
+        background:white; transform:translate(-50%,-50%);
+        box-shadow:0 0 60px 30px rgba(255,255,255,0.4), 0 0 120px 60px rgba(192,132,252,0.2);
+        animation: flare-expand 1s ease forwards;
+      `;
+      document.body.appendChild(flare);
+      setTimeout(() => flare.remove(), 1100);
+
+      spawnOpenParticles(wrap);
+
+      setTimeout(() => {
+        book.classList.remove('opening');
+        isAnimating = false;
+        book.style.transition = '';
+        book.classList.add('floating');
+        openModal('register-modal');
+      }, 1600);
+    }
+
+    book.addEventListener('click', openBook);
+    if (btn) {
+      btn.addEventListener('click', (e) => { e.stopPropagation(); openBook(); });
+    }
+
+    // ── 4. Partículas ao abrir ────────────────────────────
+    function spawnOpenParticles(container) {
+      const emojis = ['✨','⭐','🌟','💫','🎉','📖'];
+      for (let i = 0; i < 12; i++) {
+        const p = document.createElement('span');
+        p.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+        p.style.cssText = `
+          position:absolute; font-size:${0.8 + Math.random() * 1.2}rem;
+          left:${30 + Math.random() * 40}%; top:${20 + Math.random() * 60}%;
+          pointer-events:none; z-index:10;
+          animation: particle-burst 1s ease-out forwards;
+          --dx:${(Math.random()-0.5)*180}px;
+          --dy:${-60 - Math.random()*120}px;
+        `;
+        container.appendChild(p);
+        setTimeout(() => p.remove(), 1050);
+      }
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initLandingBook);
+  } else {
+    setTimeout(initLandingBook, 100);
+  }
+})();
+
+/* ══════════════════════════════════════════════════════════
+   SNOWFLAKES — Partículas brancas na landing page
+══════════════════════════════════════════════════════════ */
+(function() {
+  function initSnowflakes() {
+    const landingPage = document.getElementById('page-landing');
+    if (!landingPage) return;
+
+    const canvas = document.createElement('canvas');
+    canvas.id = 'snow-canvas';
+    canvas.style.cssText = `
+      position:fixed; inset:0; z-index:2; pointer-events:none;
+      opacity:0; transition: opacity 1s ease;
+    `;
+    document.body.appendChild(canvas);
+
+    const ctx = canvas.getContext('2d');
+    let W = canvas.width  = window.innerWidth;
+    let H = canvas.height = window.innerHeight;
+    let animId = null;
+    let visible = false;
+
+    window.addEventListener('resize', () => {
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+      flakes.forEach(f => { if (f.x > W) f.x = Math.random() * W; });
+    });
+
+    // Criar flocos
+    const COUNT = 120;
+    const flakes = Array.from({ length: COUNT }, () => makeFlake());
+
+    function makeFlake(fromTop) {
+      return {
+        x:     Math.random() * W,
+        y:     fromTop ? -10 : Math.random() * H,
+        r:     0.5 + Math.random() * 2.5,
+        speed: 0.3 + Math.random() * 0.9,
+        drift: (Math.random() - 0.5) * 0.4,
+        alpha: 0.3 + Math.random() * 0.6,
+        angle: Math.random() * Math.PI * 2,
+        spin:  (Math.random() - 0.5) * 0.02,
+        wobble: Math.random() * Math.PI * 2,
+        wobbleSpeed: 0.01 + Math.random() * 0.02,
+      };
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, W, H);
+
+      flakes.forEach(f => {
+        // Movimento
+        f.wobble += f.wobbleSpeed;
+        f.y += f.speed;
+        f.x += f.drift + Math.sin(f.wobble) * 0.5;
+        f.angle += f.spin;
+
+        // Reset ao sair pela base
+        if (f.y > H + 10) Object.assign(f, makeFlake(true));
+        if (f.x < -10)    f.x = W + 10;
+        if (f.x > W + 10) f.x = -10;
+
+        // Desenhar floco de neve (estrela 6 pontas simples)
+        ctx.save();
+        ctx.translate(f.x, f.y);
+        ctx.rotate(f.angle);
+        ctx.globalAlpha = f.alpha;
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = f.r * 0.5;
+        ctx.lineCap = 'round';
+
+        // 6 braços
+        for (let i = 0; i < 6; i++) {
+          ctx.rotate(Math.PI / 3);
+          ctx.beginPath();
+          ctx.moveTo(0, 0);
+          ctx.lineTo(0, f.r * 2.5);
+          ctx.stroke();
+          // Ramificações
+          ctx.beginPath();
+          ctx.moveTo(0, f.r * 1.2);
+          ctx.lineTo(f.r * 0.6, f.r * 0.7);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.moveTo(0, f.r * 1.2);
+          ctx.lineTo(-f.r * 0.6, f.r * 0.7);
+          ctx.stroke();
+        }
+
+        ctx.restore();
+      });
+
+      animId = requestAnimationFrame(draw);
+    }
+
+    // Mostrar só quando a landing page estiver visível
+    function checkVisibility() {
+      const isLandingVisible = !landingPage.classList.contains('hidden') &&
+                               landingPage.style.display !== 'none';
+      if (isLandingVisible && !visible) {
+        visible = true;
+        canvas.style.opacity = '1';
+        if (!animId) draw();
+      } else if (!isLandingVisible && visible) {
+        visible = false;
+        canvas.style.opacity = '0';
+      }
+    }
+
+    // Observar mudanças de visibilidade da landing page
+    const observer = new MutationObserver(checkVisibility);
+    observer.observe(landingPage, { attributes: true, attributeFilter: ['class', 'style'] });
+    checkVisibility();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initSnowflakes);
+  } else {
+    setTimeout(initSnowflakes, 150);
+  }
+})();
+</script>
 
 </body>
 </html>
