@@ -4354,32 +4354,50 @@ function createNFCard(book) {
   const color = getBookColor(book.objectId);
   const emoji = getBookEmoji(book);
   const safeId = (book.objectId||'').replace(/'/g,"\\'");
+
+  // Verificação de acesso por plano
+  const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+  const _nivelLivro   = _planHierarquia[book.planoAcesso || 'gratuito'] ?? 0;
+  const _nivelUsuario = _planHierarquia[currentUser?.plano || 'gratuito'] ?? 0;
+  const _temAcesso    = _nivelUsuario >= _nivelLivro;
+  const _nomesPlano   = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+  const lockBadge = !_temAcesso
+    ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:#fbbf24;font-size:0.68rem;font-weight:700;padding:3px 7px;border-radius:20px;display:flex;align-items:center;gap:4px;z-index:5;">🔒 ${_nomesPlano[book.planoAcesso] || book.planoAcesso}</div>`
+    : '';
+  const playBtnLabel = _temAcesso ? '▶ Ler' : '🔒 Ler';
+
   const coverContent = book.capaUrl
     ? `<img src="${book.capaUrl}" alt="" loading="lazy" onerror="this.style.display='none'" />`
     : `<div class="nf-card-cover-placeholder" style="background:${color.gradient};"><span class="cover-emoji">${emoji}</span><span class="cover-title">${(book.titulo||'').substring(0,20)}</span></div>`;
   card.innerHTML = `
-    <div class="nf-card-cover" style="background:${color.gradient};">
+    <div class="nf-card-cover" style="background:${color.gradient};${!_temAcesso?'filter:brightness(0.75);':''}">
       ${coverContent}
+      ${lockBadge}
       ${pct>0?`<div class="nf-card-progress"><div class="nf-card-progress-fill" style="width:${pct}%"></div></div>`:''}
       ${done?'<div class="nf-card-done">✓ Lido</div>':''}
       <div class="nf-card-cat">${getCatLabel(book)}</div>
       <div class="nf-card-overlay">
         <div class="nf-card-overlay-title">${(book.titulo||'Livro').substring(0,32)}</div>
         <div class="nf-card-overlay-btns">
-          <button class="nf-card-play-btn" onclick="event.stopPropagation();openBook(allBooks.find(b=>b.objectId==='${safeId}'))">▶ Ler</button>
+          <button class="nf-card-play-btn" onclick="event.stopPropagation();openBook(allBooks.find(b=>b.objectId==='${safeId}'))">${playBtnLabel}</button>
           <button class="nf-card-fav-btn${isFav?' favorited':''}" onclick="event.stopPropagation();toggleFavorite('${safeId}',this)">${isFav?'♥':'♡'}</button>
         </div>
       </div>
     </div>
     <div class="nf-card-info">
       <div class="nf-card-title">${book.titulo||'Livro'}</div>
-      <div class="nf-card-sub">${pct>0?pct+'% lido':'📌 Não iniciado'}</div>
+      <div class="nf-card-sub">${!_temAcesso ? `🔒 Plano ${_nomesPlano[book.planoAcesso]||book.planoAcesso}` : (pct>0?pct+'% lido':'📌 Não iniciado')}</div>
     </div>`;
   card.addEventListener('click', () => openBookDetail(book));
   return card;
 }
 
 function openBookDetail(book) {
+  // Permite chamar com string (objectId) ou objeto
+  if (typeof book === 'string') {
+    book = allBooks.find(b => b.objectId === book);
+    if (!book) return;
+  }
   detailBookObj = book;
   const prog = progressMap[book.objectId];
   const pct = prog ? Math.round((prog.paginaAtual/Math.max(prog.totalPaginas,1))*100) : 0;
@@ -4402,7 +4420,22 @@ function openBookDetail(book) {
   const favBtn = document.getElementById('bd-fav-btn');
   if (favBtn) { favBtn.classList.toggle('favorited',isFav); favBtn.textContent=isFav?'♥ Favoritado':'♡ Favoritar'; }
   const readBtn = document.getElementById('bd-read-btn');
-  if (readBtn) readBtn.textContent=(prog&&prog.paginaAtual>1)?'▶ Continuar Lendo':'▶ Ler Agora';
+  if (readBtn) {
+    const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+    const _nivelLivro   = _planHierarquia[book.planoAcesso || 'gratuito'] ?? 0;
+    const _nivelUsuario = _planHierarquia[currentUser?.plano || 'gratuito'] ?? 0;
+    const _temAcesso    = _nivelUsuario >= _nivelLivro;
+    if (!_temAcesso) {
+      const _nomesPlano = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+      readBtn.textContent = `🔒 Requer Plano ${_nomesPlano[book.planoAcesso] || book.planoAcesso}`;
+      readBtn.style.opacity = '0.7';
+      readBtn.style.cursor  = 'pointer';
+    } else {
+      readBtn.textContent = (prog && prog.paginaAtual > 1) ? '▶ Continuar Lendo' : '▶ Ler Agora';
+      readBtn.style.opacity = '';
+      readBtn.style.cursor  = '';
+    }
+  }
   const bdPW = document.getElementById('bd-progress-wrap');
   if (bdPW) {
     bdPW.style.display = pct>0 ? 'flex' : 'none';
@@ -4412,6 +4445,7 @@ function openBookDetail(book) {
 }
 
 function openBookFromDetail() { closeModal('book-detail-modal'); if(detailBookObj) openBook(detailBookObj); }
+function openBookById(id) { const b = allBooks.find(b => b.objectId === id); if(b) openBook(b); }
 function toggleFavoriteFromDetail() {
   if(!detailBookObj) return;
   const btn = document.getElementById('bd-fav-btn');
@@ -4577,6 +4611,34 @@ async function openBook(book) {
     showToast('Este livro ainda não tem PDF disponível.', 'error');
     return;
   }
+
+  // ── VERIFICAÇÃO DE ACESSO POR PLANO ──────────────────────────────
+  // Hierarquia: gratuito < mensal < premium < vitalicio
+  // Um livro com planoAcesso='mensal' requer plano mensal, premium ou vitalicio.
+  const planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+  const planoLivro   = book.planoAcesso || 'gratuito';
+  const planoUsuario = currentUser?.plano || 'gratuito';
+
+  const nivelLivro   = planHierarquia[planoLivro]   ?? 0;
+  const nivelUsuario = planHierarquia[planoUsuario] ?? 0;
+
+  if (nivelUsuario < nivelLivro) {
+    // Determina nome amigável do plano necessário
+    const nomesPlano = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+    const planoNecessario = nomesPlano[planoLivro] || planoLivro;
+    showToast(`🔒 Este livro requer o plano ${planoNecessario} ou superior. Faça um upgrade para acessar!`, 'error', 6000);
+    // Redireciona para a seção de planos
+    setTimeout(() => {
+      const secaoPlanos = document.getElementById('planos');
+      if (secaoPlanos) {
+        showPage('landing');
+        setTimeout(() => secaoPlanos.scrollIntoView({ behavior: 'smooth' }), 200);
+      }
+    }, 1000);
+    return;
+  }
+  // ─────────────────────────────────────────────────────────────────
+
   currentBookId    = book.objectId;
   currentBookTitle = book.titulo || 'Livro';
 
@@ -6106,25 +6168,38 @@ function buildNfCard(book) {
   const emoji = book.emoji || '📚';
   const title = book.titulo || 'Sem título';
   const cat   = book.categoria || '';
+
+  // Verificação de acesso por plano
+  const _planHierarquia = { gratuito: 0, mensal: 1, premium: 2, vitalicio: 3 };
+  const _nivelLivro   = _planHierarquia[book.planoAcesso || 'gratuito'] ?? 0;
+  const _nivelUsuario = _planHierarquia[currentUser?.plano || 'gratuito'] ?? 0;
+  const _temAcesso    = _nivelUsuario >= _nivelLivro;
+  const _nomesPlano   = { gratuito: 'Gratuito', mensal: 'Mensal', premium: 'Premium', vitalicio: 'Vitalício' };
+  const lockBadge = !_temAcesso
+    ? `<div style="position:absolute;top:6px;left:6px;background:rgba(0,0,0,0.75);color:#fbbf24;font-size:0.68rem;font-weight:700;padding:3px 7px;border-radius:20px;z-index:5;">🔒 ${_nomesPlano[book.planoAcesso] || book.planoAcesso}</div>`
+    : '';
+  const playBtnLabel = _temAcesso ? '▶ Ler' : '🔒 Ler';
+
   const coverHtml = book.capaUrl
     ? `<img src="${book.capaUrl}" alt="${title}" onerror="this.parentElement.innerHTML='<div class=nf-card-cover-placeholder><span class=cover-emoji>${emoji}</span><span class=cover-title>${title}</span></div>'">`
     : `<div class="nf-card-cover-placeholder"><span class="cover-emoji">${emoji}</span><span class="cover-title">${title}</span></div>`;
   return `
     <div class="nf-card" onclick="openBookDetail('${book.objectId}')">
-      <div class="nf-card-cover">
+      <div class="nf-card-cover" style="${!_temAcesso?'filter:brightness(0.75);':''}">
         ${coverHtml}
+        ${lockBadge}
         ${cat ? `<div class="nf-card-cat">${cat}</div>` : ''}
         <div class="nf-card-overlay">
           <div class="nf-card-overlay-title">${title}</div>
           <div class="nf-card-overlay-btns">
-            <button class="nf-card-play-btn" onclick="event.stopPropagation();openBookById('${book.objectId}')">▶ Ler</button>
+            <button class="nf-card-play-btn" onclick="event.stopPropagation();openBookById('${book.objectId}')">${playBtnLabel}</button>
             <button class="nf-card-fav-btn" onclick="event.stopPropagation();toggleFavoriteById('${book.objectId}')">♡</button>
           </div>
         </div>
       </div>
       <div class="nf-card-info">
         <div class="nf-card-title">${title}</div>
-        <div class="nf-card-sub">${cat}</div>
+        <div class="nf-card-sub">${!_temAcesso ? `🔒 Plano ${_nomesPlano[book.planoAcesso]||book.planoAcesso}` : cat}</div>
       </div>
     </div>`;
 }
