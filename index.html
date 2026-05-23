@@ -4804,6 +4804,9 @@ async function openBook(book) {
   document.getElementById('reader-loading').style.display = 'flex';
   showPage('reader');
 
+  // ── Dispara evento para o sistema de conquistas ──
+  document.dispatchEvent(new CustomEvent('bookOpened', { detail: { id: book.objectId, title: currentBookTitle } }));
+
   try {
     pdfDoc = await pdfjsLib.getDocument({ url: book.pdfUrl, withCredentials: false }).promise;
     totalPages = pdfDoc.numPages;
@@ -4895,6 +4898,11 @@ async function saveReadingProgress(pageNum, isBookmark = false) {
     }
 
     await Backendless.Data.of('ProgressoLeitura').save(data);
+
+    // ── Dispara bookCompleted quando o livro é concluído ──
+    if (pct >= 100 && (!existing.length || (existing[0].progresso || 0) < 100)) {
+      document.dispatchEvent(new CustomEvent('bookCompleted', { detail: { id: currentBookId, title: currentBookTitle } }));
+    }
   } catch(e) { /* non-critical */ }
 }
 
@@ -4903,9 +4911,13 @@ function prevPage() { if (currentPage > 1)           renderPage(currentPage - 1)
 
 function closeReader() {
   pdfDoc = null; currentPage = 1; totalPages = 0;
-  const bookId = currentBookId;
+  const bookId    = currentBookId;
+  const bookTitle = currentBookTitle;
   currentBookId = null;
   showPage('dashboard');
+
+  // ── Dispara evento para o sistema de conquistas ──
+  document.dispatchEvent(new CustomEvent('bookClosed', { detail: { id: bookId, title: bookTitle } }));
   // Refresh progress for updated card
   if (bookId) {
     setTimeout(async () => {
@@ -5793,7 +5805,7 @@ async function loadContinueReadingHero() {
       } else { coverEl.textContent = '📚'; }
 
       heroEl.style.display = 'block';
-      updateReadingStats({ booksOpened: 1 });
+      // Não incrementa booksOpened aqui — será incrementado pelo evento bookOpened ao abrir de fato
     } catch(e) { /* livro não encontrado */ }
   } catch(e) { /* sem progresso */ }
 }
@@ -6595,7 +6607,8 @@ function initNewFeatures() {
 
   // Atualiza conquistas a cada abertura de livro
   document.addEventListener('bookOpened', (e) => {
-    updateReadingStats({ booksOpened: (readingStats.booksOpened||0) + 1 });
+    const newCount = (readingStats.booksOpened || 0) + 1;
+    updateReadingStats({ booksOpened: newCount });
     startReadingSession();
   });
   document.addEventListener('bookClosed', (e) => {
