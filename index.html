@@ -2539,6 +2539,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
         <button class="nlink" onclick="showDashSection('favorites')">Meus Favoritos</button>
         <button class="nlink" onclick="showDashSection('recommendations')">🌟 Para Você</button>
         <button class="nlink" onclick="openAchievementsModal()">🏆 Conquistas</button>
+        <button class="nlink jornada-nav-btn" onclick="openJornadaModal()" id="jornada-nav-btn">⚔️ Jornada</button>
       </div>
     </div>
     <div class="netflix-nav-right">
@@ -2575,6 +2576,7 @@ hr.divider { border: none; border-top: 1px solid rgba(255,255,255,0.08); margin:
           <button class="pd-item" onclick="openProfilesModal()">👤 Perfis</button>
           <button class="pd-item" onclick="openParentAreaModal()">👨‍👩‍👧 Área dos Pais</button>
           <button class="pd-item" onclick="openAchievementsModal()">🏆 Conquistas</button>
+          <button class="pd-item" onclick="openJornadaModal()">⚔️ Jornada do Leitor</button>
           <button class="pd-item" onclick="showDashSection('favorites')">❤️ Favoritos</button>
           <button class="pd-item" onclick="showDashSection('history')">📖 Histórico</button>
           <hr class="pd-divider" />
@@ -8079,6 +8081,1480 @@ async function loadAnalytics() {
     setTimeout(initSnowflakes, 150);
   }
 })();
+</script>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     JORNADA DO LEITOR — HTML MODALS
+══════════════════════════════════════════════════════════ -->
+
+<!-- MODAL: Jornada / Perfil do Leitor -->
+<div class="modal-overlay hidden" id="jornada-modal" style="z-index:9000;">
+  <div class="jornada-modal-inner">
+    <button class="modal-close" onclick="closeModal('jornada-modal')">✕</button>
+    <!-- Abas -->
+    <div class="jornada-tabs">
+      <button class="jtab active" onclick="switchJornadaTab('perfil',this)">🧙 Meu Perfil</button>
+      <button class="jtab" onclick="switchJornadaTab('conquistas',this)">🏅 Conquistas</button>
+      <button class="jtab" onclick="switchJornadaTab('ranking',this)">👑 Ranking</button>
+    </div>
+
+    <!-- TAB: Perfil -->
+    <div class="jtab-content active" id="jtab-perfil">
+      <!-- Hero do perfil -->
+      <div class="jornada-hero">
+        <div class="jornada-hero-bg" id="jornada-hero-bg"></div>
+        <div class="jornada-hero-content">
+          <div class="jornada-avatar-wrap">
+            <div class="jornada-avatar" id="jornada-avatar">🦄</div>
+            <div class="jornada-level-badge" id="jornada-level-badge">1</div>
+          </div>
+          <div class="jornada-hero-info">
+            <div class="jornada-username" id="jornada-username">Leitor</div>
+            <div class="jornada-titulo-atual" id="jornada-titulo-atual">🌱 Aprendiz da Floresta</div>
+            <div class="jornada-moedas-display">
+              <span class="moeda-icon">🪙</span>
+              <span id="jornada-moedas-count">0</span>
+              <span class="moeda-label">Moedas Mágicas</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XP Bar -->
+      <div class="jornada-xp-section">
+        <div class="jornada-xp-header">
+          <span class="jornada-xp-label">✨ Experiência</span>
+          <span id="jornada-xp-display">0 / 100 XP</span>
+        </div>
+        <div class="jornada-xp-bar-outer">
+          <div class="jornada-xp-bar-inner" id="jornada-xp-bar" style="width:0%">
+            <div class="jornada-xp-shine"></div>
+          </div>
+        </div>
+        <div class="jornada-next-level">🎯 Próximo nível: <span id="jornada-next-level-name">Explorador dos Livros</span></div>
+      </div>
+
+      <!-- Stats Grid -->
+      <div class="jornada-stats-grid">
+        <div class="jornada-stat-card">
+          <div class="jsc-icon">📚</div>
+          <div class="jsc-val" id="jstat-books">0</div>
+          <div class="jsc-label">Livros Lidos</div>
+        </div>
+        <div class="jornada-stat-card">
+          <div class="jsc-icon">⭐</div>
+          <div class="jsc-val" id="jstat-xp">0</div>
+          <div class="jsc-label">XP Total</div>
+        </div>
+        <div class="jornada-stat-card">
+          <div class="jsc-icon">🔥</div>
+          <div class="jsc-val" id="jstat-streak">0</div>
+          <div class="jsc-label">Dias Seguidos</div>
+        </div>
+        <div class="jornada-stat-card">
+          <div class="jsc-icon">🏅</div>
+          <div class="jsc-val" id="jstat-achievements">0</div>
+          <div class="jsc-label">Conquistas</div>
+        </div>
+      </div>
+
+      <!-- Ações de XP -->
+      <div class="jornada-rewards-section">
+        <div class="jornada-section-title">⚡ Como Ganhar XP <span style="font-size:0.65rem;color:var(--text-muted);font-family:var(--font-body);font-weight:400;margin-left:6px;">(automático ao realizar a ação)</span></div>
+        <div class="jornada-rewards-grid" id="jornada-rewards-grid">
+          <!-- Preenchido pelo JS -->
+        </div>
+      </div>
+
+      <!-- Títulos -->
+      <div class="jornada-titulos-section">
+        <div class="jornada-section-title">📜 Títulos</div>
+        <div class="jornada-titulos-grid" id="jornada-titulos-grid">
+          <!-- Preenchido pelo JS -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: Conquistas com raridade -->
+    <div class="jtab-content" id="jtab-conquistas">
+      <div class="jornada-ach-filters">
+        <button class="jach-filter active" onclick="filterJornadaAch('all',this)">Todas</button>
+        <button class="jach-filter comum" onclick="filterJornadaAch('comum',this)">⚪ Comum</button>
+        <button class="jach-filter rara" onclick="filterJornadaAch('rara',this)">🔵 Rara</button>
+        <button class="jach-filter epica" onclick="filterJornadaAch('epica',this)">🟣 Épica</button>
+        <button class="jach-filter lendaria" onclick="filterJornadaAch('lendaria',this)">🟡 Lendária</button>
+        <button class="jach-filter mitica" onclick="filterJornadaAch('mitica',this)">🔴 Mítica</button>
+      </div>
+      <div class="jornada-ach-grid" id="jornada-ach-grid">
+        <!-- Preenchido pelo JS -->
+      </div>
+    </div>
+
+    <!-- TAB: Ranking -->
+    <div class="jtab-content" id="jtab-ranking">
+      <div class="jornada-ranking-header">
+        <div class="jornada-section-title">👑 Ranking dos Leitores</div>
+        <button class="btn btn-secondary btn-sm" onclick="loadJornadaRanking()">↺ Atualizar</button>
+      </div>
+      <div id="jornada-ranking-list">
+        <div style="text-align:center;padding:40px;color:var(--text-muted);">
+          <div class="spinner" style="margin:0 auto;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NOTIFICAÇÃO XP flutuante -->
+<div id="xp-notif-container" style="position:fixed;bottom:120px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:10px;pointer-events:none;"></div>
+
+<!-- ══════════════════════════════════════════════════════════
+     JORNADA DO LEITOR — CSS
+══════════════════════════════════════════════════════════ -->
+<style>
+/* ── Jornada nav button ── */
+.jornada-nav-btn {
+  background: linear-gradient(135deg, rgba(192,132,252,0.25), rgba(255,110,180,0.2)) !important;
+  border: 1px solid rgba(192,132,252,0.4) !important;
+  color: var(--lilac) !important;
+  position: relative;
+}
+.jornada-nav-btn::after {
+  content: '';
+  position: absolute; inset: 0; border-radius: 8px;
+  background: linear-gradient(135deg, rgba(192,132,252,0.1), rgba(255,110,180,0.1));
+  animation: jnav-pulse 2s ease-in-out infinite;
+}
+@keyframes jnav-pulse {
+  0%,100% { opacity: 0; }
+  50% { opacity: 1; }
+}
+
+/* ── Modal inner ── */
+.jornada-modal-inner {
+  max-width: 740px; width: 96%; max-height: 92vh; overflow-y: auto;
+  background: linear-gradient(135deg, #120530 0%, #1a0a38 50%, #0f0520 100%);
+  border: 1px solid rgba(192,132,252,0.3);
+  border-radius: 28px; padding: 0;
+  position: relative;
+  box-shadow: 0 40px 120px rgba(0,0,0,0.8), 0 0 80px rgba(192,132,252,0.2);
+}
+.jornada-modal-inner::-webkit-scrollbar { width: 5px; }
+.jornada-modal-inner::-webkit-scrollbar-thumb { background: rgba(192,132,252,0.4); border-radius: 3px; }
+
+/* ── Abas ── */
+.jornada-tabs {
+  display: flex; gap: 4px; padding: 20px 20px 0; position: sticky; top: 0; z-index: 10;
+  background: linear-gradient(135deg, #120530, #1a0a38);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+}
+.jtab {
+  flex: 1; background: none; border: none; color: var(--text-muted);
+  font-family: var(--font-body); font-weight: 700; font-size: 0.85rem;
+  padding: 10px 8px 14px; border-radius: 8px 8px 0 0; cursor: pointer;
+  transition: all 0.25s; position: relative;
+}
+.jtab.active { color: var(--lilac); }
+.jtab.active::after {
+  content: '';
+  position: absolute; bottom: 0; left: 10%; right: 10%; height: 2px;
+  background: linear-gradient(90deg, var(--rose), var(--lilac));
+  border-radius: 2px 2px 0 0;
+}
+.jtab-content { display: none; padding: 24px 24px 28px; }
+.jtab-content.active { display: block; }
+
+/* ── Hero do Perfil ── */
+.jornada-hero {
+  position: relative; border-radius: 20px; overflow: hidden;
+  background: linear-gradient(135deg, rgba(192,132,252,0.2), rgba(255,110,180,0.15));
+  border: 1px solid rgba(192,132,252,0.25); padding: 28px; margin-bottom: 20px;
+}
+.jornada-hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 80% 20%, rgba(251,191,36,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 20% 80%, rgba(255,110,180,0.1) 0%, transparent 50%);
+}
+.jornada-hero-content { position: relative; display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.jornada-avatar-wrap { position: relative; flex-shrink: 0; }
+.jornada-avatar {
+  width: 80px; height: 80px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--rose), var(--lilac-deep));
+  border: 3px solid var(--gold);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.4rem;
+  box-shadow: 0 0 30px rgba(251,191,36,0.4), 0 0 60px rgba(192,132,252,0.3);
+}
+.jornada-level-badge {
+  position: absolute; bottom: -6px; right: -6px;
+  background: linear-gradient(135deg, var(--gold), #f59e0b);
+  color: var(--bg-deep); border-radius: 50%;
+  width: 30px; height: 30px; font-size: 0.75rem; font-weight: 900;
+  display: flex; align-items: center; justify-content: center;
+  border: 2px solid var(--bg-deep);
+  box-shadow: 0 2px 12px rgba(251,191,36,0.6);
+}
+.jornada-hero-info { flex: 1; min-width: 0; }
+.jornada-username { font-family: var(--font-title); font-size: 1.5rem; color: var(--pearl); margin-bottom: 4px; }
+.jornada-titulo-atual {
+  font-size: 0.9rem; color: var(--lilac); font-weight: 700; margin-bottom: 12px;
+  background: rgba(192,132,252,0.15); border: 1px solid rgba(192,132,252,0.3);
+  display: inline-block; padding: 4px 14px; border-radius: 50px;
+}
+.moeda-icon { font-size: 1.2rem; }
+.moeda-label { font-size: 0.78rem; color: var(--text-muted); }
+.jornada-moedas-display {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);
+  padding: 6px 14px; border-radius: 50px; display: inline-flex;
+}
+.jornada-moedas-display span:nth-child(2) { font-weight: 900; font-size: 1.1rem; color: var(--gold); }
+
+/* ── XP Bar ── */
+.jornada-xp-section { margin-bottom: 20px; }
+.jornada-xp-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 0.85rem; font-weight: 700; color: var(--text-light); }
+.jornada-xp-bar-outer {
+  height: 18px; background: rgba(255,255,255,0.08); border-radius: 50px; overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1); position: relative;
+}
+.jornada-xp-bar-inner {
+  height: 100%; border-radius: 50px; position: relative; overflow: hidden;
+  background: linear-gradient(90deg, var(--rose), var(--lilac), var(--gold));
+  transition: width 0.8s cubic-bezier(0.34,1.56,0.64,1);
+  min-width: 4px;
+}
+.jornada-xp-shine {
+  position: absolute; top: 0; left: -60%; width: 40%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: xp-shine 2s ease-in-out infinite;
+}
+@keyframes xp-shine {
+  0% { left: -60%; }
+  100% { left: 120%; }
+}
+.jornada-next-level { font-size: 0.78rem; color: var(--text-muted); margin-top: 6px; text-align: right; }
+
+/* ── Stats Grid ── */
+.jornada-stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px;
+}
+.jornada-stat-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 16px 12px; text-align: center;
+  transition: all 0.3s; cursor: default;
+}
+.jornada-stat-card:hover { transform: translateY(-4px); border-color: rgba(192,132,252,0.4); box-shadow: 0 8px 24px rgba(0,0,0,0.3); }
+.jsc-icon { font-size: 1.6rem; margin-bottom: 6px; }
+.jsc-val { font-family: var(--font-title); font-size: 1.4rem; color: var(--pearl); }
+.jsc-label { font-size: 0.7rem; color: var(--text-muted); margin-top: 2px; }
+
+/* ── Seções ── */
+.jornada-section-title {
+  font-family: var(--font-title); font-size: 1rem; color: var(--pearl);
+  margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.jornada-rewards-section, .jornada-titulos-section { margin-bottom: 24px; }
+
+/* ── Rewards Grid ── */
+.jornada-rewards-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px;
+}
+.jreward-card {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 14px; padding: 14px 12px; display: flex; align-items: center; gap: 10px;
+  cursor: pointer; transition: all 0.25s;
+}
+.jreward-card:hover { background: rgba(192,132,252,0.15); border-color: rgba(192,132,252,0.4); transform: translateY(-2px); }
+.jreward-icon { font-size: 1.5rem; flex-shrink: 0; }
+.jreward-info { flex: 1; min-width: 0; }
+.jreward-name { font-size: 0.8rem; font-weight: 700; color: var(--pearl); margin-bottom: 2px; }
+.jreward-xp { font-size: 0.7rem; color: var(--gold); font-weight: 700; }
+.jreward-moedas { font-size: 0.68rem; color: var(--lilac); }
+
+/* ── Títulos Grid ── */
+.jornada-titulos-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px;
+}
+.jtitulo-card {
+  background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 14px; padding: 14px 16px; transition: all 0.3s; position: relative; overflow: hidden;
+}
+.jtitulo-card.unlocked {
+  border-color: rgba(251,191,36,0.4);
+  background: rgba(251,191,36,0.06);
+}
+.jtitulo-card.unlocked::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(251,191,36,0.08) 0%, transparent 70%);
+}
+.jtitulo-card.active-titulo {
+  border-color: var(--gold);
+  box-shadow: 0 0 20px rgba(251,191,36,0.3), 0 4px 16px rgba(0,0,0,0.4);
+}
+.jtitulo-card.locked { opacity: 0.45; filter: grayscale(0.6); }
+.jtitulo-icon { font-size: 1.8rem; margin-bottom: 6px; }
+.jtitulo-name { font-weight: 800; font-size: 0.85rem; color: var(--pearl); margin-bottom: 4px; }
+.jtitulo-req { font-size: 0.7rem; color: var(--text-muted); }
+.jtitulo-active-badge {
+  position: absolute; top: 8px; right: 8px;
+  background: var(--gold); color: var(--bg-deep); border-radius: 50px;
+  font-size: 0.6rem; font-weight: 800; padding: 2px 8px;
+}
+
+/* ── Filtros conquistas ── */
+.jornada-ach-filters {
+  display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+}
+.jach-filter {
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50px; padding: 6px 14px;
+  color: var(--text-muted); font-size: 0.78rem; font-weight: 700;
+  cursor: pointer; transition: all 0.2s; font-family: var(--font-body);
+}
+.jach-filter.active { background: rgba(192,132,252,0.2); border-color: var(--lilac); color: var(--lilac); }
+.jach-filter.comum.active  { background: rgba(156,163,175,0.2); border-color: #9ca3af; color: #9ca3af; }
+.jach-filter.rara.active   { background: rgba(59,130,246,0.2); border-color: #60a5fa; color: #60a5fa; }
+.jach-filter.epica.active  { background: rgba(192,132,252,0.2); border-color: var(--lilac); color: var(--lilac); }
+.jach-filter.lendaria.active { background: rgba(251,191,36,0.2); border-color: var(--gold); color: var(--gold); }
+.jach-filter.mitica.active { background: rgba(248,113,113,0.2); border-color: #f87171; color: #f87171; }
+
+/* ── Achievement Cards 3D ── */
+.jornada-ach-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 14px;
+}
+.jach-card {
+  border-radius: 20px; padding: 20px 12px 16px; text-align: center;
+  position: relative; overflow: hidden; cursor: default;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+  transform-style: preserve-3d; perspective: 800px;
+}
+.jach-card.locked { filter: grayscale(0.8); opacity: 0.4; }
+.jach-card.unlocked {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+}
+.jach-card.unlocked:hover {
+  transform: translateY(-6px) scale(1.04) rotateX(4deg);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+}
+
+/* Raridades */
+.jach-card.raridade-comum { border: 2px solid rgba(156,163,175,0.4); background: rgba(156,163,175,0.06); }
+.jach-card.raridade-rara  { border: 2px solid rgba(59,130,246,0.5); background: rgba(59,130,246,0.08); }
+.jach-card.raridade-epica { border: 2px solid rgba(192,132,252,0.6); background: rgba(192,132,252,0.1); }
+.jach-card.raridade-lendaria {
+  border: 2px solid rgba(251,191,36,0.7);
+  background: rgba(251,191,36,0.08);
+  box-shadow: 0 0 20px rgba(251,191,36,0.15);
+}
+.jach-card.raridade-mitica {
+  border: 2px solid rgba(248,113,113,0.7);
+  background: rgba(248,113,113,0.08);
+  box-shadow: 0 0 25px rgba(248,113,113,0.2);
+  animation: mitica-pulse 2s ease-in-out infinite;
+}
+@keyframes mitica-pulse {
+  0%,100% { box-shadow: 0 0 20px rgba(248,113,113,0.2); }
+  50% { box-shadow: 0 0 40px rgba(248,113,113,0.45); }
+}
+.jach-card.unlocked.raridade-lendaria::before,
+.jach-card.unlocked.raridade-mitica::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(135deg, transparent 30%, rgba(255,255,255,0.06) 50%, transparent 70%);
+  animation: jach-shine 3s ease-in-out infinite;
+}
+@keyframes jach-shine {
+  0%,100% { opacity: 0; transform: translateX(-100%) rotate(15deg); }
+  50% { opacity: 1; transform: translateX(200%) rotate(15deg); }
+}
+
+.jach-rarity-badge {
+  position: absolute; top: 6px; right: 6px;
+  font-size: 0.55rem; font-weight: 800; padding: 2px 7px; border-radius: 50px;
+  text-transform: uppercase; letter-spacing: 0.5px;
+}
+.raridade-comum  .jach-rarity-badge { background: rgba(156,163,175,0.2); color: #9ca3af; }
+.raridade-rara   .jach-rarity-badge { background: rgba(59,130,246,0.2);  color: #60a5fa; }
+.raridade-epica  .jach-rarity-badge { background: rgba(192,132,252,0.2); color: var(--lilac); }
+.raridade-lendaria .jach-rarity-badge { background: rgba(251,191,36,0.25); color: var(--gold); }
+.raridade-mitica   .jach-rarity-badge { background: rgba(248,113,113,0.25); color: #f87171; }
+
+.jach-icon { font-size: 2.4rem; margin-bottom: 8px; display: block; position: relative; z-index: 1; }
+.jach-name { font-weight: 800; font-size: 0.75rem; color: var(--pearl); margin-bottom: 4px; line-height: 1.3; }
+.jach-desc { font-size: 0.65rem; color: var(--text-muted); line-height: 1.4; }
+.jach-xp-reward { margin-top: 6px; font-size: 0.68rem; color: var(--gold); font-weight: 700; }
+.jach-unlock-date { margin-top: 4px; font-size: 0.6rem; color: var(--lilac); }
+
+/* ── Ranking ── */
+.jornada-ranking-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; flex-wrap: wrap; gap: 8px; }
+.jornada-ranking-item {
+  display: flex; align-items: center; gap: 14px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 14px 18px; margin-bottom: 10px; transition: all 0.25s;
+}
+.jornada-ranking-item:hover { transform: translateX(4px); border-color: rgba(192,132,252,0.3); }
+.jornada-ranking-item.rank-1 { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.4); }
+.jornada-ranking-item.rank-2 { background: rgba(147,197,253,0.08); border-color: rgba(147,197,253,0.3); }
+.jornada-ranking-item.rank-3 { background: rgba(251,146,60,0.08); border-color: rgba(251,146,60,0.3); }
+.jornada-ranking-item.rank-me { border-color: var(--lilac); background: rgba(192,132,252,0.1); }
+.jranking-pos { font-family: var(--font-title); font-size: 1.2rem; color: var(--text-muted); width: 32px; text-align: center; flex-shrink: 0; }
+.jranking-pos.gold { color: var(--gold); }
+.jranking-pos.silver { color: #9ca3af; }
+.jranking-pos.bronze { color: #f97316; }
+.jranking-avatar { width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--rose), var(--lilac-deep)); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+.jranking-info { flex: 1; min-width: 0; }
+.jranking-name { font-weight: 800; font-size: 0.88rem; color: var(--pearl); }
+.jranking-titulo { font-size: 0.72rem; color: var(--lilac); }
+.jranking-sub { font-size: 0.65rem; color: var(--text-muted); margin-top: 3px; }
+.rank-me-tag { font-size: 0.7rem; color: var(--lilac); font-weight: 700; }
+.jranking-right { text-align: right; flex-shrink: 0; }
+.jranking-level { font-family: var(--font-title); font-size: 1.1rem; color: var(--pearl); }
+.jranking-xp { font-size: 0.7rem; color: var(--text-muted); }
+.jranking-moedas { font-size: 0.65rem; color: var(--gold); margin-top: 1px; }
+
+/* Ranking summary bar */
+.jranking-summary {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 14px 20px; margin-bottom: 16px;
+}
+.jranking-summary-item { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 0 12px; }
+.jranking-summary-item + .jranking-summary-item { border-left: 1px solid rgba(255,255,255,0.1); }
+.jrs-icon { font-size: 1.1rem; }
+.jrs-val { font-family: var(--font-title); font-size: 1rem; color: var(--pearl); }
+.jrs-label { font-size: 0.62rem; color: var(--text-muted); }
+.rank-me-summary .jrs-val { color: var(--lilac); }
+
+/* Auto reward cards */
+.jreward-auto { cursor: default; }
+.jreward-auto:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.14); transform: none; }
+.jreward-desc-small { font-size: 0.6rem; color: var(--text-muted); margin-top: 2px; line-height: 1.3; }
+.jreward-auto-badge {
+  font-size: 0.9rem; flex-shrink: 0;
+  background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; color: var(--gold);
+}
+/* Streak display in stats */
+.jornada-streak-info {
+  text-align: center; background: rgba(251,191,36,0.08);
+  border: 1px solid rgba(251,191,36,0.2); border-radius: 12px; padding: 8px 12px;
+  font-size: 0.75rem; color: var(--gold); font-weight: 700;
+}
+
+/* ── XP Popup Notif ── */
+.xp-popup {
+  background: linear-gradient(135deg, rgba(20,6,50,0.97), rgba(30,10,60,0.97));
+  border: 1px solid rgba(192,132,252,0.4); border-radius: 14px;
+  padding: 12px 18px; display: flex; align-items: center; gap: 12px;
+  animation: xp-popup-in 0.4s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px rgba(192,132,252,0.2);
+  min-width: 200px; pointer-events: none;
+}
+@keyframes xp-popup-in {
+  0% { opacity: 0; transform: translateX(30px) scale(0.9); }
+  100% { opacity: 1; transform: translateX(0) scale(1); }
+}
+.xp-popup-icon { font-size: 1.6rem; }
+.xp-popup-text { flex: 1; }
+.xp-popup-title { font-weight: 800; font-size: 0.85rem; color: var(--pearl); }
+.xp-popup-sub { font-size: 0.72rem; color: var(--gold); font-weight: 700; }
+.xp-popup-moedas { font-size: 0.68rem; color: var(--lilac); }
+
+/* ── Admin Jornada Section ── */
+.admin-jornada-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.admin-jornada-ranking-table { width: 100%; border-collapse: collapse; }
+.admin-jornada-ranking-table th, .admin-jornada-ranking-table td {
+  padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.82rem; text-align: left;
+}
+.admin-jornada-ranking-table th { color: var(--text-muted); font-weight: 700; }
+.admin-jornada-ranking-table td { color: var(--pearl); }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .jornada-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .jornada-hero-content { flex-direction: column; text-align: center; align-items: center; }
+  .jornada-ach-grid { grid-template-columns: repeat(2, 1fr); }
+  .jornada-titulos-grid { grid-template-columns: 1fr; }
+  .jornada-rewards-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 420px) {
+  .jornada-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .jornada-ach-grid { grid-template-columns: repeat(2, 1fr); }
+  .jach-card { padding: 14px 8px 12px; }
+}
+</style>
+
+<!-- ══════════════════════════════════════════════════════════
+     JORNADA DO LEITOR — JAVASCRIPT ENGINE
+══════════════════════════════════════════════════════════ -->
+<script>
+/* ══════════════════════════════════════════════════════════
+   JORNADA DO LEITOR — SISTEMA COMPLETO DE XP / LEVEL / MOEDAS
+══════════════════════════════════════════════════════════ */
+
+/* ── Configurações de Level (25 níveis) ── */
+const JORNADA_LEVELS = [
+  { level: 1,  xpNeeded: 0,     titulo: '🌱 Broto Curioso'           },
+  { level: 2,  xpNeeded: 80,    titulo: '🌱 Broto Curioso'           },
+  { level: 3,  xpNeeded: 200,   titulo: '🌱 Broto Curioso'           },
+  { level: 4,  xpNeeded: 380,   titulo: '📖 Explorador dos Livros'   },
+  { level: 5,  xpNeeded: 620,   titulo: '📖 Explorador dos Livros'   },
+  { level: 6,  xpNeeded: 920,   titulo: '📖 Explorador dos Livros'   },
+  { level: 7,  xpNeeded: 1300,  titulo: '⭐ Guardião das Estrelas'   },
+  { level: 8,  xpNeeded: 1750,  titulo: '⭐ Guardião das Estrelas'   },
+  { level: 9,  xpNeeded: 2300,  titulo: '⭐ Guardião das Estrelas'   },
+  { level: 10, xpNeeded: 2950,  titulo: '📚 Mestre dos Livros'       },
+  { level: 11, xpNeeded: 3750,  titulo: '📚 Mestre dos Livros'       },
+  { level: 12, xpNeeded: 4700,  titulo: '📚 Mestre dos Livros'       },
+  { level: 13, xpNeeded: 5850,  titulo: '🔮 Sábio Encantado'         },
+  { level: 14, xpNeeded: 7200,  titulo: '🔮 Sábio Encantado'         },
+  { level: 15, xpNeeded: 8800,  titulo: '🔮 Sábio Encantado'         },
+  { level: 16, xpNeeded: 10700, titulo: '🐉 Dragão da Sabedoria'     },
+  { level: 17, xpNeeded: 12900, titulo: '🐉 Dragão da Sabedoria'     },
+  { level: 18, xpNeeded: 15500, titulo: '🐉 Dragão da Sabedoria'     },
+  { level: 19, xpNeeded: 18500, titulo: '👑 Rei/Rainha dos Contos'   },
+  { level: 20, xpNeeded: 22000, titulo: '👑 Rei/Rainha dos Contos'   },
+  { level: 21, xpNeeded: 26000, titulo: '👑 Rei/Rainha dos Contos'   },
+  { level: 22, xpNeeded: 30500, titulo: '🌌 Arquimago das Histórias' },
+  { level: 23, xpNeeded: 35500, titulo: '🌌 Arquimago das Histórias' },
+  { level: 24, xpNeeded: 41000, titulo: '🌌 Arquimago das Histórias' },
+  { level: 25, xpNeeded: 47000, titulo: '✨ Lenda Imortal dos Livros' },
+];
+
+const JORNADA_TITULOS = [
+  { id: 'broto',      name: '🌱 Broto Curioso',              icon: '🌱', req: 'Nível 1',  minLevel: 1,  desc: 'O começo de uma grande aventura!' },
+  { id: 'explorador', name: '📖 Explorador dos Livros',      icon: '📖', req: 'Nível 4',  minLevel: 4,  desc: 'Você descobriu mundos incríveis!' },
+  { id: 'guardiao',   name: '⭐ Guardião das Estrelas',      icon: '⭐', req: 'Nível 7',  minLevel: 7,  desc: 'As estrelas guiam sua leitura.' },
+  { id: 'mestre',     name: '📚 Mestre dos Livros',          icon: '📚', req: 'Nível 10', minLevel: 10, desc: 'Um verdadeiro mestre da sabedoria!' },
+  { id: 'sabio',      name: '🔮 Sábio Encantado',            icon: '🔮', req: 'Nível 13', minLevel: 13, desc: 'A magia dos livros flui em você!' },
+  { id: 'dragao',     name: '🐉 Dragão da Sabedoria',        icon: '🐉', req: 'Nível 16', minLevel: 16, desc: 'Seu conhecimento é lendário!' },
+  { id: 'rei',        name: '👑 Rei/Rainha dos Contos',      icon: '👑', req: 'Nível 19', minLevel: 19, desc: 'Você governa o reino dos livros!' },
+  { id: 'arquimago',  name: '🌌 Arquimago das Histórias',    icon: '🌌', req: 'Nível 22', minLevel: 22, desc: 'Mestre supremo das histórias!' },
+  { id: 'lenda',      name: '✨ Lenda Imortal dos Livros',   icon: '✨', req: 'Nível 25', minLevel: 25, desc: 'Sua lenda é eterna no reino encantado!' },
+];
+
+/* ── Ações de XP/Moedas — SOMENTE via eventos reais ── */
+/* NOTA: Estas ações NÃO têm botão manual. XP/moedas só são
+   concedidos quando o evento real é disparado pelo sistema. */
+const JORNADA_ACTIONS = [
+  { id: 'page_read',         name: 'Ler uma página',              icon: '📄', xp: 2,   moedas: 0,   desc: 'Ao virar cada página do livro',        autoOnly: true  },
+  { id: 'book_open',         name: 'Abrir um livro',              icon: '📖', xp: 5,   moedas: 2,   desc: 'Ao abrir qualquer livro',               autoOnly: true  },
+  { id: 'book_finish',       name: 'Finalizar um livro',          icon: '🎉', xp: 60,  moedas: 25,  desc: 'Ao completar 100% de um livro',         autoOnly: true  },
+  { id: 'book_half',         name: 'Metade de um livro',          icon: '📑', xp: 20,  moedas: 8,   desc: 'Ao atingir 50% de progresso',           autoOnly: true  },
+  { id: 'quiz_correct',      name: 'Acertar quiz',                icon: '🧠', xp: 20,  moedas: 8,   desc: 'Por cada resposta correta no quiz',      autoOnly: true  },
+  { id: 'quiz_perfect',      name: 'Quiz perfeito (100%)',        icon: '💯', xp: 50,  moedas: 20,  desc: 'Ao acertar todas as respostas do quiz',  autoOnly: true  },
+  { id: 'game_play',         name: 'Jogar jogo educativo',        icon: '🎮', xp: 10,  moedas: 4,   desc: 'Ao iniciar um jogo educativo',           autoOnly: true  },
+  { id: 'game_win',          name: 'Vencer jogo educativo',       icon: '🏆', xp: 30,  moedas: 12,  desc: 'Ao vencer um jogo educativo',            autoOnly: true  },
+  { id: 'ai_chat',           name: 'Conversar com IA',            icon: '🤖', xp: 10,  moedas: 3,   desc: 'Por cada conversa com a IA',             autoOnly: true  },
+  { id: 'favorite_book',     name: 'Favoritar um livro',          icon: '❤️', xp: 5,   moedas: 2,   desc: 'Ao adicionar livro aos favoritos',       autoOnly: true  },
+  { id: 'daily_login',       name: 'Login diário',                icon: '📅', xp: 15,  moedas: 5,   desc: 'Por fazer login todo dia',               autoOnly: true  },
+  { id: 'streak_3',          name: 'Streak de 3 dias',            icon: '🔥', xp: 30,  moedas: 15,  desc: 'Ao ler 3 dias seguidos',                 autoOnly: true  },
+  { id: 'streak_7',          name: 'Streak de 7 dias',            icon: '🔥', xp: 100, moedas: 50,  desc: 'Ao ler 7 dias seguidos',                 autoOnly: true  },
+  { id: 'streak_30',         name: 'Streak de 30 dias',           icon: '🔥', xp: 500, moedas: 200, desc: 'Ao ler 30 dias seguidos',                autoOnly: true  },
+  { id: 'share_book',        name: 'Compartilhar livro',          icon: '📤', xp: 8,   moedas: 3,   desc: 'Ao compartilhar um livro',               autoOnly: true  },
+  { id: 'first_session',     name: 'Primeira sessão',             icon: '👋', xp: 25,  moedas: 10,  desc: 'Bem-vindo ao Mundo Encantado!',           autoOnly: true  },
+  { id: 'profile_complete',  name: 'Perfil completo',             icon: '✏️', xp: 20,  moedas: 8,   desc: 'Ao preencher todos os dados do perfil',  autoOnly: true  },
+  { id: 'read_30min',        name: 'Ler 30 minutos seguidos',     icon: '⏱️', xp: 40,  moedas: 15,  desc: 'Por sessão de leitura de 30+ minutos',   autoOnly: true  },
+  { id: 'read_60min',        name: 'Ler 1 hora seguida',          icon: '⌛', xp: 90,  moedas: 35,  desc: 'Por sessão de leitura de 60+ minutos',   autoOnly: true  },
+];
+
+/* ── Conquistas Jornada com Raridade (expandidas) ── */
+const JORNADA_ACHIEVEMENTS = [
+  // ── COMUM ──
+  { id: 'j_sessao_1',        name: 'Bem-vindo!',              icon: '👋', raridade: 'comum',   xpReward: 10,  moedaReward: 5,   desc: 'Faça login pela 1ª vez',           cond: s => (s.totalSessions||0) >= 1 },
+  { id: 'j_primeiro_livro',  name: 'Primeiro Livro',          icon: '📗', raridade: 'comum',   xpReward: 20,  moedaReward: 8,   desc: 'Abra seu primeiro livro',          cond: s => (s.booksOpened||0) >= 1 },
+  { id: 'j_5_paginas',       name: '5 Páginas',               icon: '📑', raridade: 'comum',   xpReward: 10,  moedaReward: 4,   desc: 'Leia 5 páginas',                   cond: s => (s.totalPages||0) >= 5 },
+  { id: 'j_xp_50',           name: 'Primeiros Passos',        icon: '👣', raridade: 'comum',   xpReward: 10,  moedaReward: 5,   desc: 'Alcance 50 XP',                    cond: s => (s.jxp||0) >= 50 },
+  { id: 'j_xp_100',          name: 'Iniciante',               icon: '🌟', raridade: 'comum',   xpReward: 15,  moedaReward: 6,   desc: 'Alcance 100 XP',                   cond: s => (s.jxp||0) >= 100 },
+  { id: 'j_favorito_1',      name: 'Colecionador',            icon: '❤️', raridade: 'comum',   xpReward: 10,  moedaReward: 4,   desc: 'Favorite 1 livro',                 cond: s => (s.favorites||0) >= 1 },
+  { id: 'j_favorito_3',      name: 'Selecionador',            icon: '💝', raridade: 'comum',   xpReward: 15,  moedaReward: 6,   desc: 'Favorite 3 livros',                cond: s => (s.favorites||0) >= 3 },
+  { id: 'j_2_livros',        name: 'Par de Histórias',        icon: '📘', raridade: 'comum',   xpReward: 20,  moedaReward: 8,   desc: 'Abra 2 livros diferentes',         cond: s => (s.booksOpened||0) >= 2 },
+  { id: 'j_ai_chat_1',       name: 'Amigo da IA',             icon: '🤖', raridade: 'comum',   xpReward: 15,  moedaReward: 5,   desc: 'Converse com a IA pela 1ª vez',    cond: s => (s.aiChats||0) >= 1 },
+  // ── RARA ──
+  { id: 'j_3_livros',        name: 'Leitor Ávido',            icon: '📚', raridade: 'rara',    xpReward: 40,  moedaReward: 15,  desc: 'Abra 5 livros diferentes',         cond: s => (s.booksOpened||0) >= 5 },
+  { id: 'j_livro_completo',  name: 'Linha de Chegada',        icon: '🏁', raridade: 'rara',    xpReward: 80,  moedaReward: 30,  desc: 'Complete 1 livro inteiro',         cond: s => (s.booksCompleted||0) >= 1 },
+  { id: 'j_streak_3',        name: 'Constante',               icon: '🔥', raridade: 'rara',    xpReward: 50,  moedaReward: 20,  desc: 'Leia 3 dias seguidos',             cond: s => (s.streak||0) >= 3 },
+  { id: 'j_xp_500',          name: 'Experiente',              icon: '⚡', raridade: 'rara',    xpReward: 60,  moedaReward: 25,  desc: 'Acumule 500 XP',                   cond: s => (s.jxp||0) >= 500 },
+  { id: 'j_50_paginas',      name: 'Maratonista',             icon: '🏃', raridade: 'rara',    xpReward: 40,  moedaReward: 15,  desc: 'Leia 50 páginas no total',         cond: s => (s.totalPages||0) >= 50 },
+  { id: 'j_quiz_5',          name: 'Curioso do Saber',        icon: '🧩', raridade: 'rara',    xpReward: 45,  moedaReward: 18,  desc: 'Responda 5 quizzes',               cond: s => (s.quizzesAnswered||0) >= 5 },
+  { id: 'j_nivel_4',         name: 'Crescendo',               icon: '📈', raridade: 'rara',    xpReward: 40,  moedaReward: 15,  desc: 'Alcance o nível 4',                cond: s => (s.jlevel||0) >= 4 },
+  { id: 'j_2_livros_comp',   name: 'Bis Literário',           icon: '🎭', raridade: 'rara',    xpReward: 70,  moedaReward: 28,  desc: 'Complete 2 livros',                cond: s => (s.booksCompleted||0) >= 2 },
+  { id: 'j_xp_1000',         name: 'Ascendente',              icon: '🚀', raridade: 'rara',    xpReward: 80,  moedaReward: 30,  desc: 'Acumule 1000 XP',                  cond: s => (s.jxp||0) >= 1000 },
+  { id: 'j_100_paginas',     name: 'Cem Páginas',             icon: '💯', raridade: 'rara',    xpReward: 60,  moedaReward: 22,  desc: 'Leia 100 páginas no total',        cond: s => (s.totalPages||0) >= 100 },
+  // ── ÉPICA ──
+  { id: 'j_nivel_7',         name: 'Guardião Ascendido',      icon: '🌠', raridade: 'epica',   xpReward: 120, moedaReward: 50,  desc: 'Alcance o nível 7',                cond: s => (s.jlevel||0) >= 7 },
+  { id: 'j_5_livros_comp',   name: 'Devora-Livros',           icon: '🐉', raridade: 'epica',   xpReward: 150, moedaReward: 60,  desc: 'Complete 5 livros',                cond: s => (s.booksCompleted||0) >= 5 },
+  { id: 'j_streak_7',        name: 'Dedicado',                icon: '🌈', raridade: 'epica',   xpReward: 150, moedaReward: 60,  desc: 'Leia 7 dias seguidos',             cond: s => (s.streak||0) >= 7 },
+  { id: 'j_200_paginas',     name: 'Viajante Literário',      icon: '🌍', raridade: 'epica',   xpReward: 120, moedaReward: 48,  desc: 'Leia 200 páginas',                 cond: s => (s.totalPages||0) >= 200 },
+  { id: 'j_xp_2000',         name: 'Guardião do Saber',       icon: '⭐', raridade: 'epica',   xpReward: 200, moedaReward: 80,  desc: 'Acumule 2000 XP',                  cond: s => (s.jxp||0) >= 2000 },
+  { id: 'j_quiz_perfect',    name: 'Gênio!',                  icon: '🧠', raridade: 'epica',   xpReward: 130, moedaReward: 55,  desc: 'Acerte 100% em 3 quizzes',         cond: s => (s.perfectQuizzes||0) >= 3 },
+  { id: 'j_streak_14',       name: 'Duas Semanas!',           icon: '📆', raridade: 'epica',   xpReward: 200, moedaReward: 80,  desc: 'Leia 14 dias seguidos',            cond: s => (s.streak||0) >= 14 },
+  { id: 'j_nivel_10',        name: 'Mestre Leitor',           icon: '👑', raridade: 'epica',   xpReward: 250, moedaReward: 100, desc: 'Alcance o nível 10',               cond: s => (s.jlevel||0) >= 10 },
+  { id: 'j_ai_chat_10',      name: 'Amigo Fiel da IA',        icon: '🤝', raridade: 'epica',   xpReward: 110, moedaReward: 45,  desc: 'Converse com a IA 10 vezes',       cond: s => (s.aiChats||0) >= 10 },
+  { id: 'j_500_paginas',     name: 'Explorador Profundo',     icon: '🗺️', raridade: 'epica',   xpReward: 180, moedaReward: 72,  desc: 'Leia 500 páginas no total',        cond: s => (s.totalPages||0) >= 500 },
+  // ── LENDÁRIA ──
+  { id: 'j_nivel_13',        name: 'Sábio das Páginas',       icon: '🔮', raridade: 'lendaria', xpReward: 400, moedaReward: 160, desc: 'Alcance o nível 13',              cond: s => (s.jlevel||0) >= 13 },
+  { id: 'j_10_livros_comp',  name: 'Biblioteca Viva',         icon: '🏛️', raridade: 'lendaria', xpReward: 500, moedaReward: 200, desc: 'Complete 10 livros',              cond: s => (s.booksCompleted||0) >= 10 },
+  { id: 'j_streak_30',       name: 'Lenda da Leitura',        icon: '🌙', raridade: 'lendaria', xpReward: 600, moedaReward: 240, desc: 'Leia 30 dias seguidos',           cond: s => (s.streak||0) >= 30 },
+  { id: 'j_xp_5000',         name: 'Grande Mestre do XP',     icon: '💎', raridade: 'lendaria', xpReward: 700, moedaReward: 280, desc: 'Acumule 5000 XP',                 cond: s => (s.jxp||0) >= 5000 },
+  { id: 'j_1000_paginas',    name: 'Mil Páginas!',            icon: '📖', raridade: 'lendaria', xpReward: 550, moedaReward: 220, desc: 'Leia 1000 páginas no total',      cond: s => (s.totalPages||0) >= 1000 },
+  { id: 'j_xp_10000',        name: 'Mestre Supremo',          icon: '🌟', raridade: 'lendaria', xpReward: 800, moedaReward: 320, desc: 'Acumule 10.000 XP',               cond: s => (s.jxp||0) >= 10000 },
+  { id: 'j_nivel_16',        name: 'Dragão Desperto',         icon: '🐉', raridade: 'lendaria', xpReward: 600, moedaReward: 240, desc: 'Alcance o nível 16',              cond: s => (s.jlevel||0) >= 16 },
+  // ── MÍTICA ──
+  { id: 'j_nivel_20',        name: 'Rei/Rainha dos Contos',   icon: '👑', raridade: 'mitica',   xpReward: 1200,moedaReward: 500, desc: 'Alcance o nível 20',              cond: s => (s.jlevel||0) >= 20 },
+  { id: 'j_20_livros_comp',  name: 'Alma dos Livros',         icon: '🪄', raridade: 'mitica',   xpReward: 1500,moedaReward: 600, desc: 'Complete 20 livros',              cond: s => (s.booksCompleted||0) >= 20 },
+  { id: 'j_streak_60',       name: 'Imortal da Leitura',      icon: '🔮', raridade: 'mitica',   xpReward: 1800,moedaReward: 700, desc: 'Leia 60 dias seguidos',           cond: s => (s.streak||0) >= 60 },
+  { id: 'j_streak_100',      name: 'Centenário Leitor',       icon: '💫', raridade: 'mitica',   xpReward: 2500,moedaReward: 1000,desc: 'Leia 100 dias seguidos',          cond: s => (s.streak||0) >= 100 },
+  { id: 'j_nivel_25',        name: 'Lenda Imortal',           icon: '✨', raridade: 'mitica',   xpReward: 3000,moedaReward: 1200,desc: 'Alcance o nível máximo 25',       cond: s => (s.jlevel||0) >= 25 },
+  { id: 'j_xp_25000',        name: 'Transcendência',          icon: '🌌', raridade: 'mitica',   xpReward: 2000,moedaReward: 800, desc: 'Acumule 25.000 XP',               cond: s => (s.jxp||0) >= 25000 },
+  { id: 'j_5000_paginas',    name: 'Infinito Leitor',         icon: '♾️', raridade: 'mitica',   xpReward: 2200,moedaReward: 900, desc: 'Leia 5000 páginas no total',      cond: s => (s.totalPages||0) >= 5000 },
+];
+
+/* ── Estado Global da Jornada ── */
+let jornadaState = {
+  jxp: 0,
+  jlevel: 1,
+  moedas: 0,
+  tituloAtual: 'j_broto',
+  conquistas: {},   // {id: dateString}
+  rank: 0,
+  ultimaAtividade: null,
+  lastLoginDate: null,
+  streak: 0,
+  longestStreak: 0,
+};
+/* Estatísticas de leitura (complementam readingStats global) */
+let jornadaStats = {
+  booksOpened: 0,
+  booksCompleted: 0,
+  totalPages: 0,
+  favorites: 0,
+  quizzesAnswered: 0,
+  perfectQuizzes: 0,
+  gamesPlayed: 0,
+  gamesWon: 0,
+  aiChats: 0,
+  totalSessions: 0,
+  streak: 0,
+};
+let jornadaLoaded = false;
+let jornadaSaving = false;
+let _jornadaSaveTimer = null;
+const JORNADA_TABLE = 'JornadaLeitor';
+
+/* ── Streak diário real ── */
+function checkDailyLoginStreak() {
+  if (!jornadaLoaded) return;
+  const today = new Date().toDateString();
+  if (jornadaState.lastLoginDate === today) return; // já processou hoje
+
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+  if (jornadaState.lastLoginDate === yesterday) {
+    // Continuou o streak
+    jornadaState.streak = (jornadaState.streak || 0) + 1;
+  } else if (!jornadaState.lastLoginDate) {
+    // Primeiro login
+    jornadaState.streak = 1;
+    jornadaStats.totalSessions = (jornadaStats.totalSessions || 0) + 1;
+    // Dar XP de primeira sessão
+    if (jornadaStats.totalSessions === 1) addJornadaXP(25, 10, '👋 Bem-vindo!');
+  } else {
+    // Quebrou o streak
+    jornadaState.streak = 1;
+  }
+
+  jornadaState.longestStreak = Math.max(jornadaState.streak, jornadaState.longestStreak || 0);
+  jornadaState.lastLoginDate = today;
+  jornadaStats.totalSessions = (jornadaStats.totalSessions || 0) + 1;
+
+  // Dar XP de login diário
+  addJornadaXP(15, 5, '📅 Login diário');
+
+  // Verificar marcos de streak
+  const s = jornadaState.streak;
+  if (s === 3)  addJornadaXP(30, 15, '🔥 Streak de 3 dias!');
+  if (s === 7)  addJornadaXP(100, 50, '🔥 Streak de 7 dias!');
+  if (s === 14) addJornadaXP(200, 80, '🔥 Streak de 14 dias!');
+  if (s === 30) addJornadaXP(500, 200, '🔥 Streak de 30 dias!');
+  if (s === 60) addJornadaXP(1000, 400, '🔥 Streak de 60 dias!');
+  if (s === 100)addJornadaXP(2000, 800, '🔥 Streak de 100 dias!');
+
+  jornadaStats.streak = jornadaState.streak;
+  scheduleJornadaSave();
+}
+
+/* ── Temporizador de sessão de leitura ── */
+let _readingTimer = null;
+let _readingMinutes = 0;
+let _halfPageMilestone = {};
+function startReadingTimer(bookId) {
+  _readingMinutes = 0;
+  clearInterval(_readingTimer);
+  _readingTimer = setInterval(() => {
+    _readingMinutes++;
+    if (_readingMinutes === 30) addJornadaXP(40, 15, '⏱️ 30 min de leitura!');
+    if (_readingMinutes === 60) addJornadaXP(90, 35, '⌛ 1 hora de leitura!');
+  }, 60000);
+}
+function stopReadingTimer() {
+  clearInterval(_readingTimer);
+  _readingTimer = null;
+  _readingMinutes = 0;
+}
+
+/* ── Calcular Level e XP ── */
+function calcJornadaLevel(xp) {
+  let level = 1;
+  for (let i = JORNADA_LEVELS.length - 1; i >= 0; i--) {
+    if (xp >= JORNADA_LEVELS[i].xpNeeded) { level = JORNADA_LEVELS[i].level; break; }
+  }
+  return level;
+}
+
+function getJornadaLevelData(level) {
+  return JORNADA_LEVELS.find(l => l.level === level) || JORNADA_LEVELS[0];
+}
+
+function getNextLevelData(level) {
+  return JORNADA_LEVELS.find(l => l.level === level + 1) || null;
+}
+
+function getTituloAtualName(level) {
+  let titulo = JORNADA_TITULOS[0].name;
+  for (let i = JORNADA_TITULOS.length - 1; i >= 0; i--) {
+    if (level >= JORNADA_TITULOS[i].minLevel) { titulo = JORNADA_TITULOS[i].name; break; }
+  }
+  return titulo;
+}
+
+/* ── Adicionar XP ── */
+function addJornadaXP(xp, moedas, action, showPopup) {
+  if (!currentUser || !jornadaLoaded) return;
+  const oldLevel = jornadaState.jlevel;
+
+  jornadaState.jxp = (jornadaState.jxp || 0) + xp;
+  jornadaState.moedas = (jornadaState.moedas || 0) + (moedas || 0);
+  jornadaState.jlevel = calcJornadaLevel(jornadaState.jxp);
+  jornadaState.ultimaAtividade = new Date().toISOString();
+
+  // Atualiza título com base no level
+  const novoTitulo = getTituloAtualName(jornadaState.jlevel);
+  jornadaState.tituloAtual = novoTitulo;
+
+  // Level-up?
+  if (jornadaState.jlevel > oldLevel) {
+    showJornadaLevelUp(jornadaState.jlevel);
+  }
+
+  // Checa conquistas da jornada
+  checkJornadaAchievements();
+
+  // Mostra popup XP
+  if (showPopup !== false && xp > 0) {
+    showXPPopup(action || '✨ XP', xp, moedas);
+  }
+
+  // Atualiza UI se modal aberto
+  updateJornadaUI();
+
+  // Salva com debounce
+  scheduleJornadaSave();
+}
+
+/* ── Popup de XP ── */
+function showXPPopup(action, xp, moedas) {
+  const container = document.getElementById('xp-notif-container');
+  if (!container) return;
+  const el = document.createElement('div');
+  el.className = 'xp-popup';
+  el.innerHTML = `
+    <div class="xp-popup-icon">${action.includes('XP') ? '⭐' : action}</div>
+    <div class="xp-popup-text">
+      <div class="xp-popup-title">${action}</div>
+      <div class="xp-popup-sub">+${xp} XP</div>
+      ${moedas > 0 ? `<div class="xp-popup-moedas">+${moedas} 🪙 moedas</div>` : ''}
+    </div>`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.style.transition = 'all 0.4s ease';
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(30px)';
+    setTimeout(() => el.remove(), 400);
+  }, 2500);
+}
+
+/* ── Level Up ── */
+function showJornadaLevelUp(newLevel) {
+  const levelData = getJornadaLevelData(newLevel);
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:fixed; top:50%; left:50%; transform:translate(-50%,-50%) scale(0);
+    z-index:99999; background:linear-gradient(135deg,#1a0a38,#2d1260);
+    border:2px solid var(--gold); border-radius:24px; padding:32px 48px;
+    text-align:center; pointer-events:none;
+    box-shadow:0 0 80px rgba(251,191,36,0.5),0 40px 80px rgba(0,0,0,0.7);
+    animation:levelup-pop 3s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  `;
+  el.innerHTML = `
+    <div style="font-size:3rem;margin-bottom:8px;">🎉</div>
+    <div style="font-family:var(--font-title);font-size:1.8rem;color:var(--gold);margin-bottom:4px;">Nível ${newLevel}!</div>
+    <div style="font-size:1rem;color:var(--pearl);margin-bottom:8px;">${levelData.titulo || ''}</div>
+    <div style="font-size:0.85rem;color:var(--lilac);">Você evoluiu! Continue lendo! ✨</div>`;
+  document.body.appendChild(el);
+  if (!document.getElementById('levelup-kf')) {
+    const s = document.createElement('style');
+    s.id = 'levelup-kf';
+    s.textContent = `@keyframes levelup-pop{0%{opacity:0;transform:translate(-50%,-50%) scale(0)}20%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}30%{transform:translate(-50%,-50%) scale(1)}80%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-60%) scale(0.9)}}`;
+    document.head.appendChild(s);
+  }
+  setTimeout(() => el.remove(), 3100);
+  showToast(`🎉 Level ${newLevel}! ${levelData.titulo || ''}`, 'success', 4000);
+}
+
+/* ── Checar conquistas da Jornada ── */
+function checkJornadaAchievements() {
+  const s = { ...jornadaState, ...jornadaStats, ...(typeof readingStats !== 'undefined' ? readingStats : {}) };
+  s.jlevel = jornadaState.jlevel;
+  s.jxp = jornadaState.jxp;
+  let newOnes = [];
+  JORNADA_ACHIEVEMENTS.forEach(ach => {
+    if (!jornadaState.conquistas[ach.id]) {
+      try {
+        if (ach.cond(s)) {
+          jornadaState.conquistas[ach.id] = new Date().toISOString();
+          newOnes.push(ach);
+        }
+      } catch(e) {}
+    }
+  });
+  newOnes.forEach(ach => {
+    showJornadaAchNotif(ach);
+    // Dar XP e moedas de recompensa pela conquista (sem recursão)
+    if (ach.xpReward || ach.moedaReward) {
+      jornadaState.jxp     = (jornadaState.jxp || 0) + (ach.xpReward || 0);
+      jornadaState.moedas  = (jornadaState.moedas || 0) + (ach.moedaReward || 0);
+      jornadaState.jlevel  = calcJornadaLevel(jornadaState.jxp);
+      jornadaState.tituloAtual = getTituloAtualName(jornadaState.jlevel);
+    }
+  });
+  if (newOnes.length) {
+    updateJornadaUI();
+    scheduleJornadaSave();
+  }
+}
+
+function showJornadaAchNotif(ach) {
+  const rarColors = { comum:'#9ca3af', rara:'#60a5fa', epica:'#c084fc', lendaria:'#fbbf24', mitica:'#f87171' };
+  const color = rarColors[ach.raridade] || '#c084fc';
+  const el = document.createElement('div');
+  el.style.cssText = `
+    position:fixed; bottom:110px; left:50%; transform:translateX(-50%);
+    background:linear-gradient(135deg,rgba(18,5,48,0.98),rgba(26,10,56,0.98));
+    border:2px solid ${color}; border-radius:60px; padding:14px 28px;
+    font-weight:800; font-size:0.92rem; z-index:9999;
+    box-shadow:0 8px 32px rgba(0,0,0,0.7),0 0 24px ${color}50;
+    display:flex; align-items:center; gap:12px; white-space:nowrap;
+    animation:achievement-pop 4s ease forwards;
+    color:white;
+  `;
+  const rarLabel = { comum:'Comum', rara:'Rara', epica:'Épica', lendaria:'Lendária', mitica:'Mítica' };
+  el.innerHTML = `
+    <span style="font-size:1.8rem">${ach.icon}</span>
+    <div>
+      <div style="font-size:0.7rem;color:${color};letter-spacing:1px;text-transform:uppercase;">${rarLabel[ach.raridade]||''} · +${ach.xpReward} XP</div>
+      <div>${ach.name}</div>
+    </div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 4200);
+}
+
+/* ── Salvar no Backendless ── */
+function scheduleJornadaSave() {
+  clearTimeout(_jornadaSaveTimer);
+  _jornadaSaveTimer = setTimeout(saveJornadaToBackendless, 1200);
+}
+
+async function saveJornadaToBackendless() {
+  if (!currentUser || jornadaSaving) return;
+  jornadaSaving = true;
+  try {
+    const userId = currentUser.objectId;
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${userId}'`).setPageSize(1);
+    const existing = await Backendless.Data.of(JORNADA_TABLE).find(q);
+    const data = {
+      userId,
+      xp:              jornadaState.jxp || 0,
+      level:           jornadaState.jlevel || 1,
+      moedas:          jornadaState.moedas || 0,
+      tituloAtual:     jornadaState.tituloAtual || '',
+      conquistas:      JSON.stringify(jornadaState.conquistas || {}),
+      rank:            jornadaState.rank || 0,
+      ultimaAtividade: new Date().toISOString(),
+      userName:        currentUser.name || currentUser.email || '',
+      userAvatar:      currentUser.avatar || '🦄',
+      streak:          jornadaState.streak || 0,
+      longestStreak:   jornadaState.longestStreak || 0,
+      lastLoginDate:   jornadaState.lastLoginDate || '',
+      stats:           JSON.stringify(jornadaStats || {}),
+    };
+    if (existing.length > 0) data.objectId = existing[0].objectId;
+    await Backendless.Data.of(JORNADA_TABLE).save(data);
+  } catch(e) {
+    console.warn('[Jornada] Erro ao salvar:', e.message || e);
+  }
+  jornadaSaving = false;
+}
+
+/* ── Carregar do Backendless ── */
+async function loadJornadaFromBackendless() {
+  if (!currentUser) return;
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(1);
+    const results = await Backendless.Data.of(JORNADA_TABLE).find(q);
+    if (results.length) {
+      const r = results[0];
+      jornadaState.jxp          = r.xp || 0;
+      jornadaState.jlevel        = r.level || 1;
+      jornadaState.moedas        = r.moedas || 0;
+      jornadaState.tituloAtual   = r.tituloAtual || getTituloAtualName(jornadaState.jlevel);
+      jornadaState.rank          = r.rank || 0;
+      jornadaState.ultimaAtividade = r.ultimaAtividade;
+      jornadaState.streak        = r.streak || 0;
+      jornadaState.longestStreak = r.longestStreak || 0;
+      jornadaState.lastLoginDate = r.lastLoginDate || null;
+      if (r.conquistas) {
+        try { jornadaState.conquistas = JSON.parse(r.conquistas); } catch(e) { jornadaState.conquistas = {}; }
+      }
+      if (r.stats) {
+        try { Object.assign(jornadaStats, JSON.parse(r.stats)); } catch(e) {}
+      }
+    } else {
+      // Novo usuário
+      jornadaState = { jxp: 0, jlevel: 1, moedas: 0, tituloAtual: getTituloAtualName(1),
+        conquistas: {}, rank: 0, ultimaAtividade: new Date().toISOString(),
+        streak: 0, longestStreak: 0, lastLoginDate: null };
+    }
+    jornadaLoaded = true;
+    // Processar streak diário ao carregar
+    checkDailyLoginStreak();
+    checkJornadaAchievements();
+    updateJornadaNavBadge();
+    updateJornadaUI();
+  } catch(e) {
+    jornadaLoaded = true;
+    console.warn('[Jornada] load error:', e.message || e);
+  }
+}
+
+/* ── Atualizar badge no nav ── */
+function updateJornadaNavBadge() {
+  const btn = document.getElementById('jornada-nav-btn');
+  if (!btn) return;
+  btn.textContent = `⚔️ Lvl ${jornadaState.jlevel}`;
+}
+
+/* ── Abrir modal Jornada ── */
+function openJornadaModal() {
+  const dd = document.getElementById('profile-dropdown');
+  if (dd) dd.classList.remove('open');
+  openModal('jornada-modal');
+  renderJornadaProfile();
+  // Carregar aba ativa
+  switchJornadaTab('perfil', document.querySelector('.jtab.active'));
+}
+
+/* ── Trocar aba ── */
+function switchJornadaTab(tab, btn) {
+  document.querySelectorAll('.jtab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.jtab-content').forEach(c => c.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  const content = document.getElementById(`jtab-${tab}`);
+  if (content) content.classList.add('active');
+  if (tab === 'ranking') loadJornadaRanking();
+  if (tab === 'conquistas') renderJornadaAchievements('all');
+}
+
+/* ── Renderizar perfil ── */
+function renderJornadaProfile() {
+  if (!currentUser) return;
+  const lvl = jornadaState.jlevel || 1;
+  const xp  = jornadaState.jxp || 0;
+  const cur = getJornadaLevelData(lvl);
+  const nxt = getNextLevelData(lvl);
+  const xpForCur  = cur ? cur.xpNeeded : 0;
+  const xpForNext = nxt ? nxt.xpNeeded : xpForCur + 500;
+  const pct = nxt ? Math.min(100, Math.round(((xp - xpForCur) / (xpForNext - xpForCur)) * 100)) : 100;
+
+  // Avatar e nome
+  const avatar = document.getElementById('jornada-avatar');
+  if (avatar) avatar.textContent = currentUser.avatar || '🦄';
+  const uname = document.getElementById('jornada-username');
+  if (uname) uname.textContent = (currentUser.name || 'Leitor').split(' ')[0];
+
+  // Level
+  const lb = document.getElementById('jornada-level-badge');
+  if (lb) lb.textContent = lvl;
+
+  // Título
+  const ta = document.getElementById('jornada-titulo-atual');
+  if (ta) ta.textContent = getTituloAtualName(lvl);
+
+  // Moedas
+  const mc = document.getElementById('jornada-moedas-count');
+  if (mc) mc.textContent = (jornadaState.moedas || 0).toLocaleString('pt-BR');
+
+  // XP bar
+  const xpDisp = document.getElementById('jornada-xp-display');
+  const xpBar  = document.getElementById('jornada-xp-bar');
+  if (xpDisp) xpDisp.textContent = `${xp.toLocaleString('pt-BR')} / ${xpForNext.toLocaleString('pt-BR')} XP`;
+  if (xpBar) setTimeout(() => xpBar.style.width = pct + '%', 100);
+
+  // Próximo nível
+  const nl = document.getElementById('jornada-next-level-name');
+  if (nl) nl.textContent = nxt ? getJornadaLevelData(nxt.level).titulo : '✨ Nível Máximo!';
+
+  // Stats
+  const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+  setEl('jstat-books',        jornadaStats.booksOpened || (typeof readingStats !== 'undefined' ? readingStats.booksOpened : 0) || 0);
+  setEl('jstat-xp',           xp.toLocaleString('pt-BR'));
+  setEl('jstat-streak',       jornadaState.streak || 0);
+  setEl('jstat-achievements', Object.keys(jornadaState.conquistas).length);
+
+  // Rewards — exibe como informação (XP automático, sem botão manual)
+  const rg = document.getElementById('jornada-rewards-grid');
+  if (rg) {
+    rg.innerHTML = JORNADA_ACTIONS.map(a => `
+      <div class="jreward-card jreward-auto" title="XP ganho automaticamente ao realizar esta ação">
+        <span class="jreward-icon">${a.icon}</span>
+        <div class="jreward-info">
+          <div class="jreward-name">${a.name}</div>
+          <div class="jreward-xp">+${a.xp} XP${a.moedas > 0 ? ` · +${a.moedas} 🪙` : ''}</div>
+          <div class="jreward-desc-small">${a.desc}</div>
+        </div>
+        <span class="jreward-auto-badge" title="Automático">⚡</span>
+      </div>`).join('');
+  }
+
+  // Títulos
+  const tg = document.getElementById('jornada-titulos-grid');
+  if (tg) {
+    tg.innerHTML = JORNADA_TITULOS.map(t => {
+      const isUnlocked = lvl >= t.minLevel;
+      const isActive   = getTituloAtualName(lvl) === t.name;
+      return `
+        <div class="jtitulo-card ${isUnlocked ? 'unlocked' : 'locked'} ${isActive ? 'active-titulo' : ''}">
+          ${isActive ? '<div class="jtitulo-active-badge">Atual</div>' : ''}
+          <div class="jtitulo-icon">${t.icon}</div>
+          <div class="jtitulo-name">${t.name}</div>
+          <div class="jtitulo-req">${t.req}</div>
+        </div>`;
+    }).join('');
+  }
+}
+
+/* ── Ação manual desativada — XP somente por eventos reais ── */
+// manualXPAction foi removida. XP e moedas são concedidos
+// exclusivamente pelos hooks de eventos reais do sistema.
+// Veja a seção "HOOKS" abaixo para todos os pontos de ganho.
+
+/* ── Atualizar UI ── */
+function updateJornadaUI() {
+  updateJornadaNavBadge();
+  // Atualiza modal se estiver aberto
+  const modal = document.getElementById('jornada-modal');
+  if (modal && !modal.classList.contains('hidden')) {
+    renderJornadaProfile();
+  }
+}
+
+/* ── Filtrar conquistas ── */
+function filterJornadaAch(raridade, btn) {
+  document.querySelectorAll('.jach-filter').forEach(b => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderJornadaAchievements(raridade);
+}
+
+function renderJornadaAchievements(filter) {
+  const grid = document.getElementById('jornada-ach-grid');
+  if (!grid) return;
+  const list = filter === 'all' ? JORNADA_ACHIEVEMENTS : JORNADA_ACHIEVEMENTS.filter(a => a.raridade === filter);
+  const rarLabels = { comum:'⚪ Comum', rara:'🔵 Rara', epica:'🟣 Épica', lendaria:'🟡 Lendária', mitica:'🔴 Mítica' };
+  grid.innerHTML = list.map(ach => {
+    const unlocked = !!jornadaState.conquistas[ach.id];
+    const unlockDate = unlocked && jornadaState.conquistas[ach.id] !== true
+      ? new Date(jornadaState.conquistas[ach.id]).toLocaleDateString('pt-BR') : '';
+    return `
+      <div class="jach-card ${unlocked ? 'unlocked' : 'locked'} raridade-${ach.raridade}">
+        <div class="jach-rarity-badge">${rarLabels[ach.raridade] || ach.raridade}</div>
+        <span class="jach-icon">${ach.icon}</span>
+        <div class="jach-name">${ach.name}</div>
+        <div class="jach-desc">${ach.desc}</div>
+        <div class="jach-xp-reward">+${ach.xpReward} XP</div>
+        ${unlockDate ? `<div class="jach-unlock-date">✓ ${unlockDate}</div>` : ''}
+      </div>`;
+  }).join('');
+}
+
+/* ── Ranking — todos os clientes integrados ── */
+async function loadJornadaRanking() {
+  const container = document.getElementById('jornada-ranking-list');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);"><div class="spinner" style="margin:0 auto;"></div><p style="margin-top:12px;font-size:0.85rem;">Carregando ranking global...</p></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setSortBy(['xp DESC']).setPageSize(50);
+    const results = await Backendless.Data.of(JORNADA_TABLE).find(q);
+
+    if (!results.length) {
+      container.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum leitor no ranking ainda. Seja o primeiro! 🚀</div>';
+      return;
+    }
+
+    const myId = currentUser?.objectId;
+    // Atualiza rank local
+    const myIdx = results.findIndex(r => r.userId === myId);
+    if (myIdx >= 0) {
+      jornadaState.rank = myIdx + 1;
+    }
+
+    const posIcons = ['🥇','🥈','🥉'];
+
+    container.innerHTML = `
+      <div class="jranking-summary">
+        <div class="jranking-summary-item">
+          <span class="jrs-icon">👥</span>
+          <span class="jrs-val">${results.length}</span>
+          <span class="jrs-label">Leitores</span>
+        </div>
+        <div class="jranking-summary-item">
+          <span class="jrs-icon">⭐</span>
+          <span class="jrs-val">${results.reduce((a,r)=>a+(r.xp||0),0).toLocaleString('pt-BR')}</span>
+          <span class="jrs-label">XP Total</span>
+        </div>
+        ${myIdx >= 0 ? `<div class="jranking-summary-item rank-me-summary">
+          <span class="jrs-icon">📍</span>
+          <span class="jrs-val">#${myIdx+1}</span>
+          <span class="jrs-label">Sua posição</span>
+        </div>` : ''}
+      </div>
+      ${results.map((r, i) => {
+        const pos = i + 1;
+        const posDisplay = pos <= 3 ? posIcons[i] : `#${pos}`;
+        const isMe = r.userId === myId;
+        const achCount = (() => { try { return Object.keys(JSON.parse(r.conquistas||'{}')).length; } catch(e) { return 0; } })();
+        return `
+          <div class="jornada-ranking-item rank-${pos <= 3 ? pos : 'other'} ${isMe ? 'rank-me' : ''}">
+            <div class="jranking-pos ${pos===1?'gold':pos===2?'silver':pos===3?'bronze':''}">${posDisplay}</div>
+            <div class="jranking-avatar">${r.userAvatar || '🦄'}</div>
+            <div class="jranking-info">
+              <div class="jranking-name">${r.userName || 'Leitor Anônimo'} ${isMe ? '<span class="rank-me-tag">(Você)</span>' : ''}</div>
+              <div class="jranking-titulo">${r.tituloAtual || getTituloAtualName(r.level || 1)}</div>
+              <div class="jranking-sub">🏅 ${achCount} conquistas · 🔥 ${r.streak||0} dias</div>
+            </div>
+            <div class="jranking-right">
+              <div class="jranking-level">Lv. ${r.level || 1}</div>
+              <div class="jranking-xp">${(r.xp || 0).toLocaleString('pt-BR')} XP</div>
+              <div class="jranking-moedas">🪙 ${(r.moedas || 0).toLocaleString('pt-BR')}</div>
+            </div>
+          </div>`;
+      }).join('')}`;
+  } catch(e) {
+    container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px;">
+      <p>Erro ao carregar ranking.</p>
+      <small style="color:#fbbf24;">⚠️ Verifique se a tabela <b>${JORNADA_TABLE}</b> existe no Backendless com permissão <b>Find</b>.</small><br><br>
+      <button class="btn btn-secondary btn-sm" onclick="loadJornadaRanking()">↺ Tentar novamente</button>
+    </div>`;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   HOOKS — Integração com eventos existentes
+   XP e moedas SOMENTE via eventos reais
+═══════════════════════════════════════════ */
+(function hookJornada() {
+
+  // ── Hook: bookOpened ──
+  document.addEventListener('bookOpened', (e) => {
+    jornadaStats.booksOpened = (jornadaStats.booksOpened || 0) + 1;
+    addJornadaXP(5, 2, '📖 Abrir livro');
+    startReadingTimer(e.detail?.bookId);
+  });
+
+  // ── Hook: bookClosed ──
+  document.addEventListener('bookClosed', () => {
+    stopReadingTimer();
+  });
+
+  // ── Hook: bookCompleted ──
+  document.addEventListener('bookCompleted', () => {
+    jornadaStats.booksCompleted = (jornadaStats.booksCompleted || 0) + 1;
+    stopReadingTimer();
+    addJornadaXP(60, 25, '🎉 Livro concluído!');
+  });
+
+  // ── Hook: bookHalfway (50% progresso) ──
+  document.addEventListener('bookHalfway', () => {
+    addJornadaXP(20, 8, '📑 Metade do livro!');
+  });
+
+  // ── Hook: bookFavorited ──
+  document.addEventListener('bookFavorited', () => {
+    jornadaStats.favorites = (jornadaStats.favorites || 0) + 1;
+    addJornadaXP(5, 2, '❤️ Favoritar livro');
+  });
+
+  // ── Hook: paginaVirada (cada página lida) ──
+  document.addEventListener('pageTurned', () => {
+    jornadaStats.totalPages = (jornadaStats.totalPages || 0) + 1;
+    addJornadaXP(2, 0, '📄 Página lida', false); // sem popup por ser frequente
+  });
+
+  // ── Hook: quizCorrect ──
+  document.addEventListener('quizCorrect', () => {
+    jornadaStats.quizzesAnswered = (jornadaStats.quizzesAnswered || 0) + 1;
+    addJornadaXP(20, 8, '🧠 Acertou quiz!');
+  });
+
+  // ── Hook: quizPerfect ──
+  document.addEventListener('quizPerfect', () => {
+    jornadaStats.perfectQuizzes = (jornadaStats.perfectQuizzes || 0) + 1;
+    addJornadaXP(50, 20, '💯 Quiz perfeito!');
+  });
+
+  // ── Hook: gamePlayed ──
+  document.addEventListener('gamePlayed', () => {
+    jornadaStats.gamesPlayed = (jornadaStats.gamesPlayed || 0) + 1;
+    addJornadaXP(10, 4, '🎮 Jogo educativo');
+  });
+
+  // ── Hook: gameWon ──
+  document.addEventListener('gameWon', () => {
+    jornadaStats.gamesWon = (jornadaStats.gamesWon || 0) + 1;
+    addJornadaXP(30, 12, '🏆 Venceu o jogo!');
+  });
+
+  // ── Hook: aiChatStarted ──
+  document.addEventListener('aiChatStarted', () => {
+    jornadaStats.aiChats = (jornadaStats.aiChats || 0) + 1;
+    addJornadaXP(10, 3, '🤖 Chat com IA');
+  });
+
+  // ── Hook: bookShared ──
+  document.addEventListener('bookShared', () => {
+    addJornadaXP(8, 3, '📤 Compartilhar livro');
+  });
+
+  // ── Hook: loadDashboard → carrega jornada ──
+  const _origLoadDash = typeof loadDashboard === 'function' ? loadDashboard : null;
+  if (_origLoadDash) {
+    window.loadDashboard = async function() {
+      await _origLoadDash.apply(this, arguments);
+      await loadJornadaFromBackendless();
+      updateJornadaNavBadge();
+    };
+  } else {
+    // Fallback: observar visibilidade do dashboard
+    const dashEl = document.getElementById('page-dashboard');
+    if (dashEl) {
+      const obs = new MutationObserver((muts) => {
+        muts.forEach(m => {
+          if (!m.target.classList.contains('hidden') && !jornadaLoaded) {
+            loadJornadaFromBackendless();
+          }
+        });
+      });
+      obs.observe(dashEl, { attributes: true, attributeFilter: ['class'] });
+    }
+  }
+
+})()
+
+/* ═══════════════════════════════════════════
+   ADMIN: PAINEL JORNADA
+═══════════════════════════════════════════ */
+async function loadAdminJornada() {
+  const container = document.getElementById('admin-jornada-content');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>';
+  try {
+    const q = Backendless.DataQueryBuilder.create().setSortBy(['xp DESC']).setPageSize(50);
+    const records = await Backendless.Data.of(JORNADA_TABLE).find(q);
+
+    const totalXp   = records.reduce((s, r) => s + (r.xp || 0), 0);
+    const avgLevel  = records.length ? Math.round(records.reduce((s, r) => s + (r.level || 1), 0) / records.length) : 0;
+    const achCounts = {};
+    records.forEach(r => {
+      if (r.conquistas) {
+        try {
+          const c = JSON.parse(r.conquistas);
+          Object.keys(c).forEach(k => { achCounts[k] = (achCounts[k] || 0) + 1; });
+        } catch(e) {}
+      }
+    });
+    const topAch = Object.entries(achCounts).sort((a,b)=>b[1]-a[1]).slice(0,5);
+    const topAchDefs = topAch.map(([id, count]) => {
+      const def = JORNADA_ACHIEVEMENTS.find(a => a.id === id);
+      return { name: def ? def.name : id, icon: def ? def.icon : '🏅', count };
+    });
+
+    container.innerHTML = `
+      <div class="admin-jornada-stats">
+        <div class="stat-card">
+          <div class="stat-icon">👥</div>
+          <div class="stat-value">${records.length}</div>
+          <div class="stat-label">Leitores na Jornada</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">⭐</div>
+          <div class="stat-value">${totalXp.toLocaleString('pt-BR')}</div>
+          <div class="stat-label">XP Total Acumulado</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🪙</div>
+          <div class="stat-value">${records.reduce((s,r)=>s+(r.moedas||0),0).toLocaleString('pt-BR')}</div>
+          <div class="stat-label">Moedas em Circulação</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📊</div>
+          <div class="stat-value">Lv. ${avgLevel}</div>
+          <div class="stat-label">Nível Médio</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏅</div>
+          <div class="stat-value">${Object.values(achCounts).reduce((a,b)=>a+b,0)}</div>
+          <div class="stat-label">Conquistas Desbloqueadas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔥</div>
+          <div class="stat-value">${records.reduce((mx,r)=>Math.max(mx,r.streak||0),0)}</div>
+          <div class="stat-label">Maior Streak Atual</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:24px;">
+        <div class="admin-card">
+          <h3 style="color:var(--pearl);margin-bottom:16px;font-size:1rem;">🏆 Top 5 Conquistas</h3>
+          ${topAchDefs.map((a,i) => `
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+              <span style="font-size:1.2rem;">${a.icon}</span>
+              <div style="flex:1;font-size:0.82rem;color:var(--pearl);">${a.name}</div>
+              <span class="badge badge-gold">${a.count}x</span>
+            </div>`).join('') || '<div style="color:var(--text-muted);">Sem dados ainda.</div>'}
+        </div>
+        <div class="admin-card">
+          <h3 style="color:var(--pearl);margin-bottom:16px;font-size:1rem;">📈 Distribuição de Níveis (1–25)</h3>
+          ${(() => {
+            const dist = {}; records.forEach(r => { const l = r.level || 1; dist[l] = (dist[l]||0)+1; });
+            return Object.entries(dist).sort((a,b)=>+a[0]-+b[0]).map(([lv, cnt]) => `
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="color:var(--gold);font-size:0.78rem;width:40px;">Lv.${lv}</span>
+                <div style="flex:1;height:8px;background:rgba(255,255,255,0.08);border-radius:4px;overflow:hidden;">
+                  <div style="height:100%;width:${Math.round(cnt/records.length*100)}%;background:linear-gradient(90deg,var(--lilac),var(--rose));border-radius:4px;"></div>
+                </div>
+                <span style="font-size:0.72rem;color:var(--text-muted);">${cnt}</span>
+              </div>`).join('') || '<div style="color:var(--text-muted);">Sem dados.</div>';
+          })()}
+        </div>
+      </div>
+
+      <div class="admin-card">
+        <h3 style="color:var(--pearl);margin-bottom:16px;font-size:1rem;">👑 Ranking Completo (Top 50)</h3>
+        <div style="overflow-x:auto;">
+          <table class="admin-jornada-ranking-table">
+            <thead><tr>
+              <th>#</th><th>Leitor</th><th>Nível</th><th>XP</th><th>Moedas</th><th>Streak</th><th>Título</th><th>Conquistas</th><th>Última Atividade</th>
+            </tr></thead>
+            <tbody>
+              ${records.map((r, i) => {
+                let conquistas = 0;
+                try { conquistas = Object.keys(JSON.parse(r.conquistas || '{}')).length; } catch(e) {}
+                const lvlDef = JORNADA_LEVELS.find(l => l.level === (r.level||1)) || JORNADA_LEVELS[0];
+                return `<tr>
+                  <td style="color:var(--gold);font-weight:800;">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</td>
+                  <td><span style="font-size:1.1rem;">${r.userAvatar||'🦄'}</span> <b>${r.userName||'—'}</b></td>
+                  <td><span class="badge badge-gold">Lv.${r.level||1}</span></td>
+                  <td style="color:var(--lilac);font-weight:700;">${(r.xp||0).toLocaleString('pt-BR')}</td>
+                  <td style="color:var(--gold);">🪙 ${(r.moedas||0).toLocaleString('pt-BR')}</td>
+                  <td style="color:#f97316;">🔥 ${r.streak||0} dias</td>
+                  <td style="font-size:0.78rem;">${r.tituloAtual||getTituloAtualName(r.level||1)}</td>
+                  <td>🏅 ${conquistas}</td>
+                  <td style="color:var(--text-muted);font-size:0.78rem;">${r.ultimaAtividade ? new Date(r.ultimaAtividade).toLocaleDateString('pt-BR') : '—'}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  } catch(e) {
+    container.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px;">
+      <p>Erro ao carregar dados da Jornada.</p>
+      <small style="color:#fbbf24;">⚠️ Verifique se a tabela <b>${JORNADA_TABLE}</b> existe no Backendless com permissão <b>Find</b> para AdminUser.</small><br><br>
+      <button class="btn btn-secondary btn-sm" onclick="loadAdminJornada()">↺ Tentar novamente</button>
+    </div>`;
+  }
+}
+
+/* ── Injetar aba Jornada no painel admin ── */
+(function injectAdminJornadaTab() {
+  function tryInject() {
+    // Procura a nav do admin
+    const adminNav = document.querySelector('.admin-nav');
+    if (!adminNav) return false;
+    // Verifica se já injetou
+    if (document.getElementById('admin-nav-jornada')) return true;
+    // Adiciona botão na nav
+    const btn = document.createElement('button');
+    btn.id = 'admin-nav-jornada';
+    btn.className = 'admin-nav-item';
+    btn.setAttribute('onclick', "adminShowSection('jornada')");
+    btn.innerHTML = '⚔️ Jornada';
+    adminNav.appendChild(btn);
+
+    // Cria seção
+    const adminMain = document.querySelector('.admin-main');
+    if (adminMain) {
+      const section = document.createElement('div');
+      section.id = 'admin-section-jornada';
+      section.className = 'admin-section';
+      section.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+          <h2 style="color:var(--pearl);font-family:var(--font-title);font-size:1.4rem;">⚔️ Jornada do Leitor</h2>
+          <button class="btn btn-secondary btn-sm" onclick="loadAdminJornada()">↺ Atualizar dados</button>
+        </div>
+        <div id="admin-jornada-content">
+          <div style="text-align:center;color:var(--text-muted);padding:60px;">
+            Clique em "Atualizar dados" para carregar as estatísticas da Jornada.
+          </div>
+        </div>`;
+      adminMain.appendChild(section);
+    }
+
+    // Hook na função adminShowSection para carregar dados ao abrir
+    const _origAdminShow = typeof adminShowSection === 'function' ? adminShowSection : null;
+    if (_origAdminShow) {
+      window.adminShowSection = function(section) {
+        _origAdminShow(section);
+        if (section === 'jornada') loadAdminJornada();
+      };
+    }
+    return true;
+  }
+
+  // Tenta injetar ao carregar; repete se o DOM ainda não estiver pronto
+  if (!tryInject()) {
+    const obs = new MutationObserver(() => { if (tryInject()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
+})();
+
 </script>
 
 </body>
