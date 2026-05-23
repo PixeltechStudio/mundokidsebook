@@ -4070,7 +4070,7 @@ async function handleAdminLogin() {
   try {
     const user = await Backendless.UserService.login(email, password, true);
 
-    if (!ADMIN_EMAILS.map(e => e.toLowerCase()).includes((user.email || '').toLowerCase())) {
+    if (!ADMIN_EMAILS.includes((user.email || '').toLowerCase())) {
       await Backendless.UserService.logout();
       showFormError('admin-login-error', 'Acesso negado. Não é uma conta administrativa.');
       setLoading('btn-admin-login', false, '🔐 Acessar painel');
@@ -6251,8 +6251,8 @@ async function checkPlatformNotifications() {
   try {
     const user = Backendless.UserService.getCurrentUser();
     if (!user) return;
-    if (user.vencimentoPlano) {
-      const expiry = new Date(user.vencimentoPlano);
+    if (user.planoValidade) {
+      const expiry = new Date(user.planoValidade);
       const daysLeft = Math.ceil((expiry - Date.now()) / 86400000);
       if (daysLeft <= 7 && daysLeft > 0) {
         addNotification('plan', '⚠️ Plano vencendo em breve', `Seu plano vence em ${daysLeft} dia${daysLeft>1?'s':''}. Renove para continuar lendo!`);
@@ -6453,13 +6453,28 @@ async function loadAdminLogs() {
   if (!listEl) return;
   listEl.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:32px;"><div class="spinner" style="margin:0 auto;"></div></div>';
   try {
-    const q = Backendless.DataQueryBuilder.create().setSortBy(['criadoEm DESC']).setPageSize(80);
-    const logs = await Backendless.Data.of('AdminLogs').find(q);
+    // Tenta ordenar por criadoEm (campo customizado); se falhar, tenta pelo campo 'created' do Backendless
+    let logs = [];
+    try {
+      const q = Backendless.DataQueryBuilder.create().setSortBy(['criadoEm DESC']).setPageSize(80);
+      logs = await Backendless.Data.of('AdminLogs').find(q);
+    } catch(e1) {
+      const q2 = Backendless.DataQueryBuilder.create().setSortBy(['created DESC']).setPageSize(80);
+      logs = await Backendless.Data.of('AdminLogs').find(q2);
+    }
     adminLogsCache = logs;
     renderAdminLogs(logs);
   } catch(e) {
-    // Fallback to local cache
-    renderAdminLogs(adminLogsCache);
+    // Fallback para cache local (ações feitas na sessão atual)
+    if (adminLogsCache.length) {
+      renderAdminLogs(adminLogsCache);
+    } else {
+      listEl.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:40px;">
+        <p>Nenhum log encontrado.</p>
+        <small style="color:#fbbf24;">⚠️ Verifique se a tabela <b>AdminLogs</b> existe no Backendless e se o papel <b>AuthenticatedUser</b> tem permissão <b>Find</b> nela.</small>
+        <br><br><button class="btn btn-secondary btn-sm" onclick="loadAdminLogs()">↺ Tentar novamente</button>
+      </div>`;
+    }
   }
 }
 
@@ -6617,8 +6632,12 @@ function openClientProfile(clientId) {
 }
 
 function showCPTab(tab) {
-  document.querySelectorAll('.cp-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
+  // Escopo restrito ao modal de perfil do cliente — evita conflito com abas de Cupons/Planos
+  const modal = document.getElementById('client-profile-modal');
+  if (modal) {
+    modal.querySelectorAll('.cp-tab').forEach(b => b.classList.remove('active'));
+    modal.querySelectorAll('.cp-tab-content').forEach(c => c.classList.remove('active'));
+  }
   const tabBtn = document.getElementById(`cptab-${tab}`);
   const tabContent = document.getElementById(`cptab-content-${tab}`);
   if (tabBtn) tabBtn.classList.add('active');
@@ -6703,24 +6722,14 @@ async function loadCPAchievements() {
   el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;"></div></div>';
   try {
     const q = Backendless.DataQueryBuilder.create()
-      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(1);
-    const results = await Backendless.Data.of('ConquistasUsuario').find(q);
-    let unlocked = {};
-    if (results.length && results[0].conquistas) {
-      try { unlocked = JSON.parse(results[0].conquistas); } catch(e2) {}
-    }
-    const keys = Object.keys(unlocked);
-    if (!keys.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista ainda.</div>'; return; }
-    // Usa as definições locais de conquistas para exibir ícones e nomes
-    const defs = typeof ACHIEVEMENTS_DEF !== 'undefined' ? ACHIEVEMENTS_DEF : [];
+      .setWhereClause(`usuarioId = '${currentProfileClientId}'`).setPageSize(50);
+    const achs = await Backendless.Data.of('Conquistas').find(q);
+    if (!achs.length) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Nenhuma conquista ainda.</div>'; return; }
     el.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;">` +
-      keys.map(k => {
-        const def = defs.find(d => d.id === k) || {};
-        return `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;">
-          <div style="font-size:1.8rem;margin-bottom:6px;">${def.icon || '🏆'}</div>
-          <div style="font-weight:700;color:var(--pearl);font-size:0.8rem;">${def.name || k}</div>
-        </div>`;
-      }).join('') + '</div>';
+      achs.map(a => `<div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.2);border-radius:12px;padding:14px;text-align:center;">
+        <div style="font-size:1.8rem;margin-bottom:6px;">${a.icone||'🏆'}</div>
+        <div style="font-weight:700;color:var(--pearl);font-size:0.8rem;">${a.nome||a.conquista||'Conquista'}</div>
+      </div>`).join('') + '</div>';
   } catch(e) { el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;">Sem dados disponíveis.</div>'; }
 }
 
@@ -6883,49 +6892,8 @@ async function sendAdminNotification() {
   };
 
   try {
-    // Salva o registro de histórico no painel admin
     await Backendless.Data.of('Notificacoes').save(notifData);
     addAdminLog('notify', `Notificação enviada: "${title}" → ${targetUserId ? 'usuário específico' : 'todos'}`);
-
-    // Entrega a notificação para o(s) usuário(s) no formato que loadNotificationsFromBackendless espera (campo "dados" JSON)
-    const newNotifEntry = { id: Date.now(), type, title, body: message, time: new Date().toISOString(), read: false };
-    const targetIds = targetUserId ? [targetUserId] : null;
-
-    if (targetIds) {
-      // Destinatário específico
-      for (const uid of targetIds) {
-        try {
-          const uq = Backendless.DataQueryBuilder.create().setWhereClause(`usuarioId = '${uid}'`).setPageSize(1);
-          const existing = await Backendless.Data.of('Notificacoes').find(uq);
-          let dados = existing.length && existing[0].dados ? JSON.parse(existing[0].dados) : [];
-          dados.unshift(newNotifEntry);
-          if (dados.length > 20) dados = dados.slice(0, 20);
-          const rec = { usuarioId: uid, dados: JSON.stringify(dados), atualizadoEm: new Date().toISOString() };
-          if (existing.length) rec.objectId = existing[0].objectId;
-          await Backendless.Data.of('Notificacoes').save(rec);
-        } catch(e2) { /* não crítico */ }
-      }
-    } else {
-      // Para todos — busca todos os usuários e injeta a notificação
-      try {
-        const allUsers = await Backendless.Data.of('Users').find(
-          Backendless.DataQueryBuilder.create().setProperties(['objectId']).setPageSize(500)
-        );
-        for (const u of allUsers) {
-          try {
-            const uq = Backendless.DataQueryBuilder.create().setWhereClause(`usuarioId = '${u.objectId}'`).setPageSize(1);
-            const existing = await Backendless.Data.of('Notificacoes').find(uq);
-            let dados = existing.length && existing[0].dados ? JSON.parse(existing[0].dados) : [];
-            dados.unshift({ ...newNotifEntry, id: Date.now() + Math.random() });
-            if (dados.length > 20) dados = dados.slice(0, 20);
-            const rec = { usuarioId: u.objectId, dados: JSON.stringify(dados), atualizadoEm: new Date().toISOString() };
-            if (existing.length) rec.objectId = existing[0].objectId;
-            await Backendless.Data.of('Notificacoes').save(rec);
-          } catch(e3) { /* não crítico */ }
-        }
-      } catch(e4) { /* não crítico */ }
-    }
-
     showToast('✅ Notificação enviada!', 'success');
     document.getElementById('notif-title').value = '';
     document.getElementById('notif-message').value = '';
@@ -6960,10 +6928,18 @@ async function loadNotifHistory() {
 let allCoupons = [], allAdminPlans = [];
 
 function showCouponsTab(tab) {
-  document.querySelectorAll('.cp-tabs .cp-tab').forEach(b => b.classList.remove('active'));
-  document.getElementById(`ctab-${tab}`)?.classList.add('active');
-  document.getElementById('coupon-tab-content').style.display = tab === 'coupons' ? '' : 'none';
-  document.getElementById('coupon-tab-plans').style.display = tab === 'plans' ? '' : 'none';
+  // Escopo restrito à seção de cupons para não interferir com outras abas (.cp-tab)
+  const couponSection = document.getElementById('admin-section-coupons');
+  if (couponSection) {
+    couponSection.querySelectorAll('.cp-tab').forEach(b => b.classList.remove('active'));
+    couponSection.querySelector(`#ctab-${tab}`)?.classList.add('active');
+  }
+  // Usa 'block' explícito — '' remove o inline style e o CSS .cp-tab-content{display:none} assumiria
+  document.getElementById('coupon-tab-content').style.display = tab === 'coupons' ? 'block' : 'none';
+  document.getElementById('coupon-tab-plans').style.display   = tab === 'plans'   ? 'block' : 'none';
+  // Carrega dados ao trocar de aba
+  if (tab === 'coupons') loadCoupons();
+  if (tab === 'plans')   loadPlans();
 }
 
 async function loadCoupons() {
@@ -7143,34 +7119,47 @@ async function deletePlan(id) {
    ANALYTICS
 ══════════════════════════════════════════════════════════ */
 async function loadAnalytics() {
-  // Top books
-  const topEl = document.getElementById('analytics-top-books');
-  const avgEl = document.getElementById('analytics-avg-time');
+  const topEl      = document.getElementById('analytics-top-books');
+  const avgEl      = document.getElementById('analytics-avg-time');
   const inactiveEl = document.getElementById('analytics-inactive');
-  const dropEl = document.getElementById('analytics-dropoff');
+  const dropEl     = document.getElementById('analytics-dropoff');
+
+  // Loading state
+  [topEl,avgEl,inactiveEl,dropEl].forEach(el => {
+    if (el) el.innerHTML = '<div style="color:var(--text-muted);text-align:center;padding:24px;"><div class="spinner" style="margin:0 auto;margin-bottom:8px;"></div>Carregando...</div>';
+  });
 
   try {
-    const q = Backendless.DataQueryBuilder.create().setPageSize(200);
+    // Busca livros localmente para garantir títulos atualizados (sem depender do allBooks global)
+    const booksQ = Backendless.DataQueryBuilder.create().setProperties(['objectId','titulo']).setPageSize(200);
+    const livrosLocal = await Backendless.Data.of('Livros').find(booksQ);
+    const livrosMap = {};
+    livrosLocal.forEach(b => { livrosMap[b.objectId] = b; });
+
+    // Busca todos os registros de progresso
+    const q = Backendless.DataQueryBuilder.create().setPageSize(500);
     const progs = await Backendless.Data.of('ProgressoLeitura').find(q);
 
-    // Top books by read count
+    // ── Top livros mais lidos ─────────────────────────────
     const bookCounts = {};
-    progs.forEach(p => { bookCounts[p.livroId] = (bookCounts[p.livroId]||0)+1; });
+    progs.forEach(p => { if (p.livroId) bookCounts[p.livroId] = (bookCounts[p.livroId]||0)+1; });
     const topBooks = Object.entries(bookCounts).sort((a,b)=>b[1]-a[1]).slice(0,7);
     if (topEl) {
-      topEl.innerHTML = topBooks.map(([lid, count], i) => {
-        const b = allBooks.find(x => x.objectId === lid);
-        return `<div class="top-book-row">
-          <div class="top-book-rank">#${i+1}</div>
-          <div class="top-book-info">
-            <div class="top-book-title">${b?.titulo || lid.substring(0,20)}</div>
-            <div class="top-book-reads">${count} leitores</div>
-          </div>
-        </div>`;
-      }).join('') || '<div style="color:var(--text-muted);padding:16px 0;">Sem dados.</div>';
+      topEl.innerHTML = topBooks.length
+        ? topBooks.map(([lid, count], i) => {
+            const titulo = livrosMap[lid]?.titulo || lid.substring(0,20);
+            return `<div class="top-book-row">
+              <div class="top-book-rank">#${i+1}</div>
+              <div class="top-book-info">
+                <div class="top-book-title">${titulo}</div>
+                <div class="top-book-reads">${count} leitores</div>
+              </div>
+            </div>`;
+          }).join('')
+        : '<div style="color:var(--text-muted);padding:16px 0;">Sem dados ainda.</div>';
     }
 
-    // Avg completion rate (as proxy for "time")
+    // ── Taxa de conclusão ────────────────────────────────
     const completed = progs.filter(p => (p.progresso||0) >= 95);
     const completionRate = progs.length ? Math.round(completed.length/progs.length*100) : 0;
     if (avgEl) {
@@ -7183,10 +7172,10 @@ async function loadAnalytics() {
         <div style="font-size:0.8rem;color:var(--text-muted);">${completed.length} de ${progs.length} sessões com livro concluído.</div>`;
     }
 
-    // Drop-off — books where avg progress is low
-    const bookAvgProg = {};
-    const bookReadCount = {};
+    // ── Abandono de leitura ──────────────────────────────
+    const bookAvgProg = {}, bookReadCount = {};
     progs.forEach(p => {
+      if (!p.livroId) return;
       if (!bookAvgProg[p.livroId]) { bookAvgProg[p.livroId] = 0; bookReadCount[p.livroId] = 0; }
       bookAvgProg[p.livroId] += (p.progresso||0);
       bookReadCount[p.livroId]++;
@@ -7196,22 +7185,24 @@ async function loadAnalytics() {
       .filter(x => x.avg < 30 && bookReadCount[x.lid] > 1)
       .sort((a,b) => a.avg-b.avg).slice(0,5);
     if (dropEl) {
-      dropEl.innerHTML = dropOffs.map(d => {
-        const b = allBooks.find(x => x.objectId === d.lid);
-        return `<div class="top-book-row">
-          <div class="top-book-rank" style="background:rgba(248,113,113,0.15);color:#f87171;">${d.avg}%</div>
-          <div class="top-book-info">
-            <div class="top-book-title">${b?.titulo || d.lid.substring(0,20)}</div>
-            <div class="top-book-reads" style="color:#f87171;">Abandono médio em ${d.avg}%</div>
-          </div>
-        </div>`;
-      }).join('') || '<div style="color:var(--text-muted);padding:16px 0;">Sem dados de abandono.</div>';
+      dropEl.innerHTML = dropOffs.length
+        ? dropOffs.map(d => {
+            const titulo = livrosMap[d.lid]?.titulo || d.lid.substring(0,20);
+            return `<div class="top-book-row">
+              <div class="top-book-rank" style="background:rgba(248,113,113,0.15);color:#f87171;">${d.avg}%</div>
+              <div class="top-book-info">
+                <div class="top-book-title">${titulo}</div>
+                <div class="top-book-reads" style="color:#f87171;">Abandono médio em ${d.avg}%</div>
+              </div>
+            </div>`;
+          }).join('')
+        : '<div style="color:var(--text-muted);padding:16px 0;">Sem dados de abandono.</div>';
     }
 
-    // Inactive users (no login in 30 days)
+    // ── Usuários inativos (+30 dias) ─────────────────────
     const thirtyDaysAgo = new Date(Date.now() - 30*24*60*60*1000).toISOString();
     const inactiveQ = Backendless.DataQueryBuilder.create()
-      .setWhereClause(`(ultimoLogin < '${thirtyDaysAgo}' OR ultimoLogin is null) AND bloqueado != true`)
+      .setWhereClause(`(ultimoLogin < '${thirtyDaysAgo}' OR ultimoLogin IS NULL) AND bloqueado <> true`)
       .setPageSize(10).setProperties(['name','email','ultimoLogin','plano']);
     const inactiveUsers = await Backendless.Data.of('Users').find(inactiveQ);
     if (inactiveEl) {
@@ -7226,7 +7217,7 @@ async function loadAnalytics() {
         : '<div style="color:var(--text-muted);padding:16px 0;">Nenhum usuário inativo.</div>';
     }
 
-    // Charts: plans distribution
+    // ── Distribuição por plano ───────────────────────────
     const planQ = Backendless.DataQueryBuilder.create().setPageSize(500).setProperties(['plano']);
     const allUsersPlans = await Backendless.Data.of('Users').find(planQ);
     const planDist = { gratuito:0, mensal:0, premium:0, vitalicio:0 };
@@ -7243,7 +7234,7 @@ async function loadAnalytics() {
         </div>`).join('');
     }
 
-    // New users — busca usuários reais criados nos últimos 7 dias
+    // ── Novos usuários (últimos 7 dias) — dados reais ────
     const chartNew = document.getElementById('chart-new-users');
     if (chartNew) {
       try {
@@ -7253,17 +7244,13 @@ async function loadAnalytics() {
         const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000).toISOString();
         const newUsersQ = Backendless.DataQueryBuilder.create()
           .setWhereClause(`created > '${sevenDaysAgo}'`)
-          .setProperties(['created']).setPageSize(200);
+          .setProperties(['created']).setPageSize(500);
         const newUsers = await Backendless.Data.of('Users').find(newUsersQ);
-        newUsers.forEach(u => {
-          const d = new Date(u.created);
-          const dayIdx = d.getDay(); // 0=Dom
-          counts[dayIdx]++;
-        });
-        // Reordena para exibir da segunda à domingo na ordem da semana atual
+        newUsers.forEach(u => { const dayIdx = new Date(u.created).getDay(); counts[dayIdx]++; });
+
+        // Ordena da semana atual: dias mais antigos → hoje
         const todayIdx = now.getDay();
-        const orderedDays = [];
-        const orderedCounts = [];
+        const orderedDays = [], orderedCounts = [];
         for (let i = 6; i >= 0; i--) {
           const idx = (todayIdx - i + 7) % 7;
           orderedDays.push(days[idx]);
@@ -7282,8 +7269,9 @@ async function loadAnalytics() {
     }
 
   } catch(e) {
+    console.error('Analytics error:', e);
     [topEl,avgEl,inactiveEl,dropEl].forEach(el => {
-      if (el) el.innerHTML = '<div style="color:var(--text-muted);padding:16px 0;">Erro ao carregar dados.</div>';
+      if (el) el.innerHTML = `<div style="color:#f87171;padding:16px 0;">Erro ao carregar dados.<br><small style="color:var(--text-muted);">${e.message||e}</small></div>`;
     });
   }
 }
