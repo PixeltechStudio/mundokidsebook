@@ -6165,34 +6165,75 @@ function renderAchievements() {
   }).join('');
 }
 
+let _saveDebounceTimer = null;
+function scheduleSave() {
+  clearTimeout(_saveDebounceTimer);
+  _saveDebounceTimer = setTimeout(saveStatsToBackendless, 800);
+}
+
 function updateReadingStats(updates) {
   Object.assign(readingStats, updates);
-  // Salva exclusivamente no Backendless
-  saveStatsToBackendless();
-  checkAchievements();
+  checkAchievements(); // checa conquistas localmente (síncrono)
+  scheduleSave();      // salva com debounce para evitar race condition
 }
 
 async function saveStatsToBackendless() {
   try {
     const user = currentUser;
-    if (!user) return;
+    if (!user) { console.warn('[Conquistas] saveStats: currentUser é null, abortando.'); return; }
+
     const q = Backendless.DataQueryBuilder.create()
       .setWhereClause(`usuarioId = '${user.objectId}'`)
       .setPageSize(1);
     const existing = await Backendless.Data.of('Conquistas').find(q);
+
+    // Limpa stats de campos muito grandes antes de salvar
+    const statsToSave = { ...readingStats };
+    if (Array.isArray(statsToSave.genresRead)  && statsToSave.genresRead.length  > 50) statsToSave.genresRead  = statsToSave.genresRead.slice(-50);
+    if (Array.isArray(statsToSave.authorsRead) && statsToSave.authorsRead.length > 50) statsToSave.authorsRead = statsToSave.authorsRead.slice(-50);
+
+    const conquistas_str = JSON.stringify(achievementsUnlocked);
+    const stats_str      = JSON.stringify(statsToSave);
+
     const data = {
-      usuarioId: user.objectId,
-      conquistas: JSON.stringify(achievementsUnlocked),
-      stats: JSON.stringify(readingStats),
+      usuarioId:    user.objectId,
+      conquistas:   conquistas_str,
+      stats:        stats_str,
       atualizadoEm: new Date().toISOString()
     };
     if (existing.length > 0) data.objectId = existing[0].objectId;
-    await Backendless.Data.of('Conquistas').save(data);
-  } catch(e) {}
+
+    const saved = await Backendless.Data.of('Conquistas').save(data);
+    console.log('[Conquistas] Salvo com sucesso. objectId:', saved.objectId,
+      '| conquistas:', Object.keys(achievementsUnlocked).length,
+      '| booksOpened:', readingStats.booksOpened);
+  } catch(e) {
+    console.error('[Conquistas] ERRO ao salvar no Backendless:', e.message || e);
+    // Tenta novamente após 3s (pode ser falha de rede pontual)
+    setTimeout(async () => {
+      try {
+        const user = currentUser;
+        if (!user) return;
+        const q2 = Backendless.DataQueryBuilder.create()
+          .setWhereClause(`usuarioId = '${user.objectId}'`).setPageSize(1);
+        const ex2 = await Backendless.Data.of('Conquistas').find(q2);
+        const data2 = {
+          usuarioId:    user.objectId,
+          conquistas:   JSON.stringify(achievementsUnlocked),
+          stats:        JSON.stringify(readingStats),
+          atualizadoEm: new Date().toISOString()
+        };
+        if (ex2.length > 0) data2.objectId = ex2[0].objectId;
+        await Backendless.Data.of('Conquistas').save(data2);
+        console.log('[Conquistas] Retry bem-sucedido.');
+      } catch(e2) {
+        console.error('[Conquistas] Retry também falhou:', e2.message || e2);
+      }
+    }, 3000);
+  }
 }
 
 function checkAchievements() {
-  // Atualiza totalAchievements antes de checar conquistas sobre conquistas
   readingStats.totalAchievements = Object.keys(achievementsUnlocked).length;
   let newlyUnlocked = [];
   ACHIEVEMENTS_DEF.forEach(ach => {
@@ -6203,8 +6244,7 @@ function checkAchievements() {
   });
   if (newlyUnlocked.length) {
     readingStats.totalAchievements = Object.keys(achievementsUnlocked).length;
-    // Salva exclusivamente no Backendless
-    saveStatsToBackendless();
+    scheduleSave(); // usa debounce para não colidir com salvamentos em andamento
     newlyUnlocked.forEach(ach => showAchievementNotif(ach));
   }
 }
@@ -6232,7 +6272,7 @@ async function saveAchievementsToBackendless() {
 async function loadAchievementsFromBackendless() {
   try {
     const user = currentUser;
-    if (!user) return;
+    if (!user) { console.warn('[Conquistas] load: currentUser é null.'); return; }
     const q = Backendless.DataQueryBuilder.create()
       .setWhereClause(`usuarioId = '${user.objectId}'`)
       .setPageSize(1);
@@ -6240,12 +6280,14 @@ async function loadAchievementsFromBackendless() {
     if (results.length) {
       const rec = results[0];
       if (rec.conquistas) achievementsUnlocked = JSON.parse(rec.conquistas);
-      if (rec.stats) Object.assign(readingStats, JSON.parse(rec.stats));
+      if (rec.stats)      Object.assign(readingStats, JSON.parse(rec.stats));
+      console.log('[Conquistas] Carregado:', Object.keys(achievementsUnlocked).length, 'conquistas | booksOpened:', readingStats.booksOpened);
     } else {
       achievementsUnlocked = {};
+      console.log('[Conquistas] Nenhum registro encontrado para o usuário — começando do zero.');
     }
   } catch(e) {
-    console.warn('Erro ao carregar conquistas do Backendless:', e);
+    console.error('[Conquistas] ERRO ao carregar do Backendless:', e.message || e);
     achievementsUnlocked = {};
   }
 }
@@ -6574,6 +6616,174 @@ function initNewFeatures() {
   loadAchievementsFromBackendless().then(() => {
     checkAchievements();
     if (readingStats.totalMinutes) totalReadingMinutes = readingStats.totalMinutes;
+  });
+
+  // ── Sessões e streak ─────────────────────────────────────────────
+  (function trackSessionAndStreak() {
+    const today = new Date().toDateString();
+    const lastKey = 'me_lastSession';
+    const last = localStorage.getItem(lastKey) || '';
+    if (last !== today) {
+      localStorage.setItem(lastKey, today);
+      // Incrementa sessões
+      const newSessions = (readingStats.totalSessions || 0) + 1;
+      // Calcula streak
+      const yesterday = new Date(Date.now() - 86400000).toDateString();
+      let newStreak = last === yesterday ? (readingStats.streak || 0) + 1 : 1;
+      updateReadingStats({ totalSessions: newSessions, streak: newStreak, loginStreak: newStreak });
+    }
+  })();
+
+  // ── Plano do usuário ─────────────────────────────────────────────
+  if (currentUser?.plano) {
+    updateReadingStats({ plan: currentUser.plano });
+  }
+
+  // ── Perfis infantis ──────────────────────────────────────────────
+  loadChildProfiles().then(() => {
+    updateReadingStats({ childProfiles: childProfiles.length });
+  }).catch(() => {});
+
+  // ── Aniversário ──────────────────────────────────────────────────
+  if (currentUser?.birthday || currentUser?.nascimento) {
+    const bday = new Date(currentUser.birthday || currentUser.nascimento);
+    const now  = new Date();
+    if (bday.getDate() === now.getDate() && bday.getMonth() === now.getMonth()) {
+      updateReadingStats({ birthdayLogin: true });
+    }
+  }
+
+  // ── Eventos sazonais ─────────────────────────────────────────────
+  (function checkSeasonal() {
+    const now = new Date();
+    const m = now.getMonth() + 1, d = now.getDate();
+    if (m === 1  && d === 1)  updateReadingStats({ newYearRead: true });
+    if (m === 10 && d === 31) updateReadingStats({ halloweenRead: true });
+    if (m === 12 && d === 25) updateReadingStats({ christmasRead: true });
+  })();
+
+  // ── Notificações ─────────────────────────────────────────────────
+  if ('Notification' in window && Notification.permission === 'granted') {
+    updateReadingStats({ notificationsOn: true });
+  }
+
+  // ── Foto / Perfil completo ────────────────────────────────────────
+  if (currentUser) {
+    const hasPhoto = !!(currentUser.photoUrl || currentUser.profileImage || currentUser.foto);
+    const complete = !!(currentUser.name && currentUser.email &&
+                       (currentUser.birthday || currentUser.nascimento) &&
+                       hasPhoto);
+    if (hasPhoto || complete) {
+      updateReadingStats({ hasProfilePhoto: hasPhoto, profileComplete: complete });
+    }
+  }
+
+  // ── Hook: searchBooks — rastreia pesquisas ────────────────────────
+  const _origSearchBooks = window.searchBooks;
+  if (typeof _origSearchBooks === 'function') {
+    window.searchBooks = function(term) {
+      _origSearchBooks(term);
+      if (term && term.trim().length >= 2) {
+        updateReadingStats({ searchesDone: (readingStats.searchesDone || 0) + 1 });
+      }
+    };
+  }
+
+  // ── Hook: toggleFavorite — rastreia favoritos ────────────────────
+  const _origToggleFavorite = window.toggleFavorite;
+  if (typeof _origToggleFavorite === 'function') {
+    window.toggleFavorite = function(bookId, btnEl) {
+      const wasFav = typeof favoritesSet !== 'undefined' && favoritesSet.has(bookId);
+      _origToggleFavorite(bookId, btnEl);
+      const isFavNow = typeof favoritesSet !== 'undefined' && favoritesSet.has(bookId);
+      if (!wasFav && isFavNow) {
+        updateReadingStats({ favorites: (readingStats.favorites || 0) + 1 });
+      }
+    };
+  }
+
+  // ── Hook: toggleAmbientMusic — rastreia música bedtime ───────────
+  const _origAmbient = window.toggleAmbientMusic;
+  if (typeof _origAmbient === 'function') {
+    window.toggleAmbientMusic = function(type, btn) {
+      _origAmbient(type, btn);
+      updateReadingStats({
+        usedBedtimeMusic: true,
+        bedtimeUses: (readingStats.bedtimeUses || 0) + 1
+      });
+    };
+  }
+
+  // ── Hook: toggleBedtimeMode — conta usos ────────────────────────
+  const _origBedtime = window.toggleBedtimeMode;
+  if (typeof _origBedtime === 'function') {
+    window.toggleBedtimeMode = function() {
+      _origBedtime();
+      const isActive = document.getElementById('bedtime-mode-toggle')?.checked;
+      if (isActive) {
+        updateReadingStats({
+          usedBedtime: true,
+          bedtimeUses: (readingStats.bedtimeUses || 0) + 1
+        });
+      }
+    };
+  }
+
+  // ── Eventos de leitura: horário, gênero, autor, velocidade ───────
+  document.addEventListener('bookOpened', (e) => {
+    const now  = new Date();
+    const hr   = now.getHours();
+    const dow  = now.getDay(); // 0=dom, 6=sab
+    const updates = {};
+
+    // Horários especiais
+    if (hr < 7)  updates.readEarlyMorning = true;
+    if (hr >= 22) updates.readLateNight   = true;
+    if (dow === 0 || dow === 6) updates.readWeekend = true;
+    if (hr >= 12 && hr < 14)    updates.readLunchtime = true;
+
+    // Gênero e autor do livro aberto
+    const bookId = e.detail?.id;
+    const book   = typeof allBooks !== 'undefined' ? allBooks.find(b => b.objectId === bookId) : null;
+    if (book) {
+      const genres  = [...(readingStats.genresRead  || [])];
+      const authors = [...(readingStats.authorsRead || [])];
+      if (book.categoria && !genres.includes(book.categoria.toLowerCase())) {
+        genres.push(book.categoria.toLowerCase());
+        updates.genresRead = genres;
+      }
+      if (book.autor && !authors.includes(book.autor)) {
+        authors.push(book.autor);
+        updates.authorsRead = authors;
+      }
+    }
+
+    if (Object.keys(updates).length) updateReadingStats(updates);
+  });
+
+  // ── Evento bookCompleted: horário de conclusão, velocidade, binge ─
+  document.addEventListener('bookCompleted', (e) => {
+    const now = new Date();
+    const hr  = now.getHours();
+    const updates = {};
+    if (hr >= 0  && hr < 4)  updates.finishedAtNight   = true;
+    if (hr >= 5  && hr < 8)  updates.finishedInMorning = true;
+
+    // Velocidade: verifica se o livro foi completado em menos de 30min
+    if (readingSessionStart) {
+      const mins = Math.round((Date.now() - readingSessionStart) / 60000);
+      if (mins < 30) updates.speedCompleted = true;
+    }
+
+    // Binge: conta livros completados hoje
+    const todayKey = 'me_binge_' + new Date().toDateString();
+    const bingeToday = (parseInt(localStorage.getItem(todayKey) || '0')) + 1;
+    localStorage.setItem(todayKey, bingeToday);
+    if (bingeToday > (readingStats.bingeDayMax || 0)) {
+      updates.bingeDayMax = bingeToday;
+    }
+
+    if (Object.keys(updates).length) updateReadingStats(updates);
   });
 
   // Restaura preferência bedtimeMode do Backendless (campo salvo no usuário)
