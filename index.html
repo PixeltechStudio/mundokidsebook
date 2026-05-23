@@ -9557,5 +9557,1399 @@ async function loadAdminJornada() {
 
 </script>
 
+<!-- ╔══════════════════════════════════════════════════════════╗
+     ║           LOJA MÁGICA — HTML INJECTION                  ║
+     ╚══════════════════════════════════════════════════════════╝ -->
+
+<!-- ── LOJA MÁGICA MODAL (full-screen overlay) ── -->
+<div id="loja-magica-overlay" style="display:none;position:fixed;inset:0;z-index:9000;background:linear-gradient(135deg,#0f0520 0%,#1a0a38 50%,#0f0520 100%);overflow-y:auto;">
+
+  <!-- Floating particles inside loja -->
+  <div id="loja-particles" style="position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;">
+    <div class="loja-star" style="top:8%;left:5%;animation-delay:0s;">✨</div>
+    <div class="loja-star" style="top:15%;right:8%;animation-delay:0.8s;">⭐</div>
+    <div class="loja-star" style="top:40%;left:2%;animation-delay:1.6s;">💫</div>
+    <div class="loja-star" style="top:60%;right:4%;animation-delay:0.4s;">🌟</div>
+    <div class="loja-star" style="top:80%;left:10%;animation-delay:2s;">✨</div>
+    <div class="loja-star" style="top:25%;left:50%;animation-delay:1.2s;">💎</div>
+    <div class="loja-star" style="top:70%;right:15%;animation-delay:0.6s;">⭐</div>
+  </div>
+
+  <!-- TOP BAR -->
+  <div style="position:sticky;top:0;z-index:100;background:rgba(15,5,32,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(255,255,255,0.08);padding:0 24px;">
+    <div style="max-width:1400px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;height:64px;gap:16px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:16px;">
+        <button onclick="fecharLoja()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;border-radius:10px;padding:8px 14px;cursor:pointer;font-size:1rem;font-family:var(--font-body);font-weight:700;transition:all 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.15)'" onmouseout="this.style.background='rgba(255,255,255,0.08)'">← Voltar</button>
+        <h1 style="font-family:var(--font-title);font-size:1.5rem;background:linear-gradient(135deg,#fbbf24,#ff6eb4,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">🛒 Loja Mágica</h1>
+      </div>
+      <!-- Coin balance -->
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div style="background:linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05));border:1px solid rgba(251,191,36,0.4);border-radius:50px;padding:8px 20px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.3rem;">🪙</span>
+          <span style="font-weight:800;color:#fbbf24;font-size:1.1rem;" id="loja-saldo-topo">0</span>
+          <span style="color:rgba(255,255,255,0.5);font-size:0.8rem;">moedas</span>
+        </div>
+        <div class="loja-tab-btn active" id="ltab-btn-loja" onclick="lojaShowTab('loja')" style="cursor:pointer;">🏪 Loja</div>
+        <div class="loja-tab-btn" id="ltab-btn-inventario" onclick="lojaShowTab('inventario')" style="cursor:pointer;">🎒 Inventário</div>
+        <div class="loja-tab-btn" id="ltab-btn-album" onclick="lojaShowTab('album')" style="cursor:pointer;">📖 Álbum</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="max-width:1400px;margin:0 auto;padding:24px;position:relative;z-index:1;">
+
+    <!-- ══ TAB: LOJA ══ -->
+    <div id="ltab-loja" class="ltab-content active">
+      <!-- Category filter -->
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px;" id="loja-cats">
+        <button class="loja-cat-btn active" onclick="filtrarLoja('todos')">✨ Todos</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('avatares')">🦄 Avatares</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('molduras')">🖼️ Molduras</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('mascotes')">🐉 Mascotes</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('efeitos')">⚡ Efeitos</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('fundos')">🌈 Fundos</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('capas')">📚 Capas</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('livrossecret')">🔐 Livros Secretos</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('adesivos')">🎨 Adesivos</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('cartas')">🃏 Pacotes de Cartas</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('temas')">🎭 Temas</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('insignias')">🏅 Insígnias</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('titulos')">👑 Títulos</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('emotes')">😄 Emotes</button>
+        <button class="loja-cat-btn" onclick="filtrarLoja('sazonal')">🌟 Sazonais</button>
+      </div>
+
+      <div id="loja-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:20px;">
+        <div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">
+          <div class="spinner" style="margin:0 auto 16px;"></div>Carregando itens mágicos...
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: INVENTÁRIO ══ -->
+    <div id="ltab-inventario" class="ltab-content">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;" id="inv-cats">
+        <button class="loja-cat-btn active" onclick="filtrarInventario('todos')">🎒 Todos</button>
+        <button class="loja-cat-btn" onclick="filtrarInventario('equipados')">⚡ Equipados</button>
+        <button class="loja-cat-btn" onclick="filtrarInventario('avatares')">🦄 Avatares</button>
+        <button class="loja-cat-btn" onclick="filtrarInventario('molduras')">🖼️ Molduras</button>
+        <button class="loja-cat-btn" onclick="filtrarInventario('mascotes')">🐉 Mascotes</button>
+        <button class="loja-cat-btn" onclick="filtrarInventario('cartas')">🃏 Cartas</button>
+      </div>
+
+      <!-- Equipados atualmente -->
+      <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:20px;margin-bottom:24px;">
+        <h3 style="color:#fbbf24;font-family:var(--font-title);margin-bottom:16px;font-size:1.1rem;">⚡ Equipados Atualmente</h3>
+        <div id="inv-equipados-row" style="display:flex;gap:12px;flex-wrap:wrap;">
+          <div style="color:rgba(255,255,255,0.4);font-size:0.9rem;">Nenhum item equipado ainda.</div>
+        </div>
+      </div>
+
+      <div id="inv-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px;">
+        <div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">
+          <div class="spinner" style="margin:0 auto 16px;"></div>Carregando inventário...
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ TAB: ÁLBUM DE CARTAS ══ -->
+    <div id="ltab-album" class="ltab-content">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px;" id="album-colecoes-filter"></div>
+      <div id="album-progress-bar-wrap" style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:18px;margin-bottom:24px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <span style="color:#c084fc;font-weight:700;">📖 Progresso do Álbum</span>
+          <span id="album-pct-txt" style="color:#fbbf24;font-weight:800;">0%</span>
+        </div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;height:12px;overflow:hidden;">
+          <div id="album-pct-bar" style="height:100%;background:linear-gradient(90deg,#c084fc,#ff6eb4);border-radius:8px;transition:width 0.6s ease;width:0%;"></div>
+        </div>
+        <div style="display:flex;gap:20px;margin-top:12px;flex-wrap:wrap;" id="album-stats-row"></div>
+      </div>
+      <div id="album-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:16px;">
+        <div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">
+          <div class="spinner" style="margin:0 auto 16px;"></div>Carregando álbum...
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /max-width container -->
+</div><!-- /loja-magica-overlay -->
+
+<!-- ── ANIMAÇÃO DE DESBLOQUEIO ── -->
+<div id="unlock-anim-overlay" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);display:none;align-items:center;justify-content:center;flex-direction:column;">
+  <div id="unlock-anim-box" style="text-align:center;animation:unlock-pop 0.6s cubic-bezier(0.34,1.56,0.64,1) forwards;">
+    <div id="unlock-anim-emoji" style="font-size:6rem;filter:drop-shadow(0 0 40px gold);animation:spin-glow 1s ease infinite alternate;">🎁</div>
+    <div id="unlock-anim-title" style="font-family:var(--font-title);font-size:2rem;color:#fbbf24;margin:16px 0;text-shadow:0 0 40px rgba(251,191,36,0.8);">Item Desbloqueado!</div>
+    <div id="unlock-anim-name" style="color:white;font-size:1.2rem;font-weight:700;"></div>
+    <div id="unlock-anim-rarity" style="font-size:0.9rem;margin-top:6px;"></div>
+    <div id="unlock-anim-particles" style="position:absolute;inset:0;pointer-events:none;"></div>
+    <button onclick="fecharUnlockAnim()" style="margin-top:28px;background:linear-gradient(135deg,#9333ea,#ff6eb4);border:none;color:white;padding:14px 36px;border-radius:50px;font-family:var(--font-body);font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 8px 32px rgba(255,110,180,0.4);">✨ Incrível!</button>
+  </div>
+</div>
+
+<!-- ── ANIMAÇÃO ABERTURA DE PACOTE ── -->
+<div id="pack-open-overlay" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.92);backdrop-filter:blur(16px);align-items:center;justify-content:center;flex-direction:column;">
+  <h2 style="font-family:var(--font-title);color:#fbbf24;font-size:2rem;margin-bottom:32px;text-shadow:0 0 40px rgba(251,191,36,0.7);">🎴 Pacote Aberto!</h2>
+  <div id="pack-cards-row" style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;max-width:900px;"></div>
+  <button onclick="fecharPackOpen()" style="margin-top:40px;background:linear-gradient(135deg,#9333ea,#ff6eb4);border:none;color:white;padding:14px 40px;border-radius:50px;font-family:var(--font-body);font-size:1rem;font-weight:800;cursor:pointer;">✨ Guardar cartas</button>
+</div>
+
+<!-- ── ADMIN LOJA MODAL ── -->
+<div id="admin-loja-modal" style="display:none;position:fixed;inset:0;z-index:9500;background:rgba(0,0,0,0.85);backdrop-filter:blur(10px);overflow-y:auto;">
+  <div style="max-width:700px;margin:40px auto;background:rgba(26,10,56,0.98);border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:32px;position:relative;">
+    <button onclick="fecharAdminLojaModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:rgba(255,255,255,0.5);font-size:1.5rem;cursor:pointer;">✕</button>
+    <h2 style="font-family:var(--font-title);color:#fbbf24;margin-bottom:24px;" id="admin-loja-modal-title">➕ Novo Item</h2>
+    <input type="hidden" id="admin-loja-item-id" />
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+      <div class="form-group full-width"><label>Nome *</label><input type="text" id="ali-nome" placeholder="Nome do item" /></div>
+      <div class="form-group full-width"><label>Descrição</label><textarea id="ali-desc" placeholder="Descreva o item..."></textarea></div>
+      <div class="form-group"><label>Categoria</label>
+        <select id="ali-categoria">
+          <option value="avatares">🦄 Avatares</option>
+          <option value="molduras">🖼️ Molduras</option>
+          <option value="mascotes">🐉 Mascotes</option>
+          <option value="efeitos">⚡ Efeitos</option>
+          <option value="fundos">🌈 Fundos</option>
+          <option value="capas">📚 Capas</option>
+          <option value="livrossecret">🔐 Livros Secretos</option>
+          <option value="adesivos">🎨 Adesivos</option>
+          <option value="cartas">🃏 Pacote de Cartas</option>
+          <option value="temas">🎭 Temas</option>
+          <option value="insignias">🏅 Insígnias</option>
+          <option value="titulos">👑 Títulos</option>
+          <option value="emotes">😄 Emotes</option>
+          <option value="sazonal">🌟 Sazonal</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Raridade</label>
+        <select id="ali-raridade">
+          <option value="comum">⚪ Comum</option>
+          <option value="incomum">🟢 Incomum</option>
+          <option value="rara">🔵 Rara</option>
+          <option value="epica">🟣 Épica</option>
+          <option value="lendaria">🟠 Lendária</option>
+          <option value="mitica">🔴 Mítica</option>
+          <option value="especial">✨ Especial</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Preço (moedas) *</label><input type="number" id="ali-preco" min="0" placeholder="100" /></div>
+      <div class="form-group"><label>Emoji / Ícone</label><input type="text" id="ali-emoji" placeholder="🦄" maxlength="8" /></div>
+      <div class="form-group"><label>URL da Imagem</label><input type="text" id="ali-imagem" placeholder="https://..." /></div>
+      <div class="form-group"><label>Status</label>
+        <select id="ali-ativo">
+          <option value="true">✅ Ativo</option>
+          <option value="false">❌ Inativo</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Comprável?</label>
+        <select id="ali-compravel">
+          <option value="true">✅ Sim</option>
+          <option value="false">❌ Não (só por evento)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Colecionável?</label>
+        <select id="ali-colecavel">
+          <option value="false">❌ Não</option>
+          <option value="true">✅ Sim (carta)</option>
+        </select>
+      </div>
+      <div class="form-group"><label>Drop Chance (%)</label><input type="number" id="ali-drop" min="0" max="100" placeholder="10" /></div>
+      <div class="form-group full-width"><label>Coleção (para cartas)</label><input type="text" id="ali-colecao" placeholder="Ex: Aventura Mágica" /></div>
+      <div class="form-group full-width" style="display:flex;gap:12px;flex-wrap:wrap;margin-top:8px;">
+        <button class="btn btn-primary" onclick="salvarAdminLojaItem()">💾 Salvar Item</button>
+        <button class="btn btn-secondary" onclick="fecharAdminLojaModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+/* ══════════════════════════════════
+   LOJA MÁGICA — STYLES
+══════════════════════════════════ */
+
+.loja-star {
+  position: absolute;
+  font-size: 1.4rem;
+  animation: loja-star-float 4s ease-in-out infinite;
+  opacity: 0.4;
+  pointer-events: none;
+}
+@keyframes loja-star-float {
+  0%,100% { transform: translateY(0) rotate(0deg); opacity: 0.4; }
+  50% { transform: translateY(-20px) rotate(15deg); opacity: 0.7; }
+}
+
+.loja-tab-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.6);
+  border-radius: 10px;
+  padding: 8px 16px;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.25s;
+  user-select: none;
+}
+.loja-tab-btn.active,
+.loja-tab-btn:hover {
+  background: linear-gradient(135deg, rgba(147,51,234,0.4), rgba(255,110,180,0.2));
+  border-color: rgba(192,132,252,0.5);
+  color: white;
+}
+
+.ltab-content { display: none; }
+.ltab-content.active { display: block; }
+
+.loja-cat-btn {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.6);
+  border-radius: 50px;
+  padding: 7px 16px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+.loja-cat-btn.active,
+.loja-cat-btn:hover {
+  background: linear-gradient(135deg, rgba(147,51,234,0.5), rgba(255,110,180,0.3));
+  border-color: rgba(192,132,252,0.6);
+  color: white;
+}
+
+/* ── ITEM CARD ── */
+.loja-item-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.25,0.46,0.45,0.94);
+  position: relative;
+  overflow: hidden;
+}
+.loja-item-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(192,132,252,0.05) 0%, transparent 60%);
+  pointer-events: none;
+}
+.loja-item-card:hover {
+  transform: translateY(-6px) scale(1.02);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(192,132,252,0.15);
+  border-color: rgba(192,132,252,0.4);
+}
+.loja-item-card.rara { border-color: rgba(59,130,246,0.4); }
+.loja-item-card.epica { border-color: rgba(147,51,234,0.6); box-shadow: 0 0 20px rgba(147,51,234,0.15); }
+.loja-item-card.lendaria { border-color: rgba(251,146,60,0.6); box-shadow: 0 0 24px rgba(251,146,60,0.2); }
+.loja-item-card.mitica { border-color: rgba(239,68,68,0.7); box-shadow: 0 0 30px rgba(239,68,68,0.25); animation: mitica-pulse 2s ease-in-out infinite; }
+.loja-item-card.especial { border-color: rgba(251,191,36,0.7); box-shadow: 0 0 28px rgba(251,191,36,0.2); }
+@keyframes mitica-pulse {
+  0%,100% { box-shadow: 0 0 30px rgba(239,68,68,0.2); }
+  50% { box-shadow: 0 0 50px rgba(239,68,68,0.4); }
+}
+
+.loja-item-emoji {
+  font-size: 3rem;
+  margin-bottom: 10px;
+  display: block;
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.4));
+  transition: transform 0.3s;
+}
+.loja-item-card:hover .loja-item-emoji { transform: scale(1.15) rotate(5deg); }
+.loja-item-name { font-weight: 800; color: white; font-size: 0.95rem; margin-bottom: 6px; }
+.loja-item-desc { color: rgba(255,255,255,0.5); font-size: 0.78rem; margin-bottom: 12px; line-height: 1.4; }
+.loja-item-price {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(251,191,36,0.12); border: 1px solid rgba(251,191,36,0.3);
+  border-radius: 50px; padding: 5px 14px;
+  color: #fbbf24; font-weight: 800; font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+.loja-btn-comprar {
+  width: 100%;
+  background: linear-gradient(135deg, #9333ea, #ff6eb4);
+  border: none; color: white; border-radius: 12px;
+  padding: 10px 0; font-family: var(--font-body);
+  font-weight: 800; font-size: 0.88rem; cursor: pointer;
+  transition: all 0.3s; box-shadow: 0 4px 20px rgba(147,51,234,0.3);
+}
+.loja-btn-comprar:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(147,51,234,0.5); }
+.loja-btn-comprar:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.loja-btn-comprar.comprado { background: linear-gradient(135deg, #059669, #10b981); }
+.loja-btn-comprar.equipar { background: linear-gradient(135deg, #f59e0b, #fbbf24); color: #1e0a3c; }
+
+/* Rarity badge */
+.rarity-badge {
+  position: absolute; top: 12px; right: 12px;
+  font-size: 0.65rem; font-weight: 800; padding: 3px 10px;
+  border-radius: 50px; text-transform: uppercase; letter-spacing: 0.5px;
+}
+.rarity-comum { background: rgba(156,163,175,0.3); color: #d1d5db; border: 1px solid rgba(156,163,175,0.4); }
+.rarity-incomum { background: rgba(52,211,153,0.2); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.4); }
+.rarity-rara { background: rgba(59,130,246,0.2); color: #93c5fd; border: 1px solid rgba(59,130,246,0.4); }
+.rarity-epica { background: rgba(147,51,234,0.25); color: #c084fc; border: 1px solid rgba(147,51,234,0.5); }
+.rarity-lendaria { background: rgba(251,146,60,0.2); color: #fdba74; border: 1px solid rgba(251,146,60,0.5); }
+.rarity-mitica { background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.5); }
+.rarity-especial { background: rgba(251,191,36,0.2); color: #fde68a; border: 1px solid rgba(251,191,36,0.5); }
+
+/* ── CARTA CARD ── */
+.carta-card {
+  border-radius: 16px;
+  padding: 16px 12px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.carta-card.desbloqueada {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  cursor: pointer;
+}
+.carta-card.desbloqueada:hover { transform: translateY(-4px) scale(1.03); }
+.carta-card.bloqueada {
+  background: rgba(0,0,0,0.4);
+  border: 1px solid rgba(255,255,255,0.06);
+  filter: grayscale(80%);
+  opacity: 0.5;
+}
+.carta-emoji-big { font-size: 2.8rem; display: block; margin-bottom: 8px; }
+.carta-nome { font-size: 0.82rem; font-weight: 700; color: white; margin-bottom: 4px; }
+.carta-raridade-txt { font-size: 0.7rem; }
+.carta-qty {
+  position: absolute; top: 8px; right: 8px;
+  background: rgba(251,191,36,0.25); border: 1px solid rgba(251,191,36,0.5);
+  color: #fbbf24; font-size: 0.65rem; font-weight: 800;
+  padding: 2px 8px; border-radius: 50px;
+}
+.carta-bloqueada-icon {
+  position: absolute; inset: 0; display: flex; align-items: center;
+  justify-content: center; font-size: 2rem; opacity: 0.4;
+}
+
+/* ── INVENTORY ITEM ── */
+.inv-item-card {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 16px; padding: 16px;
+  text-align: center; position: relative;
+  transition: all 0.25s;
+}
+.inv-item-card.equipado-card {
+  border-color: rgba(251,191,36,0.5);
+  background: rgba(251,191,36,0.06);
+  box-shadow: 0 0 20px rgba(251,191,36,0.1);
+}
+.inv-equipado-badge {
+  position: absolute; top: 8px; left: 8px;
+  background: rgba(251,191,36,0.3); border: 1px solid rgba(251,191,36,0.6);
+  color: #fbbf24; font-size: 0.6rem; font-weight: 800;
+  padding: 2px 8px; border-radius: 50px;
+}
+
+/* ── PACK CARD (abertura) ── */
+.pack-reveal-card {
+  background: rgba(255,255,255,0.08);
+  border-radius: 16px; padding: 20px;
+  text-align: center; min-width: 140px;
+  animation: card-flip-in 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards;
+  opacity: 0;
+}
+@keyframes card-flip-in {
+  0% { opacity: 0; transform: rotateY(90deg) scale(0.8); }
+  100% { opacity: 1; transform: rotateY(0) scale(1); }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes unlock-pop {
+  0% { opacity: 0; transform: scale(0.5) rotate(-10deg); }
+  60% { transform: scale(1.1) rotate(3deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+@keyframes spin-glow {
+  0% { transform: scale(1) rotate(-5deg); filter: drop-shadow(0 0 20px gold); }
+  100% { transform: scale(1.1) rotate(5deg); filter: drop-shadow(0 0 60px gold); }
+}
+
+/* ── ADMIN LOJA section styles ── */
+.admin-loja-item-row {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px; padding: 12px 16px;
+  margin-bottom: 10px;
+  transition: all 0.2s;
+}
+.admin-loja-item-row:hover { background: rgba(255,255,255,0.07); }
+
+/* ── MOBILE ── */
+@media (max-width: 600px) {
+  .loja-tab-btn { font-size: 0.78rem; padding: 6px 10px; }
+  #loja-grid, #inv-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); }
+  #album-grid { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+</style>
+
+<script>
+/* ╔══════════════════════════════════════════════════════════╗
+   ║              LOJA MÁGICA — JAVASCRIPT                   ║
+   ╚══════════════════════════════════════════════════════════╝ */
+
+// ── TABLE NAMES ──
+const LOJA_ITENS_TABLE         = 'LojaItens';
+const USUARIO_INVENTARIO_TABLE = 'UsuarioInventario';
+const CARTAS_TABLE             = 'CartasColecionaveis';
+const USUARIO_CARTAS_TABLE     = 'UsuarioCartas';
+const PACOTES_TABLE            = 'PacotesCartas';
+const COMPRAS_TABLE            = 'ComprasLoja';
+const COLECOES_TABLE           = 'ColecoesCartas';
+const RECOMPENSAS_TABLE        = 'RecompensasColecao';
+const USUARIO_MOEDAS_TABLE     = 'UsuarioMoedas';
+
+// ── STATE ──
+let lojaItens        = [];
+let lojaInventario   = [];
+let lojaCartas       = [];
+let lojaUserCartas   = {};   // cartaId → qty
+let lojaColecoes     = [];
+let lojaSaldo        = 0;
+let lojaFiltroAtual  = 'todos';
+let invFiltroAtual   = 'todos';
+let albumFiltroAtual = 'todos';
+
+const RARITY_COLORS = {
+  comum:    '#9ca3af',
+  incomum:  '#34d399',
+  rara:     '#60a5fa',
+  epica:    '#c084fc',
+  lendaria: '#fb923c',
+  mitica:   '#f87171',
+  especial: '#fbbf24'
+};
+
+const RARITY_LABELS = {
+  comum:'⚪ Comum', incomum:'🟢 Incomum', rara:'🔵 Rara',
+  epica:'🟣 Épica', lendaria:'🟠 Lendária', mitica:'🔴 Mítica', especial:'✨ Especial'
+};
+
+// ── OPEN / CLOSE LOJA ──
+function abrirLoja() {
+  document.getElementById('loja-magica-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  carregarLoja();
+}
+
+function fecharLoja() {
+  document.getElementById('loja-magica-overlay').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+// ── TAB SWITCH ──
+function lojaShowTab(tab) {
+  document.querySelectorAll('.ltab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.loja-tab-btn').forEach(el => el.classList.remove('active'));
+  document.getElementById(`ltab-${tab}`).classList.add('active');
+  document.getElementById(`ltab-btn-${tab}`).classList.add('active');
+  if (tab === 'inventario') carregarInventario();
+  if (tab === 'album') carregarAlbum();
+}
+
+// ── LOAD SALDO ──
+async function carregarSaldo() {
+  if (!currentUser) return;
+  try {
+    // First try Jornada table (moedas field)
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}'`)
+      .setProperties(['moedas']).setPageSize(1);
+    const jr = await Backendless.Data.of('JornadaLeitor').find(q).catch(() => []);
+    if (jr.length > 0 && jr[0].moedas !== undefined) {
+      lojaSaldo = jr[0].moedas || 0;
+    } else {
+      // Fallback: UsuarioMoedas table
+      const q2 = Backendless.DataQueryBuilder.create()
+        .setWhereClause(`userId = '${currentUser.objectId}'`)
+        .setProperties(['moedas']).setPageSize(1);
+      const mr = await Backendless.Data.of(USUARIO_MOEDAS_TABLE).find(q2).catch(() => []);
+      lojaSaldo = mr.length > 0 ? (mr[0].moedas || 0) : 0;
+    }
+  } catch(e) { lojaSaldo = 0; }
+  const els = document.querySelectorAll('#loja-saldo-topo, #loja-saldo');
+  els.forEach(el => { if (el) el.textContent = lojaSaldo.toLocaleString('pt-BR'); });
+}
+
+// ── DESCONTAR MOEDAS ──
+async function descontarMoedas(quantidade) {
+  if (!currentUser) return false;
+  try {
+    // Try Jornada first
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}'`)
+      .setPageSize(1);
+    const jr = await Backendless.Data.of('JornadaLeitor').find(q).catch(() => []);
+    if (jr.length > 0) {
+      const novasM = Math.max(0, (jr[0].moedas || 0) - quantidade);
+      await Backendless.Data.of('JornadaLeitor').save({ objectId: jr[0].objectId, moedas: novasM });
+      lojaSaldo = novasM;
+    } else {
+      // Fallback UsuarioMoedas
+      const q2 = Backendless.DataQueryBuilder.create()
+        .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(1);
+      const mr = await Backendless.Data.of(USUARIO_MOEDAS_TABLE).find(q2).catch(() => []);
+      const curr = mr.length > 0 ? (mr[0].moedas || 0) : 0;
+      const novas = Math.max(0, curr - quantidade);
+      const rec = { userId: currentUser.objectId, moedas: novas };
+      if (mr.length > 0) rec.objectId = mr[0].objectId;
+      await Backendless.Data.of(USUARIO_MOEDAS_TABLE).save(rec);
+      lojaSaldo = novas;
+    }
+    const els = document.querySelectorAll('#loja-saldo-topo, #loja-saldo');
+    els.forEach(el => { if (el) el.textContent = lojaSaldo.toLocaleString('pt-BR'); });
+    return true;
+  } catch(e) { console.error('Descontar moedas error:', e); return false; }
+}
+
+// ── CARREGAR LOJA ──
+async function carregarLoja() {
+  await carregarSaldo();
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause('ativo = true AND compravel = true')
+      .setSortBy(['categoria ASC','raridade ASC'])
+      .setPageSize(100);
+    lojaItens = await Backendless.Data.of(LOJA_ITENS_TABLE).find(q);
+  } catch(e) {
+    // Table might not exist yet — show demo items
+    lojaItens = getLojaDemoItens();
+  }
+  renderLojaGrid(lojaItens);
+}
+
+function getLojaDemoItens() {
+  return [
+    { objectId:'demo1', nome:'Avatar Dragão Mágico', descricao:'Um dragão colorido e vibrante', categoria:'avatares', raridade:'rara', preco:150, emoji:'🐉', ativo:true, compravel:true },
+    { objectId:'demo2', nome:'Moldura Dourada', descricao:'Moldura brilhante de ouro puro', categoria:'molduras', raridade:'lendaria', preco:300, emoji:'🪙', ativo:true, compravel:true },
+    { objectId:'demo3', nome:'Mascote Coruja Sábia', descricao:'A coruja mais sábia do reino', categoria:'mascotes', raridade:'epica', preco:250, emoji:'🦉', ativo:true, compravel:true },
+    { objectId:'demo4', nome:'Efeito Névoa Mística', descricao:'Névoa colorida ao redor do perfil', categoria:'efeitos', raridade:'epica', preco:200, emoji:'💨', ativo:true, compravel:true },
+    { objectId:'demo5', nome:'Fundo Floresta Encantada', descricao:'Uma floresta mágica como fundo', categoria:'fundos', raridade:'rara', preco:180, emoji:'🌳', ativo:true, compravel:true },
+    { objectId:'demo6', nome:'Pacote Comum de Cartas', descricao:'3 cartas aleatórias comuns', categoria:'cartas', raridade:'comum', preco:50, emoji:'🃏', ativo:true, compravel:true, ehPacote:true, cartasPorPacote:3 },
+    { objectId:'demo7', nome:'Pacote Raro de Cartas', descricao:'3 cartas com chance de rara', categoria:'cartas', raridade:'rara', preco:120, emoji:'🎴', ativo:true, compravel:true, ehPacote:true, cartasPorPacote:3 },
+    { objectId:'demo8', nome:'Pacote Épico de Cartas', descricao:'5 cartas com chance de épica', categoria:'cartas', raridade:'epica', preco:280, emoji:'🎆', ativo:true, compravel:true, ehPacote:true, cartasPorPacote:5 },
+    { objectId:'demo9', nome:'Pacote Lendário', descricao:'5 cartas garantindo 1 lendária', categoria:'cartas', raridade:'lendaria', preco:500, emoji:'✨', ativo:true, compravel:true, ehPacote:true, cartasPorPacote:5 },
+    { objectId:'demo10', nome:'Pacote Misterioso', descricao:'Surpresa! Qualquer raridade', categoria:'cartas', raridade:'especial', preco:200, emoji:'🎁', ativo:true, compravel:true, ehPacote:true, cartasPorPacote:4 },
+    { objectId:'demo11', nome:'Título: Leitor Estelar', descricao:'Exiba seu amor pelos livros', categoria:'titulos', raridade:'rara', preco:100, emoji:'⭐', ativo:true, compravel:true },
+    { objectId:'demo12', nome:'Insígnia Explorador', descricao:'Para os grandes exploradores', categoria:'insignias', raridade:'incomum', preco:80, emoji:'🧭', ativo:true, compravel:true },
+    { objectId:'demo13', nome:'Emote Dança da Vitória', descricao:'Comemore suas conquistas!', categoria:'emotes', raridade:'incomum', preco:60, emoji:'💃', ativo:true, compravel:true },
+    { objectId:'demo14', nome:'Tema Visual Galáxia', descricao:'Interface com tema espacial', categoria:'temas', raridade:'lendaria', preco:400, emoji:'🌌', ativo:true, compravel:true },
+    { objectId:'demo15', nome:'Avatar Unicórnio Arco-Íris', descricao:'Brilhante e mágico como você!', categoria:'avatares', raridade:'mitica', preco:600, emoji:'🦄', ativo:true, compravel:true },
+    { objectId:'demo16', nome:'Adesivo Estrela Cadente', descricao:'Um adesivo brilhante e raro', categoria:'adesivos', raridade:'rara', preco:90, emoji:'🌠', ativo:true, compravel:true },
+    { objectId:'demo17', nome:'Livro Secreto: O Tesouro Perdido', descricao:'Desbloqueie essa história exclusiva', categoria:'livrossecret', raridade:'especial', preco:350, emoji:'🔐', ativo:true, compravel:true },
+    { objectId:'demo18', nome:'Capa Especial: Dragões', descricao:'Aplique aos seus livros', categoria:'capas', raridade:'epica', preco:220, emoji:'🔥', ativo:true, compravel:true },
+  ];
+}
+
+// ── RENDER LOJA GRID ──
+function renderLojaGrid(itens) {
+  const grid = document.getElementById('loja-grid');
+  if (!grid) return;
+  const filtered = lojaFiltroAtual === 'todos' ? itens : itens.filter(i => i.categoria === lojaFiltroAtual);
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">Nenhum item nesta categoria ainda. Em breve!</div>`;
+    return;
+  }
+  const comprados = lojaInventario.map(i => i.itemId);
+  grid.innerHTML = filtered.map(item => {
+    const comprado = comprados.includes(item.objectId);
+    const rar = item.raridade || 'comum';
+    const imagem = item.imagem ? `<img src="${item.imagem}" style="width:80px;height:80px;object-fit:cover;border-radius:12px;margin-bottom:8px;" onerror="this.style.display='none'" />` : '';
+    return `
+    <div class="loja-item-card ${rar}" onclick="abrirItemDetail('${item.objectId}')">
+      <span class="rarity-badge rarity-${rar}">${RARITY_LABELS[rar]||rar}</span>
+      ${imagem}
+      <span class="loja-item-emoji">${item.emoji || getCatEmoji(item.categoria)}</span>
+      <div class="loja-item-name">${item.nome}</div>
+      <div class="loja-item-desc">${item.descricao||''}</div>
+      <div class="loja-item-price">🪙 ${(item.preco||0).toLocaleString('pt-BR')}</div>
+      ${comprado
+        ? `<button class="loja-btn-comprar comprado" onclick="event.stopPropagation();equiparItem('${item.objectId}')">⚡ Equipar</button>`
+        : `<button class="loja-btn-comprar" onclick="event.stopPropagation();comprarItem('${item.objectId}')" ${lojaSaldo < (item.preco||0) ? '' : ''}>
+            ${item.ehPacote ? '🎴 Abrir Pacote' : '🔓 Desbloquear'}
+           </button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function getCatEmoji(cat) {
+  const map = { avatares:'🦄', molduras:'🖼️', mascotes:'🐉', efeitos:'⚡', fundos:'🌈',
+    capas:'📚', livrossecret:'🔐', adesivos:'🎨', cartas:'🃏', temas:'🎭',
+    insignias:'🏅', titulos:'👑', emotes:'😄', sazonal:'🌟' };
+  return map[cat] || '🎁';
+}
+
+function filtrarLoja(cat) {
+  lojaFiltroAtual = cat;
+  document.querySelectorAll('#loja-cats .loja-cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderLojaGrid(lojaItens);
+}
+
+// ── COMPRAR ITEM ──
+async function comprarItem(itemId) {
+  if (!currentUser) { showToast('Faça login para comprar!', 'error'); return; }
+  const item = lojaItens.find(i => i.objectId === itemId);
+  if (!item) return;
+
+  if (lojaSaldo < (item.preco || 0)) {
+    showToast(`✨ Você ainda precisa juntar mais moedas mágicas! Faltam ${(item.preco - lojaSaldo).toLocaleString('pt-BR')} moedas. 🪙`, 'error');
+    return;
+  }
+
+  if (item.ehPacote) {
+    await abrirPacote(item);
+    return;
+  }
+
+  try {
+    // Verificar se já possui
+    const qExist = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}' AND itemId = '${itemId}'`).setPageSize(1);
+    const existing = await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).find(qExist).catch(() => []);
+    if (existing.length > 0) { showToast('Você já possui este item! 🎉', 'info'); return; }
+
+    const ok = await descontarMoedas(item.preco || 0);
+    if (!ok) throw new Error('Falha ao descontar moedas');
+
+    // Salvar no inventário
+    const rec = {
+      userId: currentUser.objectId, itemId, nomeItem: item.nome,
+      tipoItem: item.categoria, raridade: item.raridade,
+      preco: item.preco, dataCompra: new Date().toISOString(),
+      status: 'ativo', equipado: false, emoji: item.emoji || getCatEmoji(item.categoria),
+      imagem: item.imagem || ''
+    };
+    await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).save(rec);
+
+    // Salvar compra
+    await Backendless.Data.of(COMPRAS_TABLE).save({
+      userId: currentUser.objectId, itemId, nomeItem: item.nome,
+      tipoItem: item.categoria, raridade: item.raridade, preco: item.preco,
+      dataCompra: new Date().toISOString(), status: 'concluida'
+    }).catch(()=>{});
+
+    lojaInventario.push(rec);
+    mostrarUnlockAnim(item.emoji || getCatEmoji(item.categoria), item.nome, item.raridade);
+    renderLojaGrid(lojaItens);
+  } catch(e) {
+    showToast('Erro ao comprar item: ' + (e.message || e), 'error');
+  }
+}
+
+// ── EQUIPAR ITEM ──
+async function equiparItem(itemId) {
+  if (!currentUser) return;
+  const invItem = lojaInventario.find(i => i.itemId === itemId);
+  if (!invItem) return;
+  try {
+    // Desequipar outros do mesmo tipo
+    const sameType = lojaInventario.filter(i => i.tipoItem === invItem.tipoItem && i.equipado);
+    for (const s of sameType) {
+      await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).save({ objectId: s.objectId, equipado: false }).catch(()=>{});
+      s.equipado = false;
+    }
+    invItem.equipado = true;
+    await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).save({ objectId: invItem.objectId, equipado: true });
+    showToast(`⚡ ${invItem.nomeItem} equipado com sucesso!`, 'success');
+    renderInventario();
+    // Atualizar avatar se for avatar
+    if (invItem.tipoItem === 'avatares') {
+      const navAv = document.getElementById('nav-avatar');
+      if (navAv) navAv.textContent = invItem.emoji || '🦄';
+    }
+  } catch(e) { showToast('Erro ao equipar: ' + e.message, 'error'); }
+}
+
+// ── CARREGAR INVENTÁRIO ──
+async function carregarInventario() {
+  if (!currentUser) return;
+  const grid = document.getElementById('inv-grid');
+  if (grid) grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><div class="spinner" style="margin:0 auto 16px;"></div>Carregando inventário...</div>`;
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}'`)
+      .setPageSize(200);
+    lojaInventario = await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).find(q);
+  } catch(e) { lojaInventario = []; }
+  renderInventario();
+}
+
+function filtrarInventario(cat) {
+  invFiltroAtual = cat;
+  document.querySelectorAll('#inv-cats .loja-cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderInventario();
+}
+
+function renderInventario() {
+  const grid = document.getElementById('inv-grid');
+  const equipRow = document.getElementById('inv-equipados-row');
+  if (!grid) return;
+
+  const equipados = lojaInventario.filter(i => i.equipado);
+  if (equipRow) {
+    if (equipados.length === 0) {
+      equipRow.innerHTML = `<div style="color:rgba(255,255,255,0.4);font-size:0.9rem;">Nenhum item equipado ainda.</div>`;
+    } else {
+      equipRow.innerHTML = equipados.map(e => `
+        <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:10px 16px;display:flex;align-items:center;gap:8px;">
+          <span style="font-size:1.5rem;">${e.emoji||'🎁'}</span>
+          <div>
+            <div style="font-size:0.8rem;font-weight:700;color:white;">${e.nomeItem}</div>
+            <div style="font-size:0.68rem;color:rgba(251,191,36,0.7);">${getCatEmoji(e.tipoItem)} ${e.tipoItem}</div>
+          </div>
+        </div>`).join('');
+    }
+  }
+
+  let filtered = lojaInventario;
+  if (invFiltroAtual === 'equipados') filtered = lojaInventario.filter(i => i.equipado);
+  else if (invFiltroAtual !== 'todos') filtered = lojaInventario.filter(i => i.tipoItem === invFiltroAtual);
+  // Add user cards to inventory
+  const userCartasArr = Object.entries(lojaUserCartas).map(([cId, qty]) => {
+    const c = lojaCartas.find(x => x.objectId === cId);
+    return c ? { objectId: `carta-${cId}`, tipoItem: 'cartas', nomeItem: c.nome, emoji: c.emoji||'🃏', raridade: c.raridade, qty } : null;
+  }).filter(Boolean);
+  if (invFiltroAtual === 'todos' || invFiltroAtual === 'cartas') filtered = [...filtered.filter(i => i.tipoItem!=='cartas_raw'), ...userCartasArr];
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">
+      Nenhum item ainda. Visite a <b style="color:#c084fc;">Loja Mágica</b> para adquirir itens! 🛒</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(item => {
+    const isEquipado = item.equipado;
+    const rar = item.raridade || 'comum';
+    return `
+    <div class="inv-item-card ${isEquipado ? 'equipado-card' : ''}">
+      ${isEquipado ? '<div class="inv-equipado-badge">⚡ EQUIPADO</div>' : ''}
+      <div class="loja-item-emoji" style="font-size:2.8rem;margin-bottom:8px;">${item.emoji||'🎁'}</div>
+      <div style="font-size:0.82rem;font-weight:700;color:white;margin-bottom:4px;">${item.nomeItem}</div>
+      <div style="margin-bottom:8px;"><span class="rarity-badge rarity-${rar}">${RARITY_LABELS[rar]||rar}</span></div>
+      ${item.qty ? `<div style="color:#fbbf24;font-size:0.75rem;margin-bottom:8px;">Quantidade: ${item.qty}</div>` : ''}
+      ${item.objectId && !item.objectId.startsWith('carta-') ? (isEquipado
+        ? `<button class="loja-btn-comprar equipar" style="font-size:0.78rem;padding:7px;" onclick="desequiparItem('${item.objectId}')">✕ Desequipar</button>`
+        : `<button class="loja-btn-comprar equipar" style="font-size:0.78rem;padding:7px;" onclick="equiparItem('${item.itemId}')">⚡ Equipar</button>`)
+        : ''}
+    </div>`;
+  }).join('');
+}
+
+async function desequiparItem(objectId) {
+  const inv = lojaInventario.find(i => i.objectId === objectId);
+  if (!inv) return;
+  inv.equipado = false;
+  await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).save({ objectId, equipado: false }).catch(()=>{});
+  showToast('Item desequipado.', 'info');
+  renderInventario();
+}
+
+// ── PACOTES DE CARTAS ──
+async function abrirPacote(pacote) {
+  if (!currentUser) return;
+  if (lojaSaldo < (pacote.preco || 0)) {
+    showToast('Você ainda precisa juntar mais moedas mágicas! 🪙', 'error'); return;
+  }
+
+  const ok = await descontarMoedas(pacote.preco || 0);
+  if (!ok) return;
+
+  let cartas = lojaCartas;
+  if (!cartas.length) {
+    try {
+      const q = Backendless.DataQueryBuilder.create().setPageSize(200);
+      cartas = await Backendless.Data.of(CARTAS_TABLE).find(q);
+      lojaCartas = cartas;
+    } catch(e) { cartas = getDemoCartas(); lojaCartas = cartas; }
+  }
+
+  const qtd = pacote.cartasPorPacote || 3;
+  const rar = pacote.raridade || 'comum';
+  const sorteadas = sortearCartas(cartas, qtd, rar);
+
+  // Salvar cartas no usuário
+  for (const carta of sorteadas) {
+    await salvarCartaUsuario(carta);
+  }
+
+  // Salvar compra
+  await Backendless.Data.of(COMPRAS_TABLE).save({
+    userId: currentUser.objectId, itemId: pacote.objectId,
+    nomeItem: pacote.nome, tipoItem: 'cartas', raridade: rar,
+    preco: pacote.preco, dataCompra: new Date().toISOString(), status: 'concluida'
+  }).catch(()=>{});
+
+  mostrarPackOpenAnim(sorteadas);
+}
+
+function sortearCartas(todas, qtd, rarMinima) {
+  const rarOrder = ['comum','incomum','rara','epica','lendaria','mitica','especial'];
+  const minIdx = rarOrder.indexOf(rarMinima);
+  const result = [];
+  for (let i = 0; i < qtd; i++) {
+    const roll = Math.random();
+    let pool;
+    if (rarMinima === 'lendaria' && i === 0) {
+      // Garantir pelo menos uma do nível ou acima
+      pool = todas.filter(c => rarOrder.indexOf(c.raridade) >= minIdx);
+    } else if (roll < 0.5) {
+      pool = todas.filter(c => rarOrder.indexOf(c.raridade) <= Math.max(0, minIdx));
+    } else if (roll < 0.8) {
+      pool = todas.filter(c => c.raridade === rarMinima);
+    } else {
+      pool = todas.filter(c => rarOrder.indexOf(c.raridade) > minIdx);
+    }
+    if (!pool.length) pool = todas;
+    const carta = pool[Math.floor(Math.random() * pool.length)];
+    if (carta) result.push(carta);
+  }
+  return result;
+}
+
+async function salvarCartaUsuario(carta) {
+  if (!currentUser || !carta) return;
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}' AND cartaId = '${carta.objectId}'`).setPageSize(1);
+    const existing = await Backendless.Data.of(USUARIO_CARTAS_TABLE).find(q).catch(()=>[]);
+    if (existing.length > 0) {
+      const newQty = (existing[0].quantidade || 1) + 1;
+      await Backendless.Data.of(USUARIO_CARTAS_TABLE).save({ objectId: existing[0].objectId, quantidade: newQty });
+      lojaUserCartas[carta.objectId] = newQty;
+    } else {
+      await Backendless.Data.of(USUARIO_CARTAS_TABLE).save({
+        userId: currentUser.objectId, cartaId: carta.objectId,
+        nomeItem: carta.nome, raridade: carta.raridade,
+        colecao: carta.colecao || '', quantidade: 1,
+        dataObtida: new Date().toISOString()
+      });
+      lojaUserCartas[carta.objectId] = 1;
+    }
+  } catch(e) { console.warn('Salvar carta erro:', e); }
+}
+
+function mostrarPackOpenAnim(cartas) {
+  const overlay = document.getElementById('pack-open-overlay');
+  const row = document.getElementById('pack-cards-row');
+  overlay.style.display = 'flex';
+  row.innerHTML = '';
+  cartas.forEach((carta, idx) => {
+    const rar = carta.raridade || 'comum';
+    const div = document.createElement('div');
+    div.className = 'pack-reveal-card';
+    div.style.borderColor = RARITY_COLORS[rar] || '#9ca3af';
+    div.style.border = `2px solid ${RARITY_COLORS[rar] || '#9ca3af'}`;
+    div.style.boxShadow = `0 0 20px ${RARITY_COLORS[rar]}44`;
+    div.style.animationDelay = `${idx * 0.15}s`;
+    div.innerHTML = `
+      <div style="font-size:2.5rem;margin-bottom:8px;">${carta.emoji||'🃏'}</div>
+      <div style="font-size:0.82rem;font-weight:700;color:white;margin-bottom:4px;">${carta.nome}</div>
+      <span class="rarity-badge rarity-${rar}">${RARITY_LABELS[rar]||rar}</span>
+      ${(lojaUserCartas[carta.objectId]||0) > 1 ? `<div style="margin-top:6px;font-size:0.68rem;color:rgba(255,255,255,0.5);">+1 repetida</div>` : ''}
+    `;
+    row.appendChild(div);
+  });
+}
+
+function fecharPackOpen() {
+  document.getElementById('pack-open-overlay').style.display = 'none';
+  renderLojaGrid(lojaItens);
+  lojaShowTab('album');
+}
+
+// ── ÁLBUM ──
+async function carregarAlbum() {
+  if (!currentUser) return;
+  const albumGrid = document.getElementById('album-grid');
+  if (albumGrid) albumGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><div class="spinner" style="margin:0 auto 16px;"></div>Carregando álbum...</div>`;
+  try {
+    const qC = Backendless.DataQueryBuilder.create().setPageSize(200);
+    lojaCartas = await Backendless.Data.of(CARTAS_TABLE).find(qC);
+    const qUC = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(500);
+    const userCartas = await Backendless.Data.of(USUARIO_CARTAS_TABLE).find(qUC);
+    lojaUserCartas = {};
+    userCartas.forEach(uc => { lojaUserCartas[uc.cartaId] = uc.quantidade || 1; });
+  } catch(e) {
+    lojaCartas = getDemoCartas();
+    lojaUserCartas = {};
+  }
+  // Coleções
+  const colecoesSet = [...new Set(lojaCartas.map(c => c.colecao).filter(Boolean))];
+  lojaColecoes = colecoesSet;
+  renderAlbumFilters(colecoesSet);
+  renderAlbum();
+}
+
+function getDemoCartas() {
+  return [
+    {objectId:'c1',nome:'Dragão Estelar',emoji:'🐉',raridade:'lendaria',colecao:'Aventura Mágica',descricao:'O dragão das estrelas'},
+    {objectId:'c2',nome:'Fada da Floresta',emoji:'🧚',raridade:'epica',colecao:'Aventura Mágica',descricao:'Guardiã da floresta'},
+    {objectId:'c3',nome:'Cavaleiro Valente',emoji:'🤺',raridade:'rara',colecao:'Heróis',descricao:'O mais corajoso'},
+    {objectId:'c4',nome:'Mago Ancião',emoji:'🧙',raridade:'rara',colecao:'Heróis',descricao:'Sábio e poderoso'},
+    {objectId:'c5',nome:'Unicórnio Arco-Íris',emoji:'🦄',raridade:'mitica',colecao:'Criaturas Mágicas',descricao:'O mais raro de todos'},
+    {objectId:'c6',nome:'Coruja Sábia',emoji:'🦉',raridade:'incomum',colecao:'Criaturas Mágicas',descricao:'Dona de todo saber'},
+    {objectId:'c7',nome:'Sereia Encantada',emoji:'🧜',raridade:'epica',colecao:'Criaturas Mágicas',descricao:'Guardiã dos mares'},
+    {objectId:'c8',nome:'Elfo da Lua',emoji:'🧝',raridade:'rara',colecao:'Heróis',descricao:'Filho da lua cheia'},
+    {objectId:'c9',nome:'Pedra Mágica',emoji:'💎',raridade:'comum',colecao:'Aventura Mágica',descricao:'Uma pedra com poderes'},
+    {objectId:'c10',nome:'Livro Encantado',emoji:'📖',raridade:'comum',colecao:'Aventura Mágica',descricao:'Guarda segredos antigos'},
+    {objectId:'c11',nome:'Varinha Dourada',emoji:'⚡',raridade:'especial',colecao:'Heróis',descricao:'Raridade de evento'},
+    {objectId:'c12',nome:'Fênix Flamejante',emoji:'🦅',raridade:'mitica',colecao:'Criaturas Mágicas',descricao:'Renasce das cinzas'},
+  ];
+}
+
+function renderAlbumFilters(colecoes) {
+  const cont = document.getElementById('album-colecoes-filter');
+  if (!cont) return;
+  cont.innerHTML = `<button class="loja-cat-btn active" onclick="filtrarAlbum('todos')">📖 Todas as Coleções</button>` +
+    colecoes.map(c => `<button class="loja-cat-btn" onclick="filtrarAlbum('${c}')">${c}</button>`).join('');
+}
+
+function filtrarAlbum(col) {
+  albumFiltroAtual = col;
+  document.querySelectorAll('#album-colecoes-filter .loja-cat-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  renderAlbum();
+}
+
+function renderAlbum() {
+  const grid = document.getElementById('album-grid');
+  if (!grid) return;
+  const filtered = albumFiltroAtual === 'todos' ? lojaCartas : lojaCartas.filter(c => c.colecao === albumFiltroAtual);
+  const total = filtered.length;
+  const possuidas = filtered.filter(c => (lojaUserCartas[c.objectId]||0) > 0).length;
+  const pct = total > 0 ? Math.round((possuidas/total)*100) : 0;
+
+  // Stats bar
+  const bar = document.getElementById('album-pct-bar');
+  const pctTxt = document.getElementById('album-pct-txt');
+  const statsRow = document.getElementById('album-stats-row');
+  if (bar) bar.style.width = pct + '%';
+  if (pctTxt) pctTxt.textContent = pct + '%';
+  if (statsRow) {
+    const rarCounts = {};
+    filtered.forEach(c => { rarCounts[c.raridade] = (rarCounts[c.raridade]||0) + 1; });
+    statsRow.innerHTML = Object.entries(rarCounts).map(([rar,cnt]) => `
+      <span style="font-size:0.78rem;color:${RARITY_COLORS[rar]||'white'};">
+        ${RARITY_LABELS[rar]||rar}: ${filtered.filter(c=>c.raridade===rar&&(lojaUserCartas[c.objectId]||0)>0).length}/${cnt}
+      </span>`).join('<span style="color:rgba(255,255,255,0.2);">•</span>');
+  }
+
+  if (!filtered.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:rgba(255,255,255,0.4);">Nenhuma carta ainda. Abra pacotes para colecionar! 🎴</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(carta => {
+    const qty = lojaUserCartas[carta.objectId] || 0;
+    const desbloqueada = qty > 0;
+    const rar = carta.raridade || 'comum';
+    return `
+    <div class="carta-card ${desbloqueada ? 'desbloqueada' : 'bloqueada'}" style="border: 2px solid ${desbloqueada ? RARITY_COLORS[rar] : 'rgba(255,255,255,0.06)'};">
+      ${qty > 1 ? `<div class="carta-qty">x${qty}</div>` : ''}
+      <span class="carta-emoji-big">${desbloqueada ? (carta.emoji||'🃏') : '❓'}</span>
+      <div class="carta-nome">${desbloqueada ? carta.nome : '???'}</div>
+      <div class="carta-raridade-txt" style="color:${RARITY_COLORS[rar]||'white'}">${RARITY_LABELS[rar]||rar}</div>
+      ${desbloqueada ? `<div style="font-size:0.65rem;color:rgba(255,255,255,0.4);margin-top:4px;">${carta.colecao||''}</div>` : ''}
+      ${!desbloqueada ? '<div class="carta-bloqueada-icon">🔒</div>' : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── ANIMAÇÃO UNLOCK ──
+function mostrarUnlockAnim(emoji, nome, raridade) {
+  const overlay = document.getElementById('unlock-anim-overlay');
+  if (!overlay) return;
+  document.getElementById('unlock-anim-emoji').textContent = emoji || '🎁';
+  document.getElementById('unlock-anim-title').textContent = 'Item Desbloqueado!';
+  document.getElementById('unlock-anim-name').textContent = nome;
+  const rar = raridade || 'comum';
+  const rarEl = document.getElementById('unlock-anim-rarity');
+  rarEl.textContent = RARITY_LABELS[rar] || rar;
+  rarEl.style.color = RARITY_COLORS[rar] || 'white';
+  overlay.style.display = 'flex';
+  // Particle burst
+  criarParticulas();
+}
+
+function fecharUnlockAnim() {
+  const overlay = document.getElementById('unlock-anim-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function criarParticulas() {
+  const cont = document.getElementById('unlock-anim-particles');
+  if (!cont) return;
+  cont.innerHTML = '';
+  const emojis = ['✨','⭐','💫','🌟','💎','🎉','🎊','🌸'];
+  for (let i = 0; i < 16; i++) {
+    const span = document.createElement('span');
+    span.textContent = emojis[i % emojis.length];
+    const angle = (i / 16) * 360;
+    const dist = 80 + Math.random() * 80;
+    span.style.cssText = `position:absolute;top:50%;left:50%;font-size:1.4rem;
+      --dx:${Math.cos(angle*Math.PI/180)*dist}px;
+      --dy:${Math.sin(angle*Math.PI/180)*dist}px;
+      animation: particle-burst 1.2s cubic-bezier(0.25,0.46,0.45,0.94) ${i*0.05}s forwards;`;
+    cont.appendChild(span);
+  }
+}
+
+// ── ITEM DETAIL (quick inline) ──
+function abrirItemDetail(itemId) {
+  const item = lojaItens.find(i => i.objectId === itemId);
+  if (!item) return;
+  // For demo: just trigger buy flow
+  comprarItem(itemId);
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║              ADMIN — LOJA MÁGICA                        ║
+// ╚══════════════════════════════════════════════════════════╝
+
+let adminLojaItens = [];
+let adminLojaFiltro = 'todos';
+
+async function loadAdminLoja() {
+  const cont = document.getElementById('admin-loja-content');
+  if (!cont) return;
+  cont.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>`;
+  try {
+    const q = Backendless.DataQueryBuilder.create().setPageSize(200).setSortBy(['categoria ASC']);
+    adminLojaItens = await Backendless.Data.of(LOJA_ITENS_TABLE).find(q);
+  } catch(e) { adminLojaItens = []; }
+  renderAdminLoja();
+}
+
+function renderAdminLoja() {
+  const cont = document.getElementById('admin-loja-content');
+  if (!cont) return;
+  const filtered = adminLojaFiltro === 'todos' ? adminLojaItens : adminLojaItens.filter(i => i.categoria === adminLojaFiltro);
+  cont.innerHTML = `
+    <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
+      <button class="btn btn-primary btn-sm" onclick="abrirAdminLojaModal()">➕ Novo Item</button>
+      <select onchange="adminLojaFiltro=this.value;renderAdminLoja()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 12px;border-radius:8px;font-family:var(--font-body);">
+        <option value="todos">Todas categorias</option>
+        <option value="avatares">Avatares</option><option value="molduras">Molduras</option>
+        <option value="mascotes">Mascotes</option><option value="efeitos">Efeitos</option>
+        <option value="fundos">Fundos</option><option value="capas">Capas</option>
+        <option value="livrossecret">Livros Secretos</option><option value="adesivos">Adesivos</option>
+        <option value="cartas">Pacotes Cartas</option><option value="temas">Temas</option>
+        <option value="insignias">Insígnias</option><option value="titulos">Títulos</option>
+        <option value="emotes">Emotes</option><option value="sazonal">Sazonais</option>
+      </select>
+    </div>
+    ${filtered.length === 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item cadastrado. Clique em <b>Novo Item</b> para começar.</div>` : ''}
+    ${filtered.map(item => `
+      <div class="admin-loja-item-row">
+        <span style="font-size:1.8rem;">${item.emoji||getCatEmoji(item.categoria)}</span>
+        <div style="flex:1;min-width:0;">
+          <div style="font-weight:700;color:white;">${item.nome}</div>
+          <div style="font-size:0.75rem;color:var(--text-muted);">${item.categoria} · <span class="rarity-badge rarity-${item.raridade||'comum'}" style="position:static;">${RARITY_LABELS[item.raridade||'comum']}</span> · 🪙 ${item.preco||0}</div>
+        </div>
+        <span style="font-size:0.75rem;" class="${item.ativo ? 'badge badge-green' : 'badge badge-red'}">${item.ativo ? '✅ Ativo' : '❌ Inativo'}</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary btn-sm" onclick="editarAdminLojaItem('${item.objectId}')">✏️</button>
+          <button class="btn btn-danger btn-sm" onclick="excluirAdminLojaItem('${item.objectId}')">🗑️</button>
+        </div>
+      </div>`).join('')}
+
+    <!-- Admin: Gerenciar moedas dos usuários -->
+    <div class="admin-card" style="margin-top:32px;">
+      <h3 style="color:var(--pearl);margin-bottom:16px;font-size:1rem;">🪙 Gerenciar Moedas dos Usuários</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="form-group" style="margin:0;flex:1;min-width:200px;">
+          <label>E-mail do usuário</label>
+          <input type="email" id="admin-moedas-email" placeholder="usuario@email.com" />
+        </div>
+        <div class="form-group" style="margin:0;">
+          <label>Quantidade</label>
+          <input type="number" id="admin-moedas-qty" placeholder="100" style="width:120px;" />
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="adminAdicionarMoedas()">➕ Adicionar</button>
+        <button class="btn btn-danger btn-sm" onclick="adminRemoverMoedas()">➖ Remover</button>
+        <button class="btn btn-secondary btn-sm" onclick="adminVerMoedas()">👁️ Ver saldo</button>
+      </div>
+      <div id="admin-moedas-result" style="margin-top:12px;color:var(--text-muted);font-size:0.85rem;"></div>
+    </div>
+
+    <!-- Admin: Ver compras -->
+    <div class="admin-card" style="margin-top:24px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h3 style="color:var(--pearl);font-size:1rem;">🛒 Compras Recentes</h3>
+        <button class="btn btn-secondary btn-sm" onclick="loadAdminCompras()">↺ Atualizar</button>
+      </div>
+      <div id="admin-compras-list"><div style="color:var(--text-muted);text-align:center;padding:24px;">Clique em Atualizar para ver.</div></div>
+    </div>
+  `;
+}
+
+function abrirAdminLojaModal(itemId) {
+  const modal = document.getElementById('admin-loja-modal');
+  const titleEl = document.getElementById('admin-loja-modal-title');
+  document.getElementById('admin-loja-item-id').value = '';
+  ['ali-nome','ali-desc','ali-emoji','ali-imagem','ali-colecao'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const preco = document.getElementById('ali-preco'); if (preco) preco.value = '';
+  const drop = document.getElementById('ali-drop'); if (drop) drop.value = '';
+  titleEl.textContent = '➕ Novo Item na Loja';
+  modal.style.display = 'block';
+}
+
+function editarAdminLojaItem(itemId) {
+  const item = adminLojaItens.find(i => i.objectId === itemId);
+  if (!item) return;
+  document.getElementById('admin-loja-item-id').value = itemId;
+  document.getElementById('ali-nome').value = item.nome || '';
+  document.getElementById('ali-desc').value = item.descricao || '';
+  document.getElementById('ali-emoji').value = item.emoji || '';
+  document.getElementById('ali-preco').value = item.preco || '';
+  document.getElementById('ali-imagem').value = item.imagem || '';
+  document.getElementById('ali-colecao').value = item.colecao || '';
+  document.getElementById('ali-drop').value = item.dropChance || '';
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || el.options[0]?.value; };
+  setVal('ali-categoria', item.categoria);
+  setVal('ali-raridade', item.raridade);
+  setVal('ali-ativo', String(item.ativo !== false));
+  setVal('ali-compravel', String(item.compravel !== false));
+  setVal('ali-colecavel', String(!!item.colecavel));
+  document.getElementById('admin-loja-modal-title').textContent = '✏️ Editar Item';
+  document.getElementById('admin-loja-modal').style.display = 'block';
+}
+
+async function salvarAdminLojaItem() {
+  const nome = document.getElementById('ali-nome').value.trim();
+  if (!nome) { showToast('Nome é obrigatório', 'error'); return; }
+  const itemId = document.getElementById('admin-loja-item-id').value;
+  const rec = {
+    nome,
+    descricao: document.getElementById('ali-desc').value.trim(),
+    categoria: document.getElementById('ali-categoria').value,
+    raridade: document.getElementById('ali-raridade').value,
+    preco: parseInt(document.getElementById('ali-preco').value) || 0,
+    emoji: document.getElementById('ali-emoji').value.trim(),
+    imagem: document.getElementById('ali-imagem').value.trim(),
+    ativo: document.getElementById('ali-ativo').value === 'true',
+    compravel: document.getElementById('ali-compravel').value === 'true',
+    colecavel: document.getElementById('ali-colecavel').value === 'true',
+    dropChance: parseFloat(document.getElementById('ali-drop').value) || 0,
+    colecao: document.getElementById('ali-colecao').value.trim(),
+  };
+  if (itemId) rec.objectId = itemId;
+  try {
+    await Backendless.Data.of(LOJA_ITENS_TABLE).save(rec);
+    showToast(itemId ? 'Item atualizado! ✅' : 'Item criado! ✅', 'success');
+    fecharAdminLojaModal();
+    loadAdminLoja();
+  } catch(e) { showToast('Erro ao salvar: ' + (e.message || e), 'error'); }
+}
+
+async function excluirAdminLojaItem(itemId) {
+  if (!confirm('Excluir este item da loja?')) return;
+  try {
+    await Backendless.Data.of(LOJA_ITENS_TABLE).remove({ objectId: itemId });
+    showToast('Item excluído.', 'success');
+    loadAdminLoja();
+  } catch(e) { showToast('Erro ao excluir: ' + (e.message || e), 'error'); }
+}
+
+function fecharAdminLojaModal() {
+  document.getElementById('admin-loja-modal').style.display = 'none';
+}
+
+async function adminAdicionarMoedas() {
+  await adminAlterarMoedas(1);
+}
+async function adminRemoverMoedas() {
+  await adminAlterarMoedas(-1);
+}
+
+async function adminAlterarMoedas(sinal) {
+  const email = document.getElementById('admin-moedas-email').value.trim();
+  const qty = parseInt(document.getElementById('admin-moedas-qty').value) || 0;
+  if (!email || !qty) { showToast('Preencha e-mail e quantidade', 'error'); return; }
+  const resEl = document.getElementById('admin-moedas-result');
+  resEl.textContent = 'Processando...';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`email = '${email}'`).setPageSize(1);
+    const users = await Backendless.Data.of('Users').find(q);
+    if (!users.length) { resEl.textContent = '❌ Usuário não encontrado'; return; }
+    const userId = users[0].objectId;
+    // Try Jornada
+    const q2 = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${userId}'`).setPageSize(1);
+    const jr = await Backendless.Data.of('JornadaLeitor').find(q2).catch(()=>[]);
+    if (jr.length > 0) {
+      const novas = Math.max(0, (jr[0].moedas||0) + sinal*qty);
+      await Backendless.Data.of('JornadaLeitor').save({ objectId: jr[0].objectId, moedas: novas });
+      resEl.textContent = `✅ ${users[0].name || email}: ${novas} moedas`;
+    } else {
+      const q3 = Backendless.DataQueryBuilder.create()
+        .setWhereClause(`userId = '${userId}'`).setPageSize(1);
+      const mr = await Backendless.Data.of(USUARIO_MOEDAS_TABLE).find(q3).catch(()=>[]);
+      const curr = mr.length > 0 ? (mr[0].moedas||0) : 0;
+      const novas = Math.max(0, curr + sinal*qty);
+      const rec = { userId, moedas: novas };
+      if (mr.length > 0) rec.objectId = mr[0].objectId;
+      await Backendless.Data.of(USUARIO_MOEDAS_TABLE).save(rec);
+      resEl.textContent = `✅ ${users[0].name || email}: ${novas} moedas`;
+    }
+  } catch(e) { resEl.textContent = '❌ Erro: ' + (e.message || e); }
+}
+
+async function adminVerMoedas() {
+  const email = document.getElementById('admin-moedas-email').value.trim();
+  if (!email) { showToast('Digite o e-mail', 'error'); return; }
+  const resEl = document.getElementById('admin-moedas-result');
+  resEl.textContent = 'Buscando...';
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`email = '${email}'`).setPageSize(1);
+    const users = await Backendless.Data.of('Users').find(q);
+    if (!users.length) { resEl.textContent = '❌ Usuário não encontrado'; return; }
+    const userId = users[0].objectId;
+    const q2 = Backendless.DataQueryBuilder.create()
+      .setWhereClause(`userId = '${userId}'`).setPageSize(1);
+    const jr = await Backendless.Data.of('JornadaLeitor').find(q2).catch(()=>[]);
+    const moedas = jr.length > 0 ? (jr[0].moedas||0) : 0;
+    resEl.textContent = `🪙 ${users[0].name||email}: ${moedas.toLocaleString('pt-BR')} moedas mágicas`;
+  } catch(e) { resEl.textContent = '❌ Erro: ' + (e.message||e); }
+}
+
+async function loadAdminCompras() {
+  const cont = document.getElementById('admin-compras-list');
+  if (!cont) return;
+  cont.innerHTML = `<div class="spinner" style="margin:0 auto;"></div>`;
+  try {
+    const q = Backendless.DataQueryBuilder.create()
+      .setSortBy(['dataCompra DESC']).setPageSize(50);
+    const compras = await Backendless.Data.of(COMPRAS_TABLE).find(q);
+    if (!compras.length) { cont.innerHTML = `<div style="text-align:center;color:var(--text-muted);padding:24px;">Nenhuma compra ainda.</div>`; return; }
+    cont.innerHTML = `<div style="overflow-x:auto;"><table class="admin-table">
+      <thead><tr><th>Usuário</th><th>Item</th><th>Tipo</th><th>Raridade</th><th>Preço</th><th>Data</th></tr></thead>
+      <tbody>${compras.map(c => `
+        <tr>
+          <td style="font-size:0.8rem;color:var(--text-muted);">${c.userId ? c.userId.substring(0,8)+'...' : '—'}</td>
+          <td style="font-weight:700;">${c.nomeItem||'—'}</td>
+          <td><span style="font-size:0.75rem;">${getCatEmoji(c.tipoItem)} ${c.tipoItem||'—'}</span></td>
+          <td><span class="rarity-badge rarity-${c.raridade||'comum'}" style="position:static;">${RARITY_LABELS[c.raridade||'comum']}</span></td>
+          <td style="color:#fbbf24;">🪙 ${c.preco||0}</td>
+          <td style="color:var(--text-muted);font-size:0.78rem;">${c.dataCompra ? new Date(c.dataCompra).toLocaleDateString('pt-BR') : '—'}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table></div>`;
+  } catch(e) { cont.innerHTML = `<div style="color:var(--text-muted);padding:20px;">Erro ao carregar compras. Verifique se a tabela <b>${COMPRAS_TABLE}</b> existe no Backendless.</div>`; }
+}
+
+// ╔══════════════════════════════════════════════════════════╗
+// ║           INJECTION — NAV + ADMIN TABS                  ║
+// ╚══════════════════════════════════════════════════════════╝
+(function injectLojaMagica() {
+  function tryInject() {
+    // ── 1. Add "Loja Mágica" button to Netflix nav ──
+    const navLinks = document.querySelector('.netflix-nav-links');
+    if (navLinks && !document.getElementById('nlink-loja')) {
+      const btn = document.createElement('button');
+      btn.id = 'nlink-loja';
+      btn.className = 'nlink';
+      btn.innerHTML = '🛒 Loja Mágica';
+      btn.onclick = abrirLoja;
+      navLinks.appendChild(btn);
+    }
+
+    // ── 2. Add "Loja Mágica" to profile dropdown ──
+    const pdLogout = document.querySelector('.pd-logout');
+    if (pdLogout && !document.getElementById('pd-loja')) {
+      const pdItem = document.createElement('button');
+      pdItem.id = 'pd-loja';
+      pdItem.className = 'pd-item';
+      pdItem.innerHTML = '🛒 Loja Mágica';
+      pdItem.onclick = abrirLoja;
+      pdLogout.parentNode.insertBefore(pdItem, pdLogout);
+    }
+
+    // ── 3. Add Loja tab to Admin panel ──
+    const adminNav = document.querySelector('.admin-nav');
+    if (adminNav && !document.getElementById('admin-nav-loja')) {
+      const btn = document.createElement('button');
+      btn.id = 'admin-nav-loja';
+      btn.className = 'admin-nav-item';
+      btn.setAttribute('onclick', "adminShowSection('loja')");
+      btn.innerHTML = '🛒 Loja Mágica';
+      adminNav.appendChild(btn);
+
+      const adminMain = document.querySelector('.admin-main');
+      if (adminMain) {
+        const section = document.createElement('div');
+        section.id = 'admin-section-loja';
+        section.className = 'admin-section';
+        section.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px;">
+            <h2 style="color:var(--pearl);font-family:var(--font-title);font-size:1.4rem;">🛒 Loja Mágica</h2>
+            <button class="btn btn-secondary btn-sm" onclick="loadAdminLoja()">↺ Atualizar</button>
+          </div>
+          <div id="admin-loja-content">
+            <div style="text-align:center;color:var(--text-muted);padding:60px;">
+              Clique em "Atualizar" para carregar os itens da Loja Mágica.
+            </div>
+          </div>`;
+        adminMain.appendChild(section);
+      }
+    }
+
+    // ── 4. Hook adminShowSection to include 'loja' ──
+    if (typeof adminShowSection === 'function' && !window._lojaHooked) {
+      window._lojaHooked = true;
+      const _orig = adminShowSection;
+      window.adminShowSection = function(section) {
+        _orig(section);
+        if (section === 'loja') loadAdminLoja();
+      };
+    }
+
+    return navLinks && adminNav;
+  }
+
+  if (!tryInject()) {
+    const obs = new MutationObserver(() => { if (tryInject()) obs.disconnect(); });
+    obs.observe(document.body, { childList: true, subtree: true });
+  }
+})();
+
+// ── Load inventory when loja opens (to show "comprado" state) ──
+const _origAbrirLoja = abrirLoja;
+window.abrirLoja = async function() {
+  document.getElementById('loja-magica-overlay').style.display = 'block';
+  document.body.style.overflow = 'hidden';
+  if (currentUser) {
+    try {
+      const q = Backendless.DataQueryBuilder.create()
+        .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(200);
+      lojaInventario = await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).find(q).catch(()=>[]);
+    } catch(e) { lojaInventario = []; }
+  }
+  carregarLoja();
+};
+</script>
+
 </body>
 </html>
