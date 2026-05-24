@@ -4983,6 +4983,8 @@ function adminShowSection(section) {
     'coupons':      ['Cupons & Planos', 'Gerenciar cupons e planos de assinatura'],
     'analytics':    ['Analytics de Leitura', 'Dados e métricas de uso'],
     'logs':         ['Logs Administrativos', 'Histórico de ações do painel'],
+    'loja':         ['Loja Mágica', 'Gerenciar itens da loja'],
+    'jornada':      ['Jornada do Leitor', 'Gerenciar conquistas e missões'],
   };
   const t = titles[section] || [section, ''];
   setText('admin-section-title', t[0]);
@@ -9506,17 +9508,21 @@ async function loadAdminJornada() {
 (function injectAdminJornadaTab() {
   function tryInject() {
     // Procura a nav do admin
-    const adminNav = document.querySelector('.admin-nav');
+    const adminNav = document.querySelector('.sidebar-nav ul');
     if (!adminNav) return false;
     // Verifica se já injetou
     if (document.getElementById('admin-nav-jornada')) return true;
     // Adiciona botão na nav
+    const li = document.createElement('li');
     const btn = document.createElement('button');
     btn.id = 'admin-nav-jornada';
-    btn.className = 'admin-nav-item';
     btn.setAttribute('onclick', "adminShowSection('jornada')");
     btn.innerHTML = '⚔️ Jornada';
-    adminNav.appendChild(btn);
+    li.appendChild(btn);
+    // Insere antes do <hr> do logout para que "Sair" fique por último
+    const hrLogout = adminNav.querySelector('hr.divider:last-of-type') || adminNav.querySelector('hr');
+    if (hrLogout) adminNav.insertBefore(li, hrLogout);
+    else adminNav.appendChild(li);
 
     // Cria seção
     const adminMain = document.querySelector('.admin-main');
@@ -9530,20 +9536,25 @@ async function loadAdminJornada() {
           <button class="btn btn-secondary btn-sm" onclick="loadAdminJornada()">↺ Atualizar dados</button>
         </div>
         <div id="admin-jornada-content">
-          <div style="text-align:center;color:var(--text-muted);padding:60px;">
-            Clique em "Atualizar dados" para carregar as estatísticas da Jornada.
-          </div>
+          <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
         </div>`;
       adminMain.appendChild(section);
+      // Carrega os dados imediatamente
+      setTimeout(() => loadAdminJornada(), 100);
     }
 
     // Hook na função adminShowSection para carregar dados ao abrir
-    const _origAdminShow = typeof adminShowSection === 'function' ? adminShowSection : null;
-    if (_origAdminShow) {
-      window.adminShowSection = function(section) {
-        _origAdminShow(section);
-        if (section === 'jornada') loadAdminJornada();
-      };
+    if (!window._jornadaHooked) {
+      window._jornadaHooked = true;
+      const _origAdminShow = typeof adminShowSection === 'function' ? adminShowSection : null;
+      if (_origAdminShow) {
+        window.adminShowSection = function(section) {
+          _origAdminShow(section);
+          if (section === 'jornada') loadAdminJornada();
+          if (section === 'loja') loadAdminLoja();
+        };
+        window._lojaHooked = true; // evita que o hook da Loja sobrescreva este
+      }
     }
     return true;
   }
@@ -10630,22 +10641,56 @@ let adminLojaFiltro = 'todos';
 async function loadAdminLoja() {
   const cont = document.getElementById('admin-loja-content');
   if (!cont) return;
-  cont.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>`;
+  cont.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div><p style="color:var(--text-muted);margin-top:16px;">Carregando itens da loja...</p></div>`;
+  let tabelaOk = true;
   try {
     const q = Backendless.DataQueryBuilder.create().setPageSize(200).setSortBy(['categoria ASC']);
     adminLojaItens = await Backendless.Data.of(LOJA_ITENS_TABLE).find(q);
-  } catch(e) { adminLojaItens = []; }
-  renderAdminLoja();
+  } catch(e) {
+    tabelaOk = false;
+    adminLojaItens = [];
+    cont.innerHTML = `
+      <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:24px;margin-bottom:24px;">
+        <p style="color:#fbbf24;font-weight:700;margin-bottom:6px;">⚠️ Tabela <b>${LOJA_ITENS_TABLE}</b> não encontrada ou sem permissão</p>
+        <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;">Erro: <code style="background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;">${e.message || String(e)}</code></p>
+        <p style="font-size:0.82rem;color:var(--text-muted);">Os clientes estão vendo os <b>itens demo</b> (hardcoded). Clique abaixo para importar esses itens para o Backendless e começar a gerenciá-los:</p>
+        <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="importarDemosParaBackendless()">📥 Importar itens demo para o Backendless</button>
+      </div>`;
+    // Mostra os demos para que admin possa ver o que os clientes estão vendo
+    adminLojaItens = getLojaDemoItens().map(i => ({ ...i, _isDemo: true }));
+    const demoDiv = document.createElement('div');
+    demoDiv.innerHTML = `<p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">📋 Itens demo atualmente visíveis para os clientes (somente leitura até importar):</p>`;
+    cont.appendChild(demoDiv);
+  }
+  renderAdminLoja(tabelaOk);
 }
 
-function renderAdminLoja() {
+async function importarDemosParaBackendless() {
+  const btn = event.target;
+  btn.disabled = true;
+  btn.textContent = 'Importando...';
+  const demos = getLojaDemoItens();
+  let ok = 0, err = 0;
+  for (const item of demos) {
+    try {
+      const rec = { ...item };
+      delete rec.objectId; // deixa o Backendless gerar o ID
+      await Backendless.Data.of(LOJA_ITENS_TABLE).save(rec);
+      ok++;
+    } catch(e) { err++; }
+  }
+  showToast(`Importação concluída: ${ok} itens criados${err ? ', ' + err + ' erros' : ''}`, err ? 'error' : 'success');
+  loadAdminLoja();
+}
+
+function renderAdminLoja(tabelaOk = true) {
   const cont = document.getElementById('admin-loja-content');
   if (!cont) return;
   const filtered = adminLojaFiltro === 'todos' ? adminLojaItens : adminLojaItens.filter(i => i.categoria === adminLojaFiltro);
-  cont.innerHTML = `
+  const listHtml = `
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
-      <button class="btn btn-primary btn-sm" onclick="abrirAdminLojaModal()">➕ Novo Item</button>
-      <select onchange="adminLojaFiltro=this.value;renderAdminLoja()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 12px;border-radius:8px;font-family:var(--font-body);">
+      ${tabelaOk ? `<button class="btn btn-primary btn-sm" onclick="abrirAdminLojaModal()">➕ Novo Item</button>` : ''}
+      <select onchange="adminLojaFiltro=this.value;renderAdminLoja(${tabelaOk})" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 12px;border-radius:8px;font-family:var(--font-body);">
         <option value="todos">Todas categorias</option>
         <option value="avatares">Avatares</option><option value="molduras">Molduras</option>
         <option value="mascotes">Mascotes</option><option value="efeitos">Efeitos</option>
@@ -10655,8 +10700,10 @@ function renderAdminLoja() {
         <option value="insignias">Insígnias</option><option value="titulos">Títulos</option>
         <option value="emotes">Emotes</option><option value="sazonal">Sazonais</option>
       </select>
+      <span style="font-size:0.8rem;color:var(--text-muted);">${adminLojaItens.length} item(s) total</span>
     </div>
-    ${filtered.length === 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item cadastrado. Clique em <b>Novo Item</b> para começar.</div>` : ''}
+    ${filtered.length === 0 && adminLojaItens.length === 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item cadastrado. Clique em <b>➕ Novo Item</b> para adicionar.</div>` : ''}
+    ${filtered.length === 0 && adminLojaItens.length > 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item nesta categoria.</div>` : ''}
     ${filtered.map(item => `
       <div class="admin-loja-item-row">
         <span style="font-size:1.8rem;">${item.emoji||getCatEmoji(item.categoria)}</span>
@@ -10665,10 +10712,11 @@ function renderAdminLoja() {
           <div style="font-size:0.75rem;color:var(--text-muted);">${item.categoria} · <span class="rarity-badge rarity-${item.raridade||'comum'}" style="position:static;">${RARITY_LABELS[item.raridade||'comum']}</span> · 🪙 ${item.preco||0}</div>
         </div>
         <span style="font-size:0.75rem;" class="${item.ativo ? 'badge badge-green' : 'badge badge-red'}">${item.ativo ? '✅ Ativo' : '❌ Inativo'}</span>
+        ${tabelaOk && !item._isDemo ? `
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-secondary btn-sm" onclick="editarAdminLojaItem('${item.objectId}')">✏️</button>
+          <button class="btn btn-secondary btn-sm" onclick="editarAdminLojaItem('${item.objectId}')">✏️ Editar</button>
           <button class="btn btn-danger btn-sm" onclick="excluirAdminLojaItem('${item.objectId}')">🗑️</button>
-        </div>
+        </div>` : `<span style="font-size:0.7rem;color:var(--text-muted);">demo</span>`}
       </div>`).join('')}
 
     <!-- Admin: Gerenciar moedas dos usuários -->
@@ -10699,6 +10747,15 @@ function renderAdminLoja() {
       <div id="admin-compras-list"><div style="color:var(--text-muted);text-align:center;padding:24px;">Clique em Atualizar para ver.</div></div>
     </div>
   `;
+  // Append to cont (preserving any error banner already inserted above)
+  const existing = cont.querySelector('[style*="fbbf24"]'); // the warning banner
+  if (existing) {
+    const wrapper = document.createElement('div');
+    wrapper.innerHTML = listHtml;
+    cont.appendChild(wrapper);
+  } else {
+    cont.innerHTML = listHtml;
+  }
 }
 
 function abrirAdminLojaModal(itemId) {
@@ -10888,14 +10945,18 @@ async function loadAdminCompras() {
     }
 
     // ── 3. Add Loja tab to Admin panel ──
-    const adminNav = document.querySelector('.admin-nav');
+    const adminNav = document.querySelector('.sidebar-nav ul');
     if (adminNav && !document.getElementById('admin-nav-loja')) {
+      const li = document.createElement('li');
       const btn = document.createElement('button');
       btn.id = 'admin-nav-loja';
-      btn.className = 'admin-nav-item';
       btn.setAttribute('onclick', "adminShowSection('loja')");
       btn.innerHTML = '🛒 Loja Mágica';
-      adminNav.appendChild(btn);
+      li.appendChild(btn);
+      // Insere antes do <hr> do logout para que "Sair" fique por último
+      const hrLogout = adminNav.querySelector('hr.divider:last-of-type') || adminNav.querySelector('hr');
+      if (hrLogout) adminNav.insertBefore(li, hrLogout);
+      else adminNav.appendChild(li);
 
       const adminMain = document.querySelector('.admin-main');
       if (adminMain) {
@@ -10908,11 +10969,11 @@ async function loadAdminCompras() {
             <button class="btn btn-secondary btn-sm" onclick="loadAdminLoja()">↺ Atualizar</button>
           </div>
           <div id="admin-loja-content">
-            <div style="text-align:center;color:var(--text-muted);padding:60px;">
-              Clique em "Atualizar" para carregar os itens da Loja Mágica.
-            </div>
+            <div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div></div>
           </div>`;
         adminMain.appendChild(section);
+        // Carrega os itens imediatamente
+        setTimeout(() => loadAdminLoja(), 100);
       }
     }
 
