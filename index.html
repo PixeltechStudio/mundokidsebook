@@ -7590,13 +7590,13 @@ async function loadAnalytics() {
 
   try {
     // Busca livros localmente para garantir títulos atualizados (sem depender do allBooks global)
-    const booksQ = Backendless.DataQueryBuilder.create().setProperties(['objectId','titulo']).setPageSize(200);
+    const booksQ = Backendless.DataQueryBuilder.create().setProperties(['objectId','titulo']).setPageSize(100);
     const livrosLocal = await Backendless.Data.of('Livros').find(booksQ);
     const livrosMap = {};
     livrosLocal.forEach(b => { livrosMap[b.objectId] = b; });
 
     // Busca todos os registros de progresso
-    const q = Backendless.DataQueryBuilder.create().setPageSize(500);
+    const q = Backendless.DataQueryBuilder.create().setPageSize(100);
     const progs = await Backendless.Data.of('ProgressoLeitura').find(q);
 
     // ── Top livros mais lidos ─────────────────────────────
@@ -7677,7 +7677,7 @@ async function loadAnalytics() {
     }
 
     // ── Distribuição por plano ───────────────────────────
-    const planQ = Backendless.DataQueryBuilder.create().setPageSize(500).setProperties(['plano']);
+    const planQ = Backendless.DataQueryBuilder.create().setPageSize(100).setProperties(['plano']);
     const allUsersPlans = await Backendless.Data.of('Users').find(planQ);
     const planDist = { gratuito:0, mensal:0, premium:0, anual:0 };
     allUsersPlans.forEach(u => { const p = u.plano||'gratuito'; planDist[p] = (planDist[p]||0)+1; });
@@ -7703,7 +7703,7 @@ async function loadAnalytics() {
         const sevenDaysAgo = new Date(now.getTime() - 7*24*60*60*1000).toISOString();
         const newUsersQ = Backendless.DataQueryBuilder.create()
           .setWhereClause(`created > '${sevenDaysAgo}'`)
-          .setProperties(['created']).setPageSize(500);
+          .setProperties(['created']).setPageSize(100);
         const newUsers = await Backendless.Data.of('Users').find(newUsersQ);
         newUsers.forEach(u => { const dayIdx = new Date(u.created).getDay(); counts[dayIdx]++; });
 
@@ -10297,7 +10297,7 @@ async function carregarInventario() {
   try {
     const q = Backendless.DataQueryBuilder.create()
       .setWhereClause(`userId = '${currentUser.objectId}'`)
-      .setPageSize(200);
+      .setPageSize(100);
     lojaInventario = await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).find(q);
   } catch(e) { lojaInventario = []; }
   renderInventario();
@@ -10386,7 +10386,7 @@ async function abrirPacote(pacote) {
   let cartas = lojaCartas;
   if (!cartas.length) {
     try {
-      const q = Backendless.DataQueryBuilder.create().setPageSize(200);
+      const q = Backendless.DataQueryBuilder.create().setPageSize(100);
       cartas = await Backendless.Data.of(CARTAS_TABLE).find(q);
       lojaCartas = cartas;
     } catch(e) { cartas = getDemoCartas(); lojaCartas = cartas; }
@@ -10492,10 +10492,10 @@ async function carregarAlbum() {
   const albumGrid = document.getElementById('album-grid');
   if (albumGrid) albumGrid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:rgba(255,255,255,0.4);"><div class="spinner" style="margin:0 auto 16px;"></div>Carregando álbum...</div>`;
   try {
-    const qC = Backendless.DataQueryBuilder.create().setPageSize(200);
+    const qC = Backendless.DataQueryBuilder.create().setPageSize(100);
     lojaCartas = await Backendless.Data.of(CARTAS_TABLE).find(qC);
     const qUC = Backendless.DataQueryBuilder.create()
-      .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(500);
+      .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(100);
     const userCartas = await Backendless.Data.of(USUARIO_CARTAS_TABLE).find(qUC);
     lojaUserCartas = {};
     userCartas.forEach(uc => { lojaUserCartas[uc.cartaId] = uc.quantidade || 1; });
@@ -10637,32 +10637,40 @@ function abrirItemDetail(itemId) {
 
 let adminLojaItens = [];
 let adminLojaFiltro = 'todos';
+let adminLojaTabelaOk = false;
 
 async function loadAdminLoja() {
   const cont = document.getElementById('admin-loja-content');
   if (!cont) return;
   cont.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div><p style="color:var(--text-muted);margin-top:16px;">Carregando itens da loja...</p></div>`;
-  let tabelaOk = true;
+  adminLojaTabelaOk = true;
   try {
-    const q = Backendless.DataQueryBuilder.create().setPageSize(200).setSortBy(['categoria ASC']);
-    adminLojaItens = await Backendless.Data.of(LOJA_ITENS_TABLE).find(q);
+    // Backendless limita a 100 por página — busca paginada
+    let allItens = [];
+    let offset = 0;
+    const PAGE = 100;
+    while (true) {
+      const q = Backendless.DataQueryBuilder.create()
+        .setPageSize(PAGE).setOffset(offset).setSortBy(['categoria ASC']);
+      const page = await Backendless.Data.of(LOJA_ITENS_TABLE).find(q);
+      allItens = allItens.concat(page);
+      if (page.length < PAGE) break;
+      offset += PAGE;
+    }
+    adminLojaItens = allItens;
   } catch(e) {
-    tabelaOk = false;
+    adminLojaTabelaOk = false;
     adminLojaItens = [];
     cont.innerHTML = `
-      <div style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:24px;margin-bottom:24px;">
+      <div id="admin-loja-erro-banner" style="background:rgba(251,191,36,0.06);border:1px solid rgba(251,191,36,0.25);border-radius:12px;padding:24px;margin-bottom:24px;">
         <p style="color:#fbbf24;font-weight:700;margin-bottom:6px;">⚠️ Tabela <b>${LOJA_ITENS_TABLE}</b> não encontrada ou sem permissão</p>
         <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;">Erro: <code style="background:rgba(255,255,255,0.08);padding:2px 8px;border-radius:4px;">${e.message || String(e)}</code></p>
         <p style="font-size:0.82rem;color:var(--text-muted);">Os clientes estão vendo os <b>itens demo</b> (hardcoded). Clique abaixo para importar esses itens para o Backendless e começar a gerenciá-los:</p>
         <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="importarDemosParaBackendless()">📥 Importar itens demo para o Backendless</button>
       </div>`;
-    // Mostra os demos para que admin possa ver o que os clientes estão vendo
     adminLojaItens = getLojaDemoItens().map(i => ({ ...i, _isDemo: true }));
-    const demoDiv = document.createElement('div');
-    demoDiv.innerHTML = `<p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">📋 Itens demo atualmente visíveis para os clientes (somente leitura até importar):</p>`;
-    cont.appendChild(demoDiv);
   }
-  renderAdminLoja(tabelaOk);
+  renderAdminLoja();
 }
 
 async function importarDemosParaBackendless() {
@@ -10683,14 +10691,15 @@ async function importarDemosParaBackendless() {
   loadAdminLoja();
 }
 
-function renderAdminLoja(tabelaOk = true) {
+function renderAdminLoja() {
+  const tabelaOk = adminLojaTabelaOk;
   const cont = document.getElementById('admin-loja-content');
   if (!cont) return;
   const filtered = adminLojaFiltro === 'todos' ? adminLojaItens : adminLojaItens.filter(i => i.categoria === adminLojaFiltro);
   const listHtml = `
     <div style="display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;">
       ${tabelaOk ? `<button class="btn btn-primary btn-sm" onclick="abrirAdminLojaModal()">➕ Novo Item</button>` : ''}
-      <select onchange="adminLojaFiltro=this.value;renderAdminLoja(${tabelaOk})" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 12px;border-radius:8px;font-family:var(--font-body);">
+      <select onchange="adminLojaFiltro=this.value;renderAdminLoja()" style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.15);color:white;padding:8px 12px;border-radius:8px;font-family:var(--font-body);">
         <option value="todos">Todas categorias</option>
         <option value="avatares">Avatares</option><option value="molduras">Molduras</option>
         <option value="mascotes">Mascotes</option><option value="efeitos">Efeitos</option>
@@ -10702,8 +10711,9 @@ function renderAdminLoja(tabelaOk = true) {
       </select>
       <span style="font-size:0.8rem;color:var(--text-muted);">${adminLojaItens.length} item(s) total</span>
     </div>
-    ${filtered.length === 0 && adminLojaItens.length === 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item cadastrado. Clique em <b>➕ Novo Item</b> para adicionar.</div>` : ''}
+    ${filtered.length === 0 && adminLojaItens.length === 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item cadastrado. ${tabelaOk ? 'Clique em <b>➕ Novo Item</b> para adicionar.' : 'Importe os itens demo acima para começar.'}</div>` : ''}
     ${filtered.length === 0 && adminLojaItens.length > 0 ? `<div style="text-align:center;color:var(--text-muted);padding:40px;">Nenhum item nesta categoria.</div>` : ''}
+    ${!tabelaOk && filtered.length > 0 ? `<p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">📋 Itens demo atualmente visíveis para os clientes (somente leitura até importar):</p>` : ''}
     ${filtered.map(item => `
       <div class="admin-loja-item-row">
         <span style="font-size:1.8rem;">${item.emoji||getCatEmoji(item.categoria)}</span>
@@ -10747,9 +10757,11 @@ function renderAdminLoja(tabelaOk = true) {
       <div id="admin-compras-list"><div style="color:var(--text-muted);text-align:center;padding:24px;">Clique em Atualizar para ver.</div></div>
     </div>
   `;
-  // Append to cont (preserving any error banner already inserted above)
-  const existing = cont.querySelector('[style*="fbbf24"]'); // the warning banner
-  if (existing) {
+  // Preserve the error banner if it exists
+  const errBanner = cont.querySelector('#admin-loja-erro-banner');
+  if (errBanner) {
+    let next = errBanner.nextSibling;
+    while (next) { const n = next.nextSibling; cont.removeChild(next); next = n; }
     const wrapper = document.createElement('div');
     wrapper.innerHTML = listHtml;
     cont.appendChild(wrapper);
@@ -10760,6 +10772,7 @@ function renderAdminLoja(tabelaOk = true) {
 
 function abrirAdminLojaModal(itemId) {
   const modal = document.getElementById('admin-loja-modal');
+  if (!modal) { showToast('Modal não encontrado. Recarregue a página.', 'error'); return; }
   const titleEl = document.getElementById('admin-loja-modal-title');
   document.getElementById('admin-loja-item-id').value = '';
   ['ali-nome','ali-desc','ali-emoji','ali-imagem','ali-colecao'].forEach(id => {
@@ -10767,13 +10780,18 @@ function abrirAdminLojaModal(itemId) {
   });
   const preco = document.getElementById('ali-preco'); if (preco) preco.value = '';
   const drop = document.getElementById('ali-drop'); if (drop) drop.value = '';
-  titleEl.textContent = '➕ Novo Item na Loja';
+  const ativo = document.getElementById('ali-ativo'); if (ativo) ativo.value = 'true';
+  const compravel = document.getElementById('ali-compravel'); if (compravel) compravel.value = 'true';
+  const colecavel = document.getElementById('ali-colecavel'); if (colecavel) colecavel.value = 'false';
+  ['ali-categoria','ali-raridade'].forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
+  if (titleEl) titleEl.textContent = '➕ Novo Item na Loja';
   modal.style.display = 'block';
+  document.body.style.overflow = 'hidden';
 }
 
 function editarAdminLojaItem(itemId) {
   const item = adminLojaItens.find(i => i.objectId === itemId);
-  if (!item) return;
+  if (!item) { showToast('Item não encontrado.', 'error'); return; }
   document.getElementById('admin-loja-item-id').value = itemId;
   document.getElementById('ali-nome').value = item.nome || '';
   document.getElementById('ali-desc').value = item.descricao || '';
@@ -10788,8 +10806,10 @@ function editarAdminLojaItem(itemId) {
   setVal('ali-ativo', String(item.ativo !== false));
   setVal('ali-compravel', String(item.compravel !== false));
   setVal('ali-colecavel', String(!!item.colecavel));
-  document.getElementById('admin-loja-modal-title').textContent = '✏️ Editar Item';
-  document.getElementById('admin-loja-modal').style.display = 'block';
+  const titleEl = document.getElementById('admin-loja-modal-title');
+  if (titleEl) titleEl.textContent = '✏️ Editar Item';
+  const modal = document.getElementById('admin-loja-modal');
+  if (modal) { modal.style.display = 'block'; document.body.style.overflow = 'hidden'; }
 }
 
 async function salvarAdminLojaItem() {
@@ -10829,7 +10849,9 @@ async function excluirAdminLojaItem(itemId) {
 }
 
 function fecharAdminLojaModal() {
-  document.getElementById('admin-loja-modal').style.display = 'none';
+  const modal = document.getElementById('admin-loja-modal');
+  if (modal) modal.style.display = 'none';
+  document.body.style.overflow = '';
 }
 
 async function adminAdicionarMoedas() {
@@ -11004,7 +11026,7 @@ window.abrirLoja = async function() {
   if (currentUser) {
     try {
       const q = Backendless.DataQueryBuilder.create()
-        .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(200);
+        .setWhereClause(`userId = '${currentUser.objectId}'`).setPageSize(100);
       lojaInventario = await Backendless.Data.of(USUARIO_INVENTARIO_TABLE).find(q).catch(()=>[]);
     } catch(e) { lojaInventario = []; }
   }
