@@ -9745,7 +9745,28 @@ async function loadAdminJornada() {
       </div>
       <div class="form-group"><label>Preço (moedas) *</label><input type="number" id="ali-preco" min="0" placeholder="100" /></div>
       <div class="form-group"><label>Emoji / Ícone</label><input type="text" id="ali-emoji" placeholder="🦄" maxlength="8" /></div>
-      <div class="form-group"><label>URL da Imagem</label><input type="text" id="ali-imagem" placeholder="https://..." /></div>
+      <div class="form-group full-width">
+        <label>Imagem do Item</label>
+        <div id="ali-imagem-upload-area" onclick="document.getElementById('ali-imagem-file').click()"
+          style="border:2px dashed rgba(192,132,252,0.4);border-radius:12px;padding:16px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(255,255,255,0.03);position:relative;min-height:90px;display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;"
+          onmouseover="this.style.borderColor='rgba(192,132,252,0.8)';this.style.background='rgba(192,132,252,0.06)'"
+          onmouseout="this.style.borderColor='rgba(192,132,252,0.4)';this.style.background='rgba(255,255,255,0.03)'">
+          <img id="ali-imagem-preview" src="" alt="" style="display:none;max-height:80px;max-width:120px;border-radius:8px;object-fit:contain;box-shadow:0 4px 12px rgba(0,0,0,0.4);" />
+          <div id="ali-imagem-placeholder" style="color:var(--text-muted);font-size:0.85rem;">
+            <div style="font-size:1.8rem;margin-bottom:4px;">🖼️</div>
+            <div>Clique para escolher uma imagem</div>
+            <div style="font-size:0.75rem;margin-top:2px;opacity:0.7;">PNG, JPG, GIF, WEBP, SVG…</div>
+          </div>
+          <div id="ali-imagem-filename" style="display:none;font-size:0.78rem;color:var(--lilac);margin-top:4px;"></div>
+        </div>
+        <input type="file" id="ali-imagem-file" accept="image/*" style="display:none;" onchange="onAliImagemChange(event)" />
+        <input type="hidden" id="ali-imagem" />
+        <div style="margin-top:6px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <span style="font-size:0.75rem;color:var(--text-muted);">Ou cole uma URL:</span>
+          <input type="text" id="ali-imagem-url" placeholder="https://..." oninput="onAliImagemUrlInput(this.value)"
+            style="flex:1;min-width:180px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);color:white;padding:6px 10px;border-radius:8px;font-family:var(--font-body);font-size:0.82rem;" />
+        </div>
+      </div>
       <div class="form-group"><label>Status</label>
         <select id="ali-ativo">
           <option value="true">✅ Ativo</option>
@@ -10645,9 +10666,7 @@ async function loadAdminLoja() {
   cont.innerHTML = `<div style="text-align:center;padding:40px;"><div class="spinner" style="margin:0 auto;"></div><p style="color:var(--text-muted);margin-top:16px;">Carregando itens da loja...</p></div>`;
   adminLojaTabelaOk = true;
   try {
-    // Backendless limita a 100 por página — busca paginada
-    let allItens = [];
-    let offset = 0;
+    let allItens = [], offset = 0;
     const PAGE = 100;
     while (true) {
       const q = Backendless.DataQueryBuilder.create()
@@ -10716,7 +10735,7 @@ function renderAdminLoja() {
     ${!tabelaOk && filtered.length > 0 ? `<p style="color:var(--text-muted);font-size:0.8rem;margin-bottom:12px;">📋 Itens demo atualmente visíveis para os clientes (somente leitura até importar):</p>` : ''}
     ${filtered.map(item => `
       <div class="admin-loja-item-row">
-        <span style="font-size:1.8rem;">${item.emoji||getCatEmoji(item.categoria)}</span>
+        ${item.imagem ? `<img src="${item.imagem}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px;background:rgba(255,255,255,0.05);" onerror="this.style.display='none'" />` : `<span style="font-size:1.8rem;">${item.emoji||getCatEmoji(item.categoria)}</span>`}
         <div style="flex:1;min-width:0;">
           <div style="font-weight:700;color:white;">${item.nome}</div>
           <div style="font-size:0.75rem;color:var(--text-muted);">${item.categoria} · <span class="rarity-badge rarity-${item.raridade||'comum'}" style="position:static;">${RARITY_LABELS[item.raridade||'comum']}</span> · 🪙 ${item.preco||0}</div>
@@ -10729,7 +10748,6 @@ function renderAdminLoja() {
         </div>` : `<span style="font-size:0.7rem;color:var(--text-muted);">demo</span>`}
       </div>`).join('')}
 
-    <!-- Admin: Gerenciar moedas dos usuários -->
     <div class="admin-card" style="margin-top:32px;">
       <h3 style="color:var(--pearl);margin-bottom:16px;font-size:1rem;">🪙 Gerenciar Moedas dos Usuários</h3>
       <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
@@ -10748,7 +10766,6 @@ function renderAdminLoja() {
       <div id="admin-moedas-result" style="margin-top:12px;color:var(--text-muted);font-size:0.85rem;"></div>
     </div>
 
-    <!-- Admin: Ver compras -->
     <div class="admin-card" style="margin-top:24px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <h3 style="color:var(--pearl);font-size:1rem;">🛒 Compras Recentes</h3>
@@ -10757,7 +10774,6 @@ function renderAdminLoja() {
       <div id="admin-compras-list"><div style="color:var(--text-muted);text-align:center;padding:24px;">Clique em Atualizar para ver.</div></div>
     </div>
   `;
-  // Preserve the error banner if it exists
   const errBanner = cont.querySelector('#admin-loja-erro-banner');
   if (errBanner) {
     let next = errBanner.nextSibling;
@@ -10770,12 +10786,76 @@ function renderAdminLoja() {
   }
 }
 
+// ── ADMIN LOJA — IMAGE UPLOAD HELPERS ──
+let adminLojaImagemFile = null; // arquivo selecionado para upload
+
+function onAliImagemChange(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('Selecione um arquivo de imagem.', 'error'); return; }
+  adminLojaImagemFile = file;
+  document.getElementById('ali-imagem-url').value = '';
+  document.getElementById('ali-imagem').value = '';
+  const preview = document.getElementById('ali-imagem-preview');
+  const placeholder = document.getElementById('ali-imagem-placeholder');
+  const filename = document.getElementById('ali-imagem-filename');
+  const reader = new FileReader();
+  reader.onload = e => {
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    filename.textContent = `📎 ${file.name} (${(file.size/1024).toFixed(0)} KB)`;
+    filename.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
+}
+
+function onAliImagemUrlInput(url) {
+  adminLojaImagemFile = null;
+  document.getElementById('ali-imagem-file').value = '';
+  document.getElementById('ali-imagem').value = url;
+  const preview = document.getElementById('ali-imagem-preview');
+  const placeholder = document.getElementById('ali-imagem-placeholder');
+  const filename = document.getElementById('ali-imagem-filename');
+  if (url) {
+    preview.src = url;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    filename.style.display = 'none';
+    preview.onerror = () => { preview.style.display = 'none'; placeholder.style.display = 'flex'; };
+  } else {
+    preview.style.display = 'none';
+    placeholder.style.display = 'flex';
+    filename.style.display = 'none';
+  }
+}
+
+function resetAliImagemUI(currentUrl) {
+  adminLojaImagemFile = null;
+  const fileInput = document.getElementById('ali-imagem-file');
+  const preview = document.getElementById('ali-imagem-preview');
+  const placeholder = document.getElementById('ali-imagem-placeholder');
+  const filename = document.getElementById('ali-imagem-filename');
+  const urlInput = document.getElementById('ali-imagem-url');
+  if (fileInput) fileInput.value = '';
+  if (filename) { filename.textContent = ''; filename.style.display = 'none'; }
+  if (currentUrl) {
+    if (urlInput) urlInput.value = currentUrl;
+    if (preview) { preview.src = currentUrl; preview.style.display = 'block'; }
+    if (placeholder) placeholder.style.display = 'none';
+  } else {
+    if (urlInput) urlInput.value = '';
+    if (preview) { preview.src = ''; preview.style.display = 'none'; }
+    if (placeholder) placeholder.style.display = 'flex';
+  }
+}
+
 function abrirAdminLojaModal(itemId) {
   const modal = document.getElementById('admin-loja-modal');
   if (!modal) { showToast('Modal não encontrado. Recarregue a página.', 'error'); return; }
   const titleEl = document.getElementById('admin-loja-modal-title');
   document.getElementById('admin-loja-item-id').value = '';
-  ['ali-nome','ali-desc','ali-emoji','ali-imagem','ali-colecao'].forEach(id => {
+  ['ali-nome','ali-desc','ali-emoji','ali-colecao'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   const preco = document.getElementById('ali-preco'); if (preco) preco.value = '';
@@ -10784,6 +10864,7 @@ function abrirAdminLojaModal(itemId) {
   const compravel = document.getElementById('ali-compravel'); if (compravel) compravel.value = 'true';
   const colecavel = document.getElementById('ali-colecavel'); if (colecavel) colecavel.value = 'false';
   ['ali-categoria','ali-raridade'].forEach(id => { const el = document.getElementById(id); if (el) el.selectedIndex = 0; });
+  resetAliImagemUI('');
   if (titleEl) titleEl.textContent = '➕ Novo Item na Loja';
   modal.style.display = 'block';
   document.body.style.overflow = 'hidden';
@@ -10797,9 +10878,9 @@ function editarAdminLojaItem(itemId) {
   document.getElementById('ali-desc').value = item.descricao || '';
   document.getElementById('ali-emoji').value = item.emoji || '';
   document.getElementById('ali-preco').value = item.preco || '';
-  document.getElementById('ali-imagem').value = item.imagem || '';
   document.getElementById('ali-colecao').value = item.colecao || '';
   document.getElementById('ali-drop').value = item.dropChance || '';
+  resetAliImagemUI(item.imagem || '');
   const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || el.options[0]?.value; };
   setVal('ali-categoria', item.categoria);
   setVal('ali-raridade', item.raridade);
@@ -10816,27 +10897,49 @@ async function salvarAdminLojaItem() {
   const nome = document.getElementById('ali-nome').value.trim();
   if (!nome) { showToast('Nome é obrigatório', 'error'); return; }
   const itemId = document.getElementById('admin-loja-item-id').value;
-  const rec = {
-    nome,
-    descricao: document.getElementById('ali-desc').value.trim(),
-    categoria: document.getElementById('ali-categoria').value,
-    raridade: document.getElementById('ali-raridade').value,
-    preco: parseInt(document.getElementById('ali-preco').value) || 0,
-    emoji: document.getElementById('ali-emoji').value.trim(),
-    imagem: document.getElementById('ali-imagem').value.trim(),
-    ativo: document.getElementById('ali-ativo').value === 'true',
-    compravel: document.getElementById('ali-compravel').value === 'true',
-    colecavel: document.getElementById('ali-colecavel').value === 'true',
-    dropChance: parseFloat(document.getElementById('ali-drop').value) || 0,
-    colecao: document.getElementById('ali-colecao').value.trim(),
-  };
-  if (itemId) rec.objectId = itemId;
+  const btnSalvar = document.querySelector('#admin-loja-modal .btn-primary');
+  if (btnSalvar) { btnSalvar.disabled = true; btnSalvar.textContent = '⏳ Salvando...'; }
+
   try {
+    let imagemUrl = document.getElementById('ali-imagem').value.trim()
+                 || document.getElementById('ali-imagem-url').value.trim();
+
+    // Se há arquivo selecionado, faz upload primeiro
+    if (adminLojaImagemFile) {
+      showToast('Enviando imagem...', 'info', 8000);
+      try {
+        imagemUrl = await uploadFileToBackendless(adminLojaImagemFile, 'loja-itens');
+      } catch(e) {
+        showToast('Erro no upload da imagem: ' + (e.message || e), 'error');
+        if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = '💾 Salvar Item'; }
+        return;
+      }
+    }
+
+    const rec = {
+      nome,
+      descricao: document.getElementById('ali-desc').value.trim(),
+      categoria: document.getElementById('ali-categoria').value,
+      raridade: document.getElementById('ali-raridade').value,
+      preco: parseInt(document.getElementById('ali-preco').value) || 0,
+      emoji: document.getElementById('ali-emoji').value.trim(),
+      imagem: imagemUrl,
+      ativo: document.getElementById('ali-ativo').value === 'true',
+      compravel: document.getElementById('ali-compravel').value === 'true',
+      colecavel: document.getElementById('ali-colecavel').value === 'true',
+      dropChance: parseFloat(document.getElementById('ali-drop').value) || 0,
+      colecao: document.getElementById('ali-colecao').value.trim(),
+    };
+    if (itemId) rec.objectId = itemId;
     await Backendless.Data.of(LOJA_ITENS_TABLE).save(rec);
     showToast(itemId ? 'Item atualizado! ✅' : 'Item criado! ✅', 'success');
     fecharAdminLojaModal();
     loadAdminLoja();
-  } catch(e) { showToast('Erro ao salvar: ' + (e.message || e), 'error'); }
+  } catch(e) {
+    showToast('Erro ao salvar: ' + (e.message || e), 'error');
+  } finally {
+    if (btnSalvar) { btnSalvar.disabled = false; btnSalvar.textContent = '💾 Salvar Item'; }
+  }
 }
 
 async function excluirAdminLojaItem(itemId) {
